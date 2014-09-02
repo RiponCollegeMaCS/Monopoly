@@ -61,4 +61,4 @@ class BoardLocation
 		void flipMortgaged() { mortgaged = !mortgaged; }
 		void incrementVisits() { visits++; }
 		void changeBuildings(int delta) { buildings += delta; }
-}
+};
