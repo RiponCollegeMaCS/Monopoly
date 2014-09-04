@@ -17,22 +17,22 @@
  */
 
 #include<iostream>
-#include<string>
+#include<std::string>
 
 class BoardLocation
 {
 	int id;
-	string name;
+	std::string name;
 	int price;
 	int[] rents;
 	int houseCost;
-	string group;
+	std::string group;
 	int buildings;
 	int visits;
 	bool mortgaged;
 
 	public:
-		BoardLocation(int ID, string* n, int p, int[] r, int hc, string* g)
+		BoardLocation(int ID, std::string* n, int p=0, std::string* g="none", int[] r=[0, 0, 0, 0, 0, 0], int hc=0)
 		{
 			id = ID;
 			name = *n;
@@ -48,11 +48,11 @@ class BoardLocation
 		
 		// Getters and Setters
 		int getID() { return id; }
-		string* getName() { return &name; }
+		std::string* getName() { return &name; }
 		int getPrice() { return price; }
 		int* getRents() { return &rents; }
 		int getHouseCost() { return houseCost; }
-		string* getGroup() { return &group; }
+		std::string* getGroup() { return &group; }
 		int getBuildings() { return buildings; }
 		int getVisits() { return visits; }
 		bool isMortgaged() { return mortgaged; }
