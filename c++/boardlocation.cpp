@@ -16,49 +16,46 @@
  * =====================================================================================
  */
 
-#include<iostream>
-#include<std::string>
+#include "boardlocation.h"
 
-class BoardLocation
+#include<vector>
+
+BoardLocation::BoardLocation(int id, std::string name)
 {
-	int id;
-	std::string name;
-	int price;
-	int[] rents;
-	int houseCost;
-	std::string group;
-	int buildings;
-	int visits;
-	bool mortgaged;
+	BoardLocation::id = id;
+	BoardLocation::name = name;
+}
 
-	public:
-		BoardLocation(int ID, std::string* n, int p=0, std::string* g="none", int[] r=[0, 0, 0, 0, 0, 0], int hc=0)
-		{
-			id = ID;
-			name = *n;
-			price = p;
-			rents = r;
-			houseCost = hc;
-			group = *g;
-			buildings = 0;
-			visits = 0;
-			mortgaged = false;
+BoardLocation::BoardLocation(int id, std::string name, int price, std::string group)
+{
+	BoardLocation::id = id;
+	BoardLocation::name = name;
+	BoardLocation::price = price;
+	BoardLocation::group = group;
+}
 
-		}
-		
-		// Getters and Setters
-		int getID() { return id; }
-		std::string* getName() { return &name; }
-		int getPrice() { return price; }
-		int* getRents() { return &rents; }
-		int getHouseCost() { return houseCost; }
-		std::string* getGroup() { return &group; }
-		int getBuildings() { return buildings; }
-		int getVisits() { return visits; }
-		bool isMortgaged() { return mortgaged; }
+BoardLocation::BoardLocation(int id, std::string name, int price, std::string group, std::vector<int> rents, int houseCost)
+{
+	BoardLocation::id = id;
+	BoardLocation::name = name;
+	BoardLocation::price = price;
+	BoardLocation::group = group;
+	BoardLocation::rents = rents;
+	BoardLocation::houseCost=houseCost;
+}
 
-		// Instance methods
-		void flipMortgaged() { mortgaged = !mortgaged; }
-		void incrementVisits() { visits++; }
-		void changeBuildings(int delta) { buildings += delta; }
-};
+// Getters and Setters
+int BoardLocation::getID() { return (id); }
+std::string* BoardLocation::getName() { return (&name); }
+int BoardLocation::getPrice() { return (price); }
+std::vector<int> BoardLocation::getRents() { return (rents); }
+int BoardLocation::getHouseCost() { return (houseCost); }
+std::string* BoardLocation::getGroup() { return (&group); }
+int BoardLocation::getBuildings() { return (buildings); }
+int BoardLocation::getVisits() { return (visits); }
+bool BoardLocation::isMortgaged() { return (mortgaged); }
+
+// Instance methods
+void BoardLocation::flipMortgaged() { mortgaged = !mortgaged; }
+void BoardLocation::incrementVisits() { visits++; }
+void BoardLocation::changeBuildings(int delta) { buildings += delta; }
