@@ -60,6 +60,9 @@ class Game
 
 	std::vector<BoardLocation> unownedProperties;
 
+	// Miscellaneous
+	int moneyInFP = 0;
+
 	void createCards();
 	void createBoard();
 
@@ -67,6 +70,11 @@ public:
 	Game(std::vector<Player> players, bool auct, bool fpp, bool dog, bool nrij, bool tts, bool seb, int cutoff);
 
 	void communityChest(Player* player);
+	void chance(Player* player);
+	void changeMoney(Player* player, int amount);
+	void moveTo(Player* player, int location);
+	void goToJail(Player* player);
+	void boardAction(Player* player, BoardLocation* boardLocation);
 
 };
 

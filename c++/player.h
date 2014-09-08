@@ -19,6 +19,7 @@
 #ifndef PLAYER_H_
 #define PLAYER_H_
 
+#include "boardlocation.h"
 #include<vector>
 #include<string>
 
@@ -47,7 +48,7 @@ class Player
 	    std::vector<std::string> monopolies; // implementation of these has to be checked for efficiency
 	    int auctionBid = 0;
 	    bool passedGo = false;
-	    std::vector<std::string> inventory;
+	    std::vector<BoardLocation> inventory;
 	    bool bidIncludesMortgages = false;
 
 public:
@@ -64,6 +65,11 @@ public:
     std::vector<int> getGroupPreferences();
     int getDevelopmentThreshold();
     void giveCommunityChestCard();
+    void giveChanceCard();
+    std::vector<std::string> getMonopolies();
+    std::vector<BoardLocation> getInventory();
+    int getPosition();
+    void changePosition(int delta);
 };
 
 

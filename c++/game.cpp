@@ -100,4 +100,157 @@ void Game::createBoard()
 void Game::communityChest(Player* player)
 {
 	int card = communityChestCards[communityChestIndex];
+
+	switch (card)
+	{
+	case 0: // The card's been 'removed'.
+		communityChestIndex++;
+		Game::communityChest(player);
+		break;
+	case 1: // Get out of jail free
+		player->giveCommunityChestCard();
+		communityChestCards[communityChestIndex] = 0;
+		break;
+	case 2: // Pay school tax of $150
+		Game::changeMoney(player, -150);
+		moneyInFP += 150;
+		break;
+	case 3: // Collect $50 from every player
+		for (auto i = players.begin(); i != players.end(); i++)
+		{
+			Game::changeMoney(i, -50);
+			Game::changeMoney(player, 50);
+		}
+		break;
+	case 4: // Xmas fund matures / Collect $100
+		Game::changeMoney(player, 100);
+		break;
+	case 5: // Income tax refund/ Collect $20
+		Game::changeMoney(player, 20);
+		break;
+	case 6: // You inherit $100
+		Game::changeMoney(player, 100);
+		break;
+	case 7: // You have won second prize in a beauty concert / Collect $10
+		Game::changeMoney(player, 10);
+		break;
+	case 8: // Bank error in your favor / collect $200
+		Game::changeMoney(player, 200);
+		break;
+	case 9: // Receive for services $25
+		Game::changeMoney(player, 25);
+		break;
+	case 10: // Advance to go (collect $200)
+		Game::moveTo(player, 0); // Player moves to Go.
+		break;
+	case 11: // You are assessed for street repairs
+		int houses = 0, hotels = 0;
+
+		if (player->getMonopolies().empty())
+		{
+			for (auto i = player->getInventory().begin(); i != player->getInventory().end(); i++)
+			{
+				if (5 == i->buildings)
+					hotels++;
+				else
+					houses += i->buildings;
+			}
+			int houseRepairs = 40 * houses;
+			int hotelRepairs = 115 * hotels;
+
+			Game::changeMoney(player, (houseRepairs + hotelRepairs));
+			moneyInFP += houseRepairs + hotelRepairs;
+		}
+			break;
+	case 12: // Life insurance matures / Collect $100
+		Game::changeMoney(player, 100);
+		break;
+	case 13: // Doctor's fee / Pay $50
+		Game::changeMoney(player, -50);
+		moneyInFP += 50;
+		break;
+	case 14: // From sale of stock / You get $45
+		Game::changeMoney(player, 45);
+		break;
+	case 15: // Pay hospital $100
+		Game::changeMoney(player, -100);
+		moneyInFP += 100;
+		break;
+	case 16:
+		Game::goToJail(player);
+		break;
+	}
+
+	communityChestIndex = (communityChestIndex + 1) % NUMBER_OF_CARDS;
+}
+
+void Game::chance(Player* player)
+{
+	int card = chanceCards[chanceIndex];
+
+	switch (card)
+	{
+	case 0: // The card's been 'removed'.
+		chanceIndex++;
+		Game::chance(player);
+		break;
+	case 1: // Get out of jail free
+		player->giveChanceCard();
+		chanceCards[chanceIndex] = 0;
+		break;
+	case 2: // Go directly to jail
+		Game::goToJail(player);
+		break;
+	case 3: // Your building loan matures / Collect $150
+		Game::changeMoney(player, 150);
+		break;
+	case 4: // Go back 3 spaces
+		player->changePosition(-3);
+		board[player->getPosition()].visits += 1; // Increase hit counter
+		Game::boardAction(player, board[player->getPosition()]);
+		break;
+	case 5:
+	case 11: // Advance token to the nearest railroad
+		if (player->getPosition() <= 7)
+			Game::moveTo(player, 15);
+		else if (player->getPosition() <= 22)
+			Game::moveTo(player, 25);
+		else if (player->getPosition() <= 36)
+			Game::moveTo(player, 5);
+		player->cardRent = true;
+		Game::boardAction(player, board[player->getPosition()]);
+		break;
+	case 6: // Advance to Go (Collect $200)
+		Game::moveTo(player, 0);
+		break;
+	case 7: // Advance to Illinois Ave.
+		Game::moveTo(player, 24);
+		Game::boardAction(player, board[player->getPosition()]);
+		break;
+	case 8: // Make general repairs on all your property.
+		int houses = 0, hotels = 0;
+
+		if (player->getMonopolies().empty())
+		{
+			for (auto i = player->getInventory().begin(); i != player->getInventory().end(); i++)
+			{
+				if (5 == i->buildings)
+					hotels++;
+				else
+					houses += i->buildings;
+			}
+			int houseRepairs = 45 * houses;
+			int hotelRepairs = 100 * hotels;
+
+			Game::changeMoney(player, (houseRepairs + hotelRepairs));
+			moneyInFP += houseRepairs + hotelRepairs;
+		}
+		break;
+	case 9: // Advance to St. Charles Place
+		Game::moveTo(player, 11);
+		Game::boardAction(player, board[player->getPosition()]);
+		break;
+	case 10: // Advance token to nearest utility
+
+	}
 }
