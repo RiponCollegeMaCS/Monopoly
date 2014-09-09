@@ -356,6 +356,7 @@ class Game:
             rent = 25 * pow(2, railroad_counter - 1)  # The rent.
             if player.card_rent:  # Rent is double for the railroad cards.
                 rent *= 2
+
         # Rent for Utilities.
         elif current_property.group == "Utility":
             self.dice_roll = randint(1, 6) + randint(1, 6)  # Roll again.
@@ -815,14 +816,12 @@ class Game:
                 self.change_money(player, 200)
 
         elif board_space.name == "Income Tax":
-            # The player pays either $200 or 10% of all assets.
-            all_assets = self.total_assets(player)
-            tax_to_be_paid = min(200, int(round(Decimal(str(0.1 * all_assets)), 0)))
-            self.change_money(player, -tax_to_be_paid)
+            # The player pays either $200.  The '10% of all assets' option was removed in 2008.
+            self.change_money(player, -200)
 
             # Check to see if the Free Parking pool is enabled.
             if self.free_parking_pool:
-                self.money_in_fp += tax_to_be_paid  # The pool gains the tax.
+                self.money_in_fp += 200  # The pool gains the tax.
 
         elif board_space.name == "Free Parking":
             if self.free_parking_pool:  # Check to see if the Free Parking pool is enabled.
@@ -839,10 +838,10 @@ class Game:
             self.go_to_jail(player)  # The player goes to jail.
 
         elif board_space.name == "Luxury Tax":
-            self.change_money(player, -75)  # The player pays $75.
+            self.change_money(player, -100)  # The player pays a $100 tax.
 
             if self.free_parking_pool:  # Check to see if the Free Parking pool is enabled.
-                self.money_in_fp += 75  # The pool gains the tax.
+                self.money_in_fp += 100  # The pool gains the tax.
 
         else:  # The player landed on a property.
             self.property_action(player, board_space)
