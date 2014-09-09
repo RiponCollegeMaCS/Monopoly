@@ -34,8 +34,8 @@ class Game
 
 	bool gameStatus = true;
 	int numberOfPlayers;
-	std::vector<BoardLocation> board;
-	std::vector<Player> players;
+	std::vector<BoardLocation*> board;
+	std::vector<Player*> players;
 	int turnCounter = 0;
 	int doublesCounter = 0;
 	int result = 99;
@@ -43,6 +43,8 @@ class Game
 	bool auctionsEnabled = false;
 	bool firstBuilding = false;
 	int cutoff = 300;
+
+	bool moveAgain = false;
 
 	// House rules flags
 	bool freeParkingPool = false;
@@ -71,10 +73,15 @@ public:
 
 	void communityChest(Player* player);
 	void chance(Player* player);
+	void moveAhead(Player* player, int numberOfSpaces);
 	void changeMoney(Player* player, int amount);
 	void moveTo(Player* player, int location);
+	void payOutOfJail(Player* player);
 	void goToJail(Player* player);
+    void buyProperty(Player* player, BoardLocation* boardSpace, int customPrice=0);
+    Player* propertyOwner(BoardLocation* property);
 	void boardAction(Player* player, BoardLocation* boardLocation);
+	bool monopolyStatus(Player* player, BoardLocation* boardSpace);
 
 };
 

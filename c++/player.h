@@ -28,48 +28,57 @@ class Player
 	int number;
 
 	// Strategy params
-	    int buyingThreshold = 100;
-	    int buildingThreshold = 5;
-	    int jailTime = 3;
-	    bool smartJailStrategy = false;
-	    int completeMonopoly = 0;
-	    std::vector<int> groupPreferences;
-	    int developmentThreshold = 0;
+	int buyingThreshold = 100;
+	int buildingThreshold = 5;
+	int jailTime = 3;
+	int initJailTime = 3; // ??????
+	bool smartJailStrategy = false;
+	int completeMonopoly = 0;
+	std::vector<int> groupPreferences;
+	int developmentThreshold = 0;
 
-	    // Parameters
-	    int successIndicator = 0;
-	    int position = 0;
-	    int money = 1500;
-	    bool chanceCard = false;
-	    bool communityChestCard = false;
-	    bool inJail = false;
-	    int jailCounter = 0;
-	    bool cardRent = false;
-	    std::vector<std::string> monopolies; // implementation of these has to be checked for efficiency
-	    int auctionBid = 0;
-	    bool passedGo = false;
-	    std::vector<BoardLocation> inventory;
-	    bool bidIncludesMortgages = false;
+	// Parameters
+	int successIndicator = 0;
+	int position = 0;
+	int money = 1500;
+	bool chanceCard = false;
+	bool communityChestCard = false;
+	bool inJail = false;
+	int jailCounter = 0;
+	bool cardRent = false;
+	std::vector<std::string*> monopolies; // implementation of these has to be checked for efficiency
+	int auctionBid = 0;
+	bool passed_go = false;
+	std::vector<BoardLocation*> inventory;
+	bool bidIncludesMortgages = false;
 
 public:
     Player(int num, std::vector<int> groupPreferencers, int buy_thresh, int build_thresh, int jt, bool sjs, int cm, int dt);
 
     void reset_values();
+    void changePosition(int delta);
+    void passedGo();
 
     // Getters and setters
     int getBuyingThreshold();
     int getBuildingThreshold();
     int getJailTime();
-    bool isSmartJailStrategy();
+    void setJailTime(int jailTime);
+    int getInitJailTime();
+    bool hasSmartJailStrategy();
     int getCompleteMonopoly();
     std::vector<int> getGroupPreferences();
     int getDevelopmentThreshold();
-    void giveCommunityChestCard();
-    void giveChanceCard();
-    std::vector<std::string> getMonopolies();
-    std::vector<BoardLocation> getInventory();
+    void flipCommunityChestCard();
+    bool hasCommunityChestCard();
+    void flipChanceCard();
+    bool hasChanceCard();
+    std::vector<std::string*> getMonopolies();
+    std::vector<BoardLocation*> getInventory();
     int getPosition();
-    void changePosition(int delta);
+    void setPosition(int position);
+    bool isInJail();
+    void putInJail();
 };
 
 

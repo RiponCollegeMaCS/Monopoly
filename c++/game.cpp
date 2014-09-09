@@ -217,7 +217,7 @@ void Game::chance(Player* player)
 			Game::moveTo(player, 25);
 		else if (player->getPosition() <= 36)
 			Game::moveTo(player, 5);
-		player->cardRent = true;
+		player->cardRent = true; // TODO: make this into a setter
 		Game::boardAction(player, board[player->getPosition()]);
 		break;
 	case 6: // Advance to Go (Collect $200)
@@ -251,6 +251,127 @@ void Game::chance(Player* player)
 		Game::boardAction(player, board[player->getPosition()]);
 		break;
 	case 10: // Advance token to nearest utility
+		if (player->getPosition() <= 7)
+			Game::moveTo(player, 12);
+		else if (player->getPosition() <= 22)
+			Game::moveTo(player, 28);
+		else if (player->getPosition() <= 36)
+			Game::moveTo(player, 12);
+		player->cardRent = true; // TODO: make this into a setter
+		Game::boardAction(player, board[player->getPosition()]);
+		break;
+	case 12: // Pay poor tax of $15
+		Game::changeMoney(player, -15);
+		moneyInFP += 15;
+		break;
+	case 13: // Take a ride on the Reading Railroad
+		Game::moveTo(player, 5);
+		Game::boardAction(player, board[player->getPosition()]);
+		break;
+	case 14: // Advance token to Board Walk [sic]
+		Game::moveTo(player, 39);
+		Game::boardAction(player, board[player->getPosition()]);
+		break;
+	case 15: // Pay each player $50
+		for (auto i = players.begin(); i != players.end(); i++)
+		{
+			Game::changeMoney(i, 50);
+			Game::changeMoney(player, -50);
+		}
+		break;
+	case 16: // Bank pays you divident of $50
+		Game::changeMoney(player, 50);
+		break;
+	}
+	chanceIndex = (chanceIndex + 1) % NUMBER_OF_CARDS;
+}
 
+void Game::moveAhead(Player* player, int numberOfSpaces)
+{
+	int newPosition = (player->getPosition() + numberOfSpaces) % 40;
+
+	if (newPosition < player->getPosition()) // Does the player pass Go?
+	{
+		Game::changeMoney(player, 200);
+		player->passedGo();
+	}
+	player->setPosition(newPosition);
+	board[newPosition].incrementVisits();
+}
+
+void Game::moveTo(Player* player, int newPosition)
+{
+	if (newPosition < player->getPosition()) // Does the player pass Go?
+	{
+		Game::changeMoney(player, 200);
+		player->passedGo();
+	}
+	player->setPosition(newPosition);
+	board[newPosition].incrementVisits();
+}
+
+void Game::payOutOfJail(Player* player)
+{
+	if (player->hasChanceCard())
+	{
+		player->flipChanceCard();
+		// TODO: add jail card back into deck.
+	}
+	else if (player->hasCommunityChestCard())
+	{
+		player->flipCommunityChestCard();
+		// TODO: add jail card back into deck.
+	}
+	else
+	{
+		Game::changeMoney(player, -50);
+	}
+}
+
+void Game::goToJail(Player* player)
+{
+	player->setPosition(10);
+	board[10]->incrementVisits();
+	moveAgain = false;
+	player->putInJail();
+
+	if (player->hasSmartJailStrategy() && firstBuilding)
+	{
+		player->setJailTime(3);
+	}
+	else
+	{
+		player->setJailTime(player->getInitJailTime());
+	}
+}
+
+void Game::buyProperty(Player* player, BoardLocation* boardSpace, int customPrice=0)
+{
+	if (customPrice)
+	{
+		Game::changeMoney(player, -customPrice);
+	}
+	else
+	{
+		Game::changeMoney(player, -boardSpace->getPrice());
+	}
+
+	unownedProperties.erase(unownedProperties.begin() + boardSpace->getID()); // Wow.  TODO: No.
+	player->inventory.push_back(boardSpace);
+
+	if (monopolyStatus(player, boardSpace))
+	{
+		player->monopolies.push_back(boardSpace->getGroup());
+	}
+}
+
+Player* Game::propertyOwner(BoardLocation* property)
+{
+	for (auto i = players.begin(); i != players.end(); i++)
+	{
+		if (std::find(i->inventory.begin(), i->inventory.end(), property))
+		{
+			return (i);
+		}
 	}
 }
