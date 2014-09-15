@@ -54,6 +54,7 @@ std::string* BoardLocation::getGroup() { return (&group); }
 int BoardLocation::getBuildings() { return (buildings); }
 int BoardLocation::getVisits() { return (visits); }
 bool BoardLocation::isMortgaged() { return (mortgaged); }
+void BoardLocation::setMortgaged(bool val) { mortgaged = val; }
 
 // Instance methods
 void BoardLocation::flipMortgaged() { mortgaged = !mortgaged; }

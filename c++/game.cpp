@@ -28,7 +28,7 @@
 #include<random>
 #include<functional>
 
-Game::Game(std::vector<Player> players, bool auct, bool fpp, bool dog, bool nrij, bool tts, bool seb, int cutoff=300)
+Game::Game(std::vector<Player*> players, bool auct, bool fpp, bool dog, bool nrij, bool tts, bool seb, int cutoff=300)
 {
 	Game::players = players;
 	Game::numberOfPlayers = (sizeof(Game::players)/sizeof(Game::players[0]));
@@ -56,46 +56,46 @@ void Game::createCards()
 void Game::createBoard()
 	{
 
-		board.push_back(BoardLocation(0, "Go"));
-		board.push_back(BoardLocation(1, "Mediterranean Ave.", 60, "Brown", std::vector<int> {2, 10, 30, 90, 160, 250} , 50));
-		board.push_back(BoardLocation(2, "Community Chest"));
-		board.push_back(BoardLocation(3, "Baltic Ave.", 60, "Brown", std::vector<int> {4, 20, 60, 180, 320, 450}, 50));
-		board.push_back(BoardLocation(4, "Income Tax"));
-		board.push_back(BoardLocation(5, "Reading Railroad", 200, "Railroad"));
-		board.push_back(BoardLocation(6, "Oriental Ave.", 100, "Light Blue", std::vector<int> {6, 30, 90, 270, 400, 550}, 50));
-		board.push_back(BoardLocation(7, "Chance"));
-		board.push_back(BoardLocation(9, "Vermont Ave.", 100, "Light Blue", std::vector<int> {6, 30, 90, 270, 400, 550}, 50));
-		board.push_back(BoardLocation(10, "Connecticut Ave.", 120, "Light Blue", std::vector<int> {8, 40, 100, 300, 450, 600}, 50));
-		board.push_back(BoardLocation(11, "Just Visiting / In Jail"));
-		board.push_back(BoardLocation(12, "St. Charles Place", 140, "Pink", std::vector<int> {10, 50, 150, 450, 625, 750}, 100));
-		board.push_back(BoardLocation(13, "Electric Company", 150, "Utility"));
-		board.push_back(BoardLocation(14, "States Ave.", 140, "Pink", std::vector<int> {10, 50, 150, 450, 625, 750}, 100));
-		board.push_back(BoardLocation(15, "Virginia Ave.", 160, "Pink", std::vector<int> {12, 60, 180, 500, 700, 900}, 100));
-		board.push_back(BoardLocation(16, "Pennsylvania Railroad", 200, "Railroad"));
-		board.push_back(BoardLocation(17, "St. James Place", 180, "Orange", std::vector<int> {14, 70, 200, 550, 750, 950}, 100));
-		board.push_back(BoardLocation(18, "Community Chest"));
-		board.push_back(BoardLocation(19, "Tennessee Ave.", 180, "Orange", std::vector<int> {14, 70, 200, 550, 750, 950}, 100));
-		board.push_back(BoardLocation(20, "New York Ave.", 200, "Orange", std::vector<int> {16, 80, 220, 600, 800, 1000}, 100));
-		board.push_back(BoardLocation(21, "Free Parking"));
-		board.push_back(BoardLocation(22, "Kentucky Ave.", 220, "Red", std::vector<int> {18, 90, 250, 700, 875, 1050}, 150));
-		board.push_back(BoardLocation(23, "Chance"));
-		board.push_back(BoardLocation(24, "Indiana Ave.", 220, "Red", std::vector<int> {18, 90, 250, 700, 875, 1050}, 150));
-		board.push_back(BoardLocation(25, "Illinois Ave.", 240, "Red", std::vector<int> {20, 100, 300, 750, 925, 1100}, 150));
-		board.push_back(BoardLocation(26, "B. & O. Railroad", 200, "Railroad"));
-		board.push_back(BoardLocation(27, "Atlantic Ave.", 260, "Yellow", std::vector<int> {22, 110, 330, 800, 975, 1150}, 150));
-		board.push_back(BoardLocation(28, "Ventnor Ave.", 260, "Yellow", std::vector<int> {22, 110, 330, 800, 975, 1150}, 150));
-		board.push_back(BoardLocation(29, "Water Works", 150, "Utility"));
-		board.push_back(BoardLocation(30, "Marvin Gardens", 280, "Yellow", std::vector<int> {24, 120, 360, 850, 1025, 1200}, 150));
-		board.push_back(BoardLocation(31, "Go to Jail"));
-		board.push_back(BoardLocation(32, "Pacific Ave.", 300, "Green", std::vector<int> {26, 130, 390, 900, 1100, 1275}, 200));
-		board.push_back(BoardLocation(33, "North Carolina Ave.", 300, "Green", std::vector<int> {26, 130, 390, 900, 1100, 1275}, 200));
-		board.push_back(BoardLocation(34, "Community Chest"));
-		board.push_back(BoardLocation(35, "Pennsylvania Ave.", 320, "Green", std::vector<int> {28, 150, 450, 1000, 1200, 1400}, 200));
-		board.push_back(BoardLocation(36, "Short Line Railroad", 200, "Railroad"));
-		board.push_back(BoardLocation(37, "Chance"));
-		board.push_back(BoardLocation(38, "Park Place", 350, "Dark Blue", std::vector<int> {35, 175, 500, 1100, 1300, 1500}, 200));
-		board.push_back(BoardLocation(39, "Luxury Tax"));
-		board.push_back(BoardLocation(40, "Boardwalk", 400, "Dark Blue", std::vector<int> {50, 200, 600, 1400, 1700, 2000}, 200));
+		board.push_back(new BoardLocation(0, "Go"));
+		board.push_back(new BoardLocation(1, "Mediterranean Ave.", 60, "Brown", std::vector<int> {2, 10, 30, 90, 160, 250} , 50));
+		board.push_back(new BoardLocation(2, "Community Chest"));
+		board.push_back(new BoardLocation(3, "Baltic Ave.", 60, "Brown", std::vector<int> {4, 20, 60, 180, 320, 450}, 50));
+		board.push_back(new BoardLocation(4, "Income Tax"));
+		board.push_back(new BoardLocation(5, "Reading Railroad", 200, "Railroad"));
+		board.push_back(new BoardLocation(6, "Oriental Ave.", 100, "Light Blue", std::vector<int> {6, 30, 90, 270, 400, 550}, 50));
+		board.push_back(new BoardLocation(7, "Chance"));
+		board.push_back(new BoardLocation(9, "Vermont Ave.", 100, "Light Blue", std::vector<int> {6, 30, 90, 270, 400, 550}, 50));
+		board.push_back(new BoardLocation(10, "Connecticut Ave.", 120, "Light Blue", std::vector<int> {8, 40, 100, 300, 450, 600}, 50));
+		board.push_back(new BoardLocation(11, "Just Visiting / In Jail"));
+		board.push_back(new BoardLocation(12, "St. Charles Place", 140, "Pink", std::vector<int> {10, 50, 150, 450, 625, 750}, 100));
+		board.push_back(new BoardLocation(13, "Electric Company", 150, "Utility"));
+		board.push_back(new BoardLocation(14, "States Ave.", 140, "Pink", std::vector<int> {10, 50, 150, 450, 625, 750}, 100));
+		board.push_back(new BoardLocation(15, "Virginia Ave.", 160, "Pink", std::vector<int> {12, 60, 180, 500, 700, 900}, 100));
+		board.push_back(new BoardLocation(16, "Pennsylvania Railroad", 200, "Railroad"));
+		board.push_back(new BoardLocation(17, "St. James Place", 180, "Orange", std::vector<int> {14, 70, 200, 550, 750, 950}, 100));
+		board.push_back(new BoardLocation(18, "Community Chest"));
+		board.push_back(new BoardLocation(19, "Tennessee Ave.", 180, "Orange", std::vector<int> {14, 70, 200, 550, 750, 950}, 100));
+		board.push_back(new BoardLocation(20, "New York Ave.", 200, "Orange", std::vector<int> {16, 80, 220, 600, 800, 1000}, 100));
+		board.push_back(new BoardLocation(21, "Free Parking"));
+		board.push_back(new BoardLocation(22, "Kentucky Ave.", 220, "Red", std::vector<int> {18, 90, 250, 700, 875, 1050}, 150));
+		board.push_back(new BoardLocation(23, "Chance"));
+		board.push_back(new BoardLocation(24, "Indiana Ave.", 220, "Red", std::vector<int> {18, 90, 250, 700, 875, 1050}, 150));
+		board.push_back(new BoardLocation(25, "Illinois Ave.", 240, "Red", std::vector<int> {20, 100, 300, 750, 925, 1100}, 150));
+		board.push_back(new BoardLocation(26, "B. & O. Railroad", 200, "Railroad"));
+		board.push_back(new BoardLocation(27, "Atlantic Ave.", 260, "Yellow", std::vector<int> {22, 110, 330, 800, 975, 1150}, 150));
+		board.push_back(new BoardLocation(28, "Ventnor Ave.", 260, "Yellow", std::vector<int> {22, 110, 330, 800, 975, 1150}, 150));
+		board.push_back(new BoardLocation(29, "Water Works", 150, "Utility"));
+		board.push_back(new BoardLocation(30, "Marvin Gardens", 280, "Yellow", std::vector<int> {24, 120, 360, 850, 1025, 1200}, 150));
+		board.push_back(new BoardLocation(31, "Go to Jail"));
+		board.push_back(new BoardLocation(32, "Pacific Ave.", 300, "Green", std::vector<int> {26, 130, 390, 900, 1100, 1275}, 200));
+		board.push_back(new BoardLocation(33, "North Carolina Ave.", 300, "Green", std::vector<int> {26, 130, 390, 900, 1100, 1275}, 200));
+		board.push_back(new BoardLocation(34, "Community Chest"));
+		board.push_back(new BoardLocation(35, "Pennsylvania Ave.", 320, "Green", std::vector<int> {28, 150, 450, 1000, 1200, 1400}, 200));
+		board.push_back(new BoardLocation(36, "Short Line Railroad", 200, "Railroad"));
+		board.push_back(new BoardLocation(37, "Chance"));
+		board.push_back(new BoardLocation(38, "Park Place", 350, "Dark Blue", std::vector<int> {35, 175, 500, 1100, 1300, 1500}, 200));
+		board.push_back(new BoardLocation(39, "Luxury Tax"));
+		board.push_back(new BoardLocation(40, "Boardwalk", 400, "Dark Blue", std::vector<int> {50, 200, 600, 1400, 1700, 2000}, 200));
 
 		unownedProperties.swap(board); // double check
 	}
@@ -111,7 +111,7 @@ void Game::communityChest(Player* player)
 		Game::communityChest(player);
 		break;
 	case 1: // Get out of jail free
-		player->giveCommunityChestCard();
+		player->flipCommunityChestCard();
 		communityChestCards[communityChestIndex] = 0;
 		break;
 	case 2: // Pay school tax of $150
@@ -119,7 +119,7 @@ void Game::communityChest(Player* player)
 		moneyInFP += 150;
 		break;
 	case 3: // Collect $50 from every player
-		for (auto i = players.begin(); i != players.end(); i++)
+            for (auto i : players)
 		{
 			Game::changeMoney(i, -50);
 			Game::changeMoney(player, 50);
@@ -147,16 +147,21 @@ void Game::communityChest(Player* player)
 		Game::moveTo(player, 0); // Player moves to Go.
 		break;
 	case 11: // You are assessed for street repairs
+        {
 		int houses = 0, hotels = 0;
 
 		if (player->getMonopolies().empty())
 		{
-			for (auto i = player->getInventory().begin(); i != player->getInventory().end(); i++)
+            for (auto i : player->getInventory())
 			{
-				if (5 == i->buildings)
+				if (5 == i->getBuildings())
+                {
 					hotels++;
+                }
 				else
-					houses += i->buildings;
+                {
+					houses += i->getBuildings();
+                }
 			}
 			int houseRepairs = 40 * houses;
 			int hotelRepairs = 115 * hotels;
@@ -164,7 +169,9 @@ void Game::communityChest(Player* player)
 			Game::changeMoney(player, (houseRepairs + hotelRepairs));
 			moneyInFP += houseRepairs + hotelRepairs;
 		}
-			break;
+            
+        break;
+        }
 	case 12: // Life insurance matures / Collect $100
 		Game::changeMoney(player, 100);
 		break;
@@ -198,7 +205,7 @@ void Game::chance(Player* player)
 		Game::chance(player);
 		break;
 	case 1: // Get out of jail free
-		player->giveChanceCard();
+		player->flipChanceCard();
 		chanceCards[chanceIndex] = 0;
 		break;
 	case 2: // Go directly to jail
@@ -209,7 +216,7 @@ void Game::chance(Player* player)
 		break;
 	case 4: // Go back 3 spaces
 		player->changePosition(-3);
-		board[player->getPosition()].visits += 1; // Increase hit counter
+		board[player->getPosition()]->incrementVisits(); // Increase hit counter
 		Game::boardAction(player, board[player->getPosition()]);
 		break;
 	case 5:
@@ -220,7 +227,7 @@ void Game::chance(Player* player)
 			Game::moveTo(player, 25);
 		else if (player->getPosition() <= 36)
 			Game::moveTo(player, 5);
-		player->cardRent = true; // TODO: make this into a setter
+		player->setCardRent(true);
 		Game::boardAction(player, board[player->getPosition()]);
 		break;
 	case 6: // Advance to Go (Collect $200)
@@ -231,16 +238,17 @@ void Game::chance(Player* player)
 		Game::boardAction(player, board[player->getPosition()]);
 		break;
 	case 8: // Make general repairs on all your property.
+        {
 		int houses = 0, hotels = 0;
 
 		if (player->getMonopolies().empty())
 		{
-			for (auto i = player->getInventory().begin(); i != player->getInventory().end(); i++)
+            for (auto i : player->getInventory())
 			{
-				if (5 == i->buildings)
+				if (5 == i->getBuildings())
 					hotels++;
 				else
-					houses += i->buildings;
+					houses += i->getBuildings();
 			}
 			int houseRepairs = 45 * houses;
 			int hotelRepairs = 100 * hotels;
@@ -249,6 +257,7 @@ void Game::chance(Player* player)
 			moneyInFP += houseRepairs + hotelRepairs;
 		}
 		break;
+        }
 	case 9: // Advance to St. Charles Place
 		Game::moveTo(player, 11);
 		Game::boardAction(player, board[player->getPosition()]);
@@ -260,7 +269,7 @@ void Game::chance(Player* player)
 			Game::moveTo(player, 28);
 		else if (player->getPosition() <= 36)
 			Game::moveTo(player, 12);
-		player->cardRent = true; // TODO: make this into a setter
+		player->setCardRent(true);
 		Game::boardAction(player, board[player->getPosition()]);
 		break;
 	case 12: // Pay poor tax of $15
@@ -276,7 +285,7 @@ void Game::chance(Player* player)
 		Game::boardAction(player, board[player->getPosition()]);
 		break;
 	case 15: // Pay each player $50
-		for (auto i = players.begin(); i != players.end(); i++)
+            for (auto i : players)
 		{
 			Game::changeMoney(i, 50);
 			Game::changeMoney(player, -50);
@@ -296,10 +305,10 @@ void Game::moveAhead(Player* player, int numberOfSpaces)
 	if (newPosition < player->getPosition()) // Does the player pass Go?
 	{
 		Game::changeMoney(player, 200);
-		player->passedGo();
+		player->passGo();
 	}
 	player->setPosition(newPosition);
-	board[newPosition].incrementVisits();
+	board[newPosition]->incrementVisits();
 }
 
 void Game::moveTo(Player* player, int newPosition)
@@ -307,10 +316,10 @@ void Game::moveTo(Player* player, int newPosition)
 	if (newPosition < player->getPosition()) // Does the player pass Go?
 	{
 		Game::changeMoney(player, 200);
-		player->passedGo();
+		player->passGo();
 	}
 	player->setPosition(newPosition);
-	board[newPosition].incrementVisits();
+	board[newPosition]->incrementVisits();
 }
 
 void Game::payOutOfJail(Player* player)
@@ -360,23 +369,24 @@ void Game::buyProperty(Player* player, BoardLocation* boardSpace, int customPric
 	}
 
 	unownedProperties.erase(unownedProperties.begin() + boardSpace->getID()); // Wow.  TODO: No.
-	player->inventory.push_back(boardSpace);
+	player->appendToInventory(boardSpace);
 
 	if (monopolyStatus(player, boardSpace))
 	{
-		player->monopolies.push_back(boardSpace->getGroup());
+		player->appendToMonopolies(*boardSpace->getGroup());
 	}
 }
 
 Player* Game::propertyOwner(BoardLocation* property)
 {
-	for (auto i = players.begin(); i != players.end(); i++)
+    for (auto i : players)
 	{
-		if (std::find(i->inventory.begin(), i->inventory.end(), property))
+		if (std::find(i->getInventory().begin(), i->getInventory().end(), property) != i->getInventory().end())
 		{
 			return (i);
 		}
 	}
+    return (NULL);
 }
 
 void Game::payRent(Player* player)
@@ -389,12 +399,12 @@ void Game::payRent(Player* player)
 	if (noRentInJail && owner->isInJail())
 		return;
 
-	if (currentProperty->getGroup() == "Railroad")
+	if (*currentProperty->getGroup() == "Railroad")
 	{
 		int railroadCounter = 0;
-		for (auto i = owner->getInventory().begin(); i != owner->getInventory().end(); i++)
+        for (auto i : owner->getInventory())
 		{
-			if (i->getGroup() == "Railroad")
+			if (*i->getGroup() == "Railroad")
 			{
 				railroadCounter++;
 			}
@@ -407,14 +417,14 @@ void Game::payRent(Player* player)
 			rent *= 2;
 		}
 	}
-	else if (currentProperty->getGroup() == "Utility")
+	else if (*currentProperty->getGroup() == "Utility")
 	{
         diceRoll = Game::rollDie(); // TODO: Check this
 		int utilityCounter = 0;
-		for (auto i = owner->getInventory().begin(); i != owner->getInventory().end(); i++)
+        for (auto i : owner->getInventory())
 		{
-			if (i->getGroup() == "Utility");
-			utilityCounter++;
+			if (*i->getGroup() == "Utility")
+                utilityCounter++;
 		}
 
 		if (utilityCounter == 2 || player->getCardRent())
@@ -432,13 +442,13 @@ void Game::payRent(Player* player)
 		{
 			rent = currentProperty->getRents(5);
 		}
-		else if (0 < currentProperty->getBuildings() < 5)
+		else if (0 < currentProperty->getBuildings() && currentProperty->getBuildings() < 5)
 		{
-			rent = currentProperty->getRents()[currentProperty->getBuildings()];
+			rent = currentProperty->getRents(currentProperty->getBuildings());
 		}
 		else
 		{
-            if (std::find(owner->getMonopolies().begin(), owner->getMonopolies().end(), currentProperty->getGroup()))
+            if (std::find(owner->getMonopolies().begin(), owner->getMonopolies().end(), currentProperty->getGroup()) != owner->getMonopolies().end())
             {
                 rent = currentProperty->getRents(0) * 2;
                 
@@ -463,9 +473,9 @@ void Game::payRent(Player* player)
     Game::changeMoney(owner, rent);
 }
 
-int Game:unmortagePrice(BoardLocation* property)
+int Game::unmortgagePrice(BoardLocation* property)
 {
-    return ((int) 1.1 * (property->getPrice() / 2)) // TODO: Check rounding
+    return ((int) 1.1 * (property->getPrice() / 2)); // TODO: Check rounding
 }
 
 void Game::sellBuilding(Player* player, BoardLocation* property, std::string building)
@@ -504,7 +514,7 @@ void Game::changeMoney(Player* player, int amount)
         // Mortgage properties if they're not in a monopoly.
         for (auto boardSpace : player->getInventory())
         {
-            if (!std::find(player->getMonopolies().begin(), player->getMonopolies().end(); boardSpace->getGroup() && !boardSpace->isMortgaged()))
+            if (!(std::find(player->getMonopolies().begin(), player->getMonopolies().end(), boardSpace->getGroup()) != player->getMonopolies().end()) && !boardSpace->isMortgaged())
             {
                 int mortgageValue = boardSpace->getPrice() / 2;
                 player->addMoney(mortgageValue);
@@ -555,11 +565,11 @@ void Game::changeMoney(Player* player, int amount)
                     }
                 }
             }
-            for (auto i : player->getInventory())
+            for (auto boardSpace : player->getInventory())
             {
                 if (!boardSpace->isMortgaged())
                 {
-                    if (std::find(player->getMonopolies().begin(), player->getMonopolies().end(), boardSpace->getGroup()))
+                    if (std::find(player->getMonopolies().begin(), player->getMonopolies().end(), boardSpace->getGroup()) != player->getMonopolies().end())
                     {
                         throw 2; // ???
                     }
@@ -622,7 +632,7 @@ void Game::developProperties(Player* player)
     // Unmortgage proprties in monopolies, if possible.
     for (auto boardSpace : player->getInventory())
     {
-        if (boardSpace->isMortgaged() && std::find(player->getMonopolies().begin(), player->getMonopolies().end(), boardSpace->getGroup()))
+        if (boardSpace->isMortgaged() && std::find(player->getMonopolies().begin(), player->getMonopolies().end(), boardSpace->getGroup()) != player->getMonopolies().end())
         {
             int unmortgagePrice = Game::unmortgagePrice(boardSpace);
             if (player->getMoney() - unmortgagePrice >= player->getBuyingThreshold())
@@ -644,7 +654,7 @@ void Game::developProperties(Player* player)
             keepBuilding = false;
             for (auto boardSpace : player->getInventory())
             {
-                if (std::find(player->getInventory().begin(), player->getInventory.end(), boardSpace->getGroup()))
+                if (std::find(player->getInventory().begin(), player->getInventory().end(), boardSpace->getGroup()) != player->getInventory().end())
                 {
                     if (Game::evenBuildingTest(boardSpace, player))
                     {
@@ -661,7 +671,7 @@ void Game::developProperties(Player* player)
                             {
                                 for (auto property : player->getInventory())
                                 {
-                                    if (!std::find(player->getMonopolies().begin(), player->getMonopolies().end(), property->getGroup() && !property->isMortgaged()))
+                                    if (!(std::find(player->getMonopolies().begin(), player->getMonopolies().end(), property->getGroup()) != player->getMonopolies().end()) && !property->isMortgaged())
                                     
                                         availableMorgageValue += property->getPrice() / 2;
                                     
@@ -712,7 +722,7 @@ void Game::developProperties(Player* player)
                                         while (player->getMoney() <= 0)
                                         {
                                             BoardLocation* cProperty = player->getInventory()[propertyIndex];
-                                            if (!std::find(player->getMonopolies().begin(), player->getMonopolies().end(), cProperty->getGroup()) && !cProperty->isMortgaged())
+                                            if (!(std::find(player->getMonopolies().begin(), player->getMonopolies().end(), cProperty->getGroup()) != player->getMonopolies().end()) && !cProperty->isMortgaged())
                                             {
                                                 if (Game::mortgageCheck(cProperty, player))
                                                 {
@@ -755,7 +765,7 @@ void Game::developProperties(Player* player)
 // Doesn't edeal with additional properties...yet.
 bool Game::monopolyStatus(Player* player, BoardLocation* boardSpace)
 {
-    std::string group = boardSpace->getGroup();
+    std::string group = *boardSpace->getGroup();
     
     if (group == "" || group == "Railroad" || group == "Utility")
     {
@@ -766,7 +776,7 @@ bool Game::monopolyStatus(Player* player, BoardLocation* boardSpace)
     
     for (auto property : player->getInventory())
     {
-        if (property->getGroup() == group)
+        if (*property->getGroup() == group)
         {
             propertyCounter++;
         }
@@ -793,7 +803,7 @@ int Game::findAvailableMortgageValue(Player* player)
         {
             addMyValue = true;
             
-            if (std::find(player->getMonopolies().begin(), player->getMonopolies().end(), property->getGroup()))
+            if (std::find(player->getMonopolies().begin(), player->getMonopolies().end(), property->getGroup()) != player->getMonopolies().end())
             {
                 for (auto aProperty : player->getInventory())
                 {
@@ -816,14 +826,14 @@ int Game::findAvailableMortgageValue(Player* player)
 
 void Game::auction(BoardLocation* boardSpace)
 {
-    int winningBid;
+    int winningBid = 0;
     Player* winningPlayer;
     
     for (auto player : players)
     {
         player->setBidIncludesMortgages(false);
         
-        if (std::find(player->getGroupPreferences().begin(), player->getGroupPreferences().end(), boardSpace->getGroup()))
+        if (std::find(player->getGroupPreferences().begin(), player->getGroupPreferences().end(), boardSpace->getGroup()) != player->getGroupPreferences().end())
         {
             player->setAuctionBid(player->getMoney() - 1);
         }
@@ -842,7 +852,7 @@ void Game::auction(BoardLocation* boardSpace)
         
         else
         {
-            player->setAuctionBid(player->getMoney() - palyer->getBuyingThreshold());
+            player->setAuctionBid(player->getMoney() - player->getBuyingThreshold());
         }
     }
     
@@ -883,7 +893,7 @@ void Game::auction(BoardLocation* boardSpace)
     
     else
     {
-        winningPlayer = -1;
+        winningPlayer = NULL;
         throw 20;
         return;
     }
@@ -915,7 +925,7 @@ void Game::auction(BoardLocation* boardSpace)
         unownedProperties.erase(std::remove(unownedProperties.begin(), unownedProperties.end(), boardSpace), unownedProperties.end()); // This needs to change. TODO
         
         winningPlayer->appendToInventory(boardSpace);
-        winningPlayer->appendToMonopolies(boardSpace->getGroup());
+        winningPlayer->appendToMonopolies(*boardSpace->getGroup());
     }
     
     else
@@ -943,20 +953,20 @@ int Game::totalAssets(Player* player)
 
 void Game::propertyAction(Player* player, BoardLocation* boardSpace)
 {
-    if (std:find(player->getInventory().begin(), player->getInventory().end(), boardSpace)) // Player owns property, nothing happens.
+    if (std::find(player->getInventory().begin(), player->getInventory().end(), boardSpace) != player->getInventory().end()) // Player owns property, nothing happens.
     {
-        continue;
+        ; // do nothing, TODO: rewrite
     }
     else if (boardSpace->isMortgaged()) // Property is mortgaged, nothing happens.
     {
-        continue;
+        ; // do nothing
     }
     
-    else if (std::find(unownedProperties.begin(), unownedProperties.end(), boardSpace))
+    else if (std::find(unownedProperties.begin(), unownedProperties.end(), boardSpace) != unownedProperties.end())
     {
         if (tripToStart && !player->hasPassedGo())
         {
-            continue;
+            ; // do nothing
         }
         else
         {
@@ -965,7 +975,7 @@ void Game::propertyAction(Player* player, BoardLocation* boardSpace)
                 Game::buyProperty(player, boardSpace);
             }
             
-            else if (std::find(player->getGroupPreferences().begin(), player->getGroupPreferences().end(), boardSpace->getGroup()) && boardSpace->getPrice() > 0)
+            else if (std::find(player->getGroupPreferences().begin(), player->getGroupPreferences().end(), boardSpace->getGroup()) != player->getGroupPreferences().end() && boardSpace->getPrice() > 0)
             {
                 Game::buyProperty(player, boardSpace);
             }
@@ -979,7 +989,7 @@ void Game::propertyAction(Player* player, BoardLocation* boardSpace)
             {
                 if ((player->getMoney() + Game::findAvailableMortgageValue(player)) - boardSpace->getPrice() > 0)
                 {
-                    player->addMoney(-boardSpace->getPrice())
+                    player->addMoney(-boardSpace->getPrice());
                     
                     int propertyIndex = 0;
                     while (player->getMoney() <= 0)
@@ -996,7 +1006,7 @@ void Game::propertyAction(Player* player, BoardLocation* boardSpace)
                         propertyIndex++;
                     }
                     unownedProperties.erase(std::remove(unownedProperties.begin(), unownedProperties.end(), boardSpace), unownedProperties.end()); // This needs to change. TODO
-                    player->appendToMonopolies(boardSpace->getGroup());
+                    player->appendToMonopolies(*boardSpace->getGroup());
                 }
             }
             
@@ -1018,12 +1028,12 @@ void Game::propertyAction(Player* player, BoardLocation* boardSpace)
 
 void Game::boardAction(Player* player, BoardLocation* boardSpace)
 {
-    if (boardSpace->getName() == "Go" || boardSpace->getName() == "Just Visiting / In Jail")
+    if (*boardSpace->getName() == "Go" || *boardSpace->getName() == "Just Visiting / In Jail")
     {
-        continue;
+        ; // do nothing - TODO: restructure
     }
     
-    else if (boardSpace->getName() == "Go")
+    else if (*boardSpace->getName() == "Go")
     {
         if (doubleOnGo)
         {
@@ -1031,7 +1041,7 @@ void Game::boardAction(Player* player, BoardLocation* boardSpace)
         }
     }
     
-    else if (boardSpace->getName() == "Income Tax")
+    else if (*boardSpace->getName() == "Income Tax")
     {
         Game::changeMoney(player, -200);
         
@@ -1041,7 +1051,7 @@ void Game::boardAction(Player* player, BoardLocation* boardSpace)
         }
     }
     
-    else if (boardSpace->getName() == "Free Parking")
+    else if (*boardSpace->getName() == "Free Parking")
     {
         if (freeParkingPool)
         {
@@ -1050,22 +1060,22 @@ void Game::boardAction(Player* player, BoardLocation* boardSpace)
         }
     }
     
-    else if (boardSpace->getName() == "Chance")
+    else if (*boardSpace->getName() == "Chance")
     {
         Game::chance(player);
     }
     
-    else if (boardSpace->getName() == "Community Chest")
+    else if (*boardSpace->getName() == "Community Chest")
     {
         Game::communityChest(player);
     }
     
-    else if (boardSpace->getName() == "Go to Jail")
+    else if (*boardSpace->getName() == "Go to Jail")
     {
         Game::goToJail(player);
     }
     
-    else if (boardSpace->getName() == "Luxury Tax")
+    else if (*boardSpace->getName() == "Luxury Tax")
     {
         Game::changeMoney(player, -100);
         
@@ -1089,7 +1099,7 @@ void Game::takeTurn(Player* player)
     doublesCounter = 0;
     
     int die1 = Game::rollDie();
-    int die2 = Game::rollDie()
+    int die2 = Game::rollDie();
     diceRoll = die1 + die2;
     
     if (snakeEyesBonus && die1 == die2 == 1)
@@ -1197,10 +1207,10 @@ void Game::updateStatus()
     }
 }
 
-void Game::play()
+endReport Game::play()
 {
     // TODO: Shuffle players
-    Player*[] playingOrder;
+    int playingOrder[2]; // TODO: check
     
     int currentPlayerIndex = 0;
     
@@ -1224,7 +1234,15 @@ void Game::play()
         Game::updateStatus();
     }
     
-    // TODO: Return heterogeneous results.
+    endReport report;
+    report.result = result;
+    report.turnCounter = turnCounter;
+    report.player0Monopolies = players[0]->getMonopolies();
+    report.player1Monopolies = players[1]->getMonopolies();
+    report.player0Money = players[0]->getMoney();
+    report.player1Money = players[1]->getMoney();
+    
+    return (report); // Check for efficiency.
 }
 
 int Game::rollDie()

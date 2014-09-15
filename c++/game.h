@@ -25,6 +25,16 @@
 #include<string>
 #include<vector>
 
+struct endReport
+{
+    int result;
+    int turnCounter;
+    std::vector<std::string*> player0Monopolies;
+    std::vector<std::string*> player1Monopolies;
+    int player0Money;
+    int player1Money;
+};
+
 class Game
 {
 	const int BOARD_SIZE = 40;
@@ -46,7 +56,6 @@ class Game
 
 	// House rules flags
 	bool freeParkingPool = false;
-	int moneyInFP = false;
 	bool doubleOnGo = false;
 	bool noRentInJail = false;
 	bool tripToStart = false;
@@ -58,7 +67,7 @@ class Game
 	int chanceIndex = 0;
 	int communityChestIndex = 0;
 
-	std::vector<BoardLocation> unownedProperties;
+	std::vector<BoardLocation*> unownedProperties;
 
 	// Miscellaneous
 	int moneyInFP = 0;
@@ -69,7 +78,7 @@ class Game
 	void createBoard();
 
 public:
-	Game(std::vector<Player> players, bool auct, bool fpp, bool dog, bool nrij, bool tts, bool seb, int cutoff);
+	Game(std::vector<Player*> players, bool auct, bool fpp, bool dog, bool nrij, bool tts, bool seb, int cutoff);
 
 	void communityChest(Player* player);
 	void chance(Player* player);
@@ -77,7 +86,7 @@ public:
 	void moveTo(Player* player, int location);
 	void payOutOfJail(Player* player);
 	void goToJail(Player* player);
-    void buyProperty(Player* player, BoardLocation* boardSpace, int customPrice=0);
+    void buyProperty(Player* player, BoardLocation* boardSpace, int customPrice);
     Player* propertyOwner(BoardLocation* property);
     void payRent(Player* player);
     int unmortgagePrice(BoardLocation* property);
@@ -95,7 +104,7 @@ public:
 	void boardAction(Player* player, BoardLocation* boardLocation);
     void takeTurn(Player* player);
     void updateStatus();
-    void play();
+    endReport play();
     int rollDie();
 };
 

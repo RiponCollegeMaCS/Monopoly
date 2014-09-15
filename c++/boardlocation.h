@@ -48,7 +48,6 @@ public:
 	std::string* getGroup();
 	int getBuildings();
 	int getVisits();
-	void incrementVisits();
 	bool isMortgaged();
     void setMortgaged(bool val);
 

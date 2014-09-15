@@ -48,7 +48,7 @@ class Player
 	bool cardRent = false;
 	std::vector<std::string*> monopolies; // implementation of these has to be checked for efficiency
 	int auctionBid = 0;
-	bool passed_go = false;
+	bool passedGo = false;
 	std::vector<BoardLocation*> inventory;
 	bool bidIncludesMortgages = false;
 
@@ -57,7 +57,7 @@ public:
 
     void reset_values();
     void changePosition(int delta);
-    void passedGo();
+    void passGo();
     void appendToInventory(BoardLocation* boardSpace);
     void appendToMonopolies(std::string group);
 
@@ -67,7 +67,7 @@ public:
     int getBuildingThreshold();
     bool hasPassedGo();
     int getJailTime();
-    void setJailTime(int jailTime);
+    void setJailTime(int jailtime);
     int getInitJailTime();
     bool hasSmartJailStrategy();
     int getCompleteMonopoly();
@@ -80,7 +80,7 @@ public:
     std::vector<std::string*> getMonopolies();
     std::vector<BoardLocation*> getInventory();
     int getPosition();
-    void setPosition(int position);
+    void setPosition(int pos);
     bool isInJail();
     void setInJail(bool jail);
     int getMoney();
@@ -90,6 +90,7 @@ public:
     void setBidIncludesMortgages(bool bid);
     int getAuctionBid();
     void setAuctionBid(int bid);
+    bool getCardRent();
     void setCardRent(bool rent);
     int getJailCounter();
     void setJailCounter(int count);
