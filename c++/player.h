@@ -58,10 +58,14 @@ public:
     void reset_values();
     void changePosition(int delta);
     void passedGo();
+    void appendToInventory(BoardLocation* boardSpace);
+    void appendToMonopolies(std::string group);
 
     // Getters and setters
+    int getNumber();
     int getBuyingThreshold();
     int getBuildingThreshold();
+    bool hasPassedGo();
     int getJailTime();
     void setJailTime(int jailTime);
     int getInitJailTime();
@@ -78,7 +82,18 @@ public:
     int getPosition();
     void setPosition(int position);
     bool isInJail();
-    void putInJail();
+    void setInJail(bool jail);
+    int getMoney();
+    void setMoney(int newMoney);
+    void addMoney(int add);
+    bool getBidIncludesMortgages();
+    void setBidIncludesMortgages(bool bid);
+    int getAuctionBid();
+    void setAuctionBid(int bid);
+    void setCardRent(bool rent);
+    int getJailCounter();
+    void setJailCounter(int count);
+    void incrementJailCounter();
 };
 
 

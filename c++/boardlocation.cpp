@@ -48,7 +48,7 @@ BoardLocation::BoardLocation(int id, std::string name, int price, std::string gr
 int BoardLocation::getID() { return (id); }
 std::string* BoardLocation::getName() { return (&name); }
 int BoardLocation::getPrice() { return (price); }
-std::vector<int> BoardLocation::getRents() { return (rents); }
+int BoardLocation::getRents(int position) { return (rents[position]); }
 int BoardLocation::getHouseCost() { return (houseCost); }
 std::string* BoardLocation::getGroup() { return (&group); }
 int BoardLocation::getBuildings() { return (buildings); }

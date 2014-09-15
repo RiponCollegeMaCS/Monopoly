@@ -29,8 +29,6 @@ class Game
 {
 	const int BOARD_SIZE = 40;
 	const int NUMBER_OF_CARDS = 16;
-	const int HOUSES = 32;
-	const int HOTELS = 12;
 
 	bool gameStatus = true;
 	int numberOfPlayers;
@@ -64,6 +62,8 @@ class Game
 
 	// Miscellaneous
 	int moneyInFP = 0;
+    int houses = 32;
+    int hotels = 12;
 
 	void createCards();
 	void createBoard();
@@ -74,15 +74,29 @@ public:
 	void communityChest(Player* player);
 	void chance(Player* player);
 	void moveAhead(Player* player, int numberOfSpaces);
-	void changeMoney(Player* player, int amount);
 	void moveTo(Player* player, int location);
 	void payOutOfJail(Player* player);
 	void goToJail(Player* player);
     void buyProperty(Player* player, BoardLocation* boardSpace, int customPrice=0);
     Player* propertyOwner(BoardLocation* property);
+    void payRent(Player* player);
+    int unmortgagePrice(BoardLocation* property);
+    void sellBuilding(Player* player, BoardLocation* property, std::string building);
+    void changeMoney(Player* player, int amount);
+    bool evenSellingTest(BoardLocation* property, Player* player);
+    bool evenBuildingTest(BoardLocation* property, Player* player);
+    bool mortgageCheck(BoardLocation* property, Player* player);
+    void developProperties(Player* player);
+    bool monopolyStatus(Player* player, BoardLocation* boardSpace);
+    int findAvailableMortgageValue(Player* player);
+    void auction(BoardLocation* boardSpace);
+    int totalAssets(Player* player);
+    void propertyAction(Player* player, BoardLocation* boardSpace);
 	void boardAction(Player* player, BoardLocation* boardLocation);
-	bool monopolyStatus(Player* player, BoardLocation* boardSpace);
-
+    void takeTurn(Player* player);
+    void updateStatus();
+    void play();
+    int rollDie();
 };
 
 

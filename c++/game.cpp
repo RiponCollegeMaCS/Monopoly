@@ -24,6 +24,9 @@
 #include<string>
 #include<vector>
 #include<algorithm>
+#include<cmath>
+#include<random>
+#include<functional>
 
 Game::Game(std::vector<Player> players, bool auct, bool fpp, bool dog, bool nrij, bool tts, bool seb, int cutoff=300)
 {
@@ -333,7 +336,7 @@ void Game::goToJail(Player* player)
 	player->setPosition(10);
 	board[10]->incrementVisits();
 	moveAgain = false;
-	player->putInJail();
+    player->setInJail(true);
 
 	if (player->hasSmartJailStrategy() && firstBuilding)
 	{
@@ -374,4 +377,860 @@ Player* Game::propertyOwner(BoardLocation* property)
 			return (i);
 		}
 	}
+}
+
+void Game::payRent(Player* player)
+{
+	BoardLocation* currentProperty = board[player->getPosition()];
+	Player* owner = Game::propertyOwner(currentProperty);
+
+	int rent = 0;
+
+	if (noRentInJail && owner->isInJail())
+		return;
+
+	if (currentProperty->getGroup() == "Railroad")
+	{
+		int railroadCounter = 0;
+		for (auto i = owner->getInventory().begin(); i != owner->getInventory().end(); i++)
+		{
+			if (i->getGroup() == "Railroad")
+			{
+				railroadCounter++;
+			}
+		}
+
+		rent = 25 * std::pow(2.0, railroadCounter - 1);
+
+		if (player->getCardRent())
+		{
+			rent *= 2;
+		}
+	}
+	else if (currentProperty->getGroup() == "Utility")
+	{
+        diceRoll = Game::rollDie(); // TODO: Check this
+		int utilityCounter = 0;
+		for (auto i = owner->getInventory().begin(); i != owner->getInventory().end(); i++)
+		{
+			if (i->getGroup() == "Utility");
+			utilityCounter++;
+		}
+
+		if (utilityCounter == 2 || player->getCardRent())
+		{
+			rent = diceRoll * 10;
+		}
+		else
+		{
+			rent = diceRoll * 4;
+		}
+	}
+	else // for color group properties
+	{
+		if (currentProperty->getBuildings() == 5) // Hotel?
+		{
+			rent = currentProperty->getRents(5);
+		}
+		else if (0 < currentProperty->getBuildings() < 5)
+		{
+			rent = currentProperty->getRents()[currentProperty->getBuildings()];
+		}
+		else
+		{
+            if (std::find(owner->getMonopolies().begin(), owner->getMonopolies().end(), currentProperty->getGroup()))
+            {
+                rent = currentProperty->getRents(0) * 2;
+                
+                // If a property in the monopoly is mortgaged, redefine the rest.
+                for (auto i : owner->getInventory())
+                {
+                    if (i->getGroup() == currentProperty->getGroup() && i->isMortgaged())
+                    {
+                        rent = currentProperty->getRents(0);
+                    }
+                    else // The player does not have a monopoly
+                    {
+                        rent = currentProperty->getRents(0);
+                    }
+                }
+            }
+		}
+	}
+    
+    // Let's pay this rent!
+    Game::changeMoney(player, -rent);
+    Game::changeMoney(owner, rent);
+}
+
+int Game:unmortagePrice(BoardLocation* property)
+{
+    return ((int) 1.1 * (property->getPrice() / 2)) // TODO: Check rounding
+}
+
+void Game::sellBuilding(Player* player, BoardLocation* property, std::string building)
+{
+    if (building == "house")
+    {
+        property->changeBuildings(-1);
+        houses += 1;
+        player->addMoney(property->getHouseCost() / 2); // Better than setting the member variable?
+    }
+    else if (building == "hotel")
+    {
+        property->changeBuildings(-1);
+        hotels += 1;
+        houses -= 4;
+        player->addMoney((property->getHouseCost() / 2) * 5);
+    }
+    else if (building == "all")
+    {
+        if (property->getBuildings() == 5)
+        {
+            property->changeBuildings(-5);
+            hotels++;
+            player->addMoney((property->getHouseCost() / 2 * property->getBuildings()));
+            property->changeBuildings(-property->getBuildings());
+        }
+    }
+}
+
+void Game::changeMoney(Player* player, int amount)
+{
+    player->addMoney(amount);
+    
+    if (player->getMoney() <= 0)
+    {
+        // Mortgage properties if they're not in a monopoly.
+        for (auto boardSpace : player->getInventory())
+        {
+            if (!std::find(player->getMonopolies().begin(), player->getMonopolies().end(); boardSpace->getGroup() && !boardSpace->isMortgaged()))
+            {
+                int mortgageValue = boardSpace->getPrice() / 2;
+                player->addMoney(mortgageValue);
+                boardSpace->setMortgaged(true);
+                if (player->getMoney() > 0)
+                    return;
+            }
+        }
+        
+        // Sell houses and hotels.
+        
+        if (!player->getMonopolies().empty()) // verify
+        {
+            bool keepSelling = true;
+            
+            while (keepSelling)
+            {
+                keepSelling = false;
+                
+                for (auto boardSpace : player->getInventory())
+                {
+                    if (boardSpace->getBuildings() > 0 && Game::evenSellingTest(boardSpace, player))
+                    {
+                        keepSelling = true;
+                        if (boardSpace->getBuildings() == 5)
+                        {
+                            if (houses >= 4)
+                            {
+                                Game::sellBuilding(player, boardSpace, "hotel");
+                            }
+                            else // Not enough houses to break hotel.
+                            {
+                                for (auto i : player->getInventory())
+                                {
+                                    if (i->getGroup() == boardSpace->getGroup())
+                                    {
+                                        Game::sellBuilding(player, i, "all");
+                                    }
+                                }
+                            }
+                        }
+                        else // It's a house
+                        {
+                            Game::sellBuilding(player, boardSpace, "house");
+                        }
+                        if (player->getMoney() > 0)
+                            return;
+                    }
+                }
+            }
+            for (auto i : player->getInventory())
+            {
+                if (!boardSpace->isMortgaged())
+                {
+                    if (std::find(player->getMonopolies().begin(), player->getMonopolies().end(), boardSpace->getGroup()))
+                    {
+                        throw 2; // ???
+                    }
+                    
+                    int mortgageValue = boardSpace->getPrice() / 2;
+                    player->addMoney(mortgageValue);
+                    boardSpace->setMortgaged(true);
+                    
+                    if (player->getMoney() > 0)
+                    {
+                        return;
+                    }
+                }
+            }
+        }
+    }
+}
+
+bool Game::evenSellingTest(BoardLocation* property, Player* player)
+{
+    bool testResult = true;
+    for (auto boardSpace : player->getInventory())
+    {
+        if (boardSpace->getGroup() == property->getGroup() && boardSpace->getBuildings() - property->getBuildings() > 0)
+    
+            testResult = false;
+    }
+    return (testResult);
+}
+
+bool Game::evenBuildingTest(BoardLocation* property, Player* player)
+{
+    bool testResult = true;
+    for (auto boardSpace : player->getInventory())
+    {
+        if (boardSpace->getGroup() == property->getGroup() && property->getBuildings() - boardSpace->getBuildings() > 0)
+        {
+            testResult = false;
+        }
+    }
+    return (testResult);
+}
+
+bool Game::mortgageCheck(BoardLocation* property, Player* player)
+{
+    bool testResult = true;
+    for (auto aProperty : player->getInventory())
+    {
+        if (aProperty->getBuildings() > 0 && aProperty->getGroup() == property->getGroup())
+        {
+            testResult = false;
+        }
+    }
+    
+    return (testResult);
+}
+
+void Game::developProperties(Player* player)
+{
+    // Unmortgage proprties in monopolies, if possible.
+    for (auto boardSpace : player->getInventory())
+    {
+        if (boardSpace->isMortgaged() && std::find(player->getMonopolies().begin(), player->getMonopolies().end(), boardSpace->getGroup()))
+        {
+            int unmortgagePrice = Game::unmortgagePrice(boardSpace);
+            if (player->getMoney() - unmortgagePrice >= player->getBuyingThreshold())
+            {
+                player->addMoney(-unmortgagePrice);
+                boardSpace->setMortgaged(false);
+            }
+            else
+                return;
+        }
+    }
+    
+    // Buy buildings
+    if (!player->getMonopolies().empty())
+    {
+        bool keepBuilding = true;
+        while (keepBuilding)
+        {
+            keepBuilding = false;
+            for (auto boardSpace : player->getInventory())
+            {
+                if (std::find(player->getInventory().begin(), player->getInventory.end(), boardSpace->getGroup()))
+                {
+                    if (Game::evenBuildingTest(boardSpace, player))
+                    {
+                        if (boardSpace->getBuildings() < player->getBuildingThreshold())
+                        {
+                            if (boardSpace->isMortgaged())
+                                throw 2;
+                            
+                            int availableCash = 0, availableMorgageValue = 0;
+                            // Calculate current cash available
+                            if (player->getDevelopmentThreshold() == 1)
+                                availableCash += player->getMoney() - 1;
+                            else if (player->getDevelopmentThreshold() == 2)
+                            {
+                                for (auto property : player->getInventory())
+                                {
+                                    if (!std::find(player->getMonopolies().begin(), player->getMonopolies().end(), property->getGroup() && !property->isMortgaged()))
+                                    
+                                        availableMorgageValue += property->getPrice() / 2;
+                                    
+                                    availableCash = availableMorgageValue + player->getMoney();
+                                }
+                            }
+                            else
+                            {
+                                availableCash = player->getMoney() - player->getBuyingThreshold();
+                            }
+                            
+                            if (availableCash - boardSpace->getHouseCost() >= 0) // The player can afford it.
+                            {
+                                int buildingSupply = 0;
+                                std::string building;
+                                if (boardSpace->getBuildings() < 4)
+                                {
+                                    buildingSupply = houses;
+                                    building = "house";
+                                }
+                                else if (boardSpace->getBuildings() == 4)
+                                {
+                                    buildingSupply = hotels;
+                                    building = "hotel";
+                                }
+                                
+                                // Check if there's a building available.
+                                if (buildingSupply > 0)
+                                {
+                                    if (building == "house")
+                                        houses--;
+                                    else if (building == "hotel")
+                                    {
+                                        hotels--;
+                                        houses += 4;
+                                    }
+                                    
+                                    boardSpace->changeBuildings(1);
+                                    player->addMoney(-boardSpace->getHouseCost());
+                                    
+                                    if (player->getDevelopmentThreshold() != 2 && player->getMoney() < 0)
+                                        
+                                        throw 20;
+                                    
+                                    if (player->getDevelopmentThreshold() == 2)
+                                    {
+                                        int propertyIndex = 0;
+                                        while (player->getMoney() <= 0)
+                                        {
+                                            BoardLocation* cProperty = player->getInventory()[propertyIndex];
+                                            if (!std::find(player->getMonopolies().begin(), player->getMonopolies().end(), cProperty->getGroup()) && !cProperty->isMortgaged())
+                                            {
+                                                if (Game::mortgageCheck(cProperty, player))
+                                                {
+                                                    cProperty->setMortgaged(true);
+                                                    player->addMoney(cProperty->getPrice());
+                                                }
+                                            }
+                                            propertyIndex++;
+                                        }
+                                    }
+                                    
+                                    keepBuilding = true;
+                                    firstBuilding = true; // Buildings have been built.
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    // Unmortgage singleton properties
+    for (auto boardSpace : player->getInventory())
+    {
+        if (boardSpace->isMortgaged())
+        {
+            int unmortgagedPrice = Game::unmortgagePrice(boardSpace);
+            if (player->getMoney() - unmortgagedPrice >= player->getBuyingThreshold())
+            {
+                player->addMoney(-unmortgagedPrice);
+                boardSpace->setMortgaged(false);
+            }
+            else
+                return;
+        }
+    }
+}
+
+// Doesn't edeal with additional properties...yet.
+bool Game::monopolyStatus(Player* player, BoardLocation* boardSpace)
+{
+    std::string group = boardSpace->getGroup();
+    
+    if (group == "" || group == "Railroad" || group == "Utility")
+    {
+        return (false);
+    }
+    
+    int propertyCounter = 0;
+    
+    for (auto property : player->getInventory())
+    {
+        if (property->getGroup() == group)
+        {
+            propertyCounter++;
+        }
+    }
+    
+    if (propertyCounter == 3 && (group == "Light Blue" || group == "Pink" || group == "Orange" || group == "Red" || group == "Yellow" || group == "Green"))
+    {
+        return (true);
+    }
+    else if (propertyCounter == 2 && (group == "Dark Blue" || group == "Brown"))
+    {
+        return true;
+    }
+    return false;
+}
+
+int Game::findAvailableMortgageValue(Player* player)
+{
+    int available = 0;
+    bool addMyValue;
+    for (auto property : player->getInventory())
+    {
+        if (property->getBuildings() == 0 && !property->isMortgaged())
+        {
+            addMyValue = true;
+            
+            if (std::find(player->getMonopolies().begin(), player->getMonopolies().end(), property->getGroup()))
+            {
+                for (auto aProperty : player->getInventory())
+                {
+                    if (aProperty->getBuildings() > 0 && aProperty->getGroup() == property->getGroup())
+                    {
+                        addMyValue = false;
+                    }
+                }
+            }
+            
+            if (addMyValue)
+            {
+                available += property->getPrice() / 2;
+            }
+        }
+    }
+    
+    return (available);
+}
+
+void Game::auction(BoardLocation* boardSpace)
+{
+    int winningBid;
+    Player* winningPlayer;
+    
+    for (auto player : players)
+    {
+        player->setBidIncludesMortgages(false);
+        
+        if (std::find(player->getGroupPreferences().begin(), player->getGroupPreferences().end(), boardSpace->getGroup()))
+        {
+            player->setAuctionBid(player->getMoney() - 1);
+        }
+        
+        else if (1 == player->getCompleteMonopoly() && Game::monopolyStatus(player, boardSpace))
+        {
+            player->setAuctionBid(player->getMoney() - 1);
+        }
+        
+        else if (2 == player->getCompleteMonopoly() && Game::monopolyStatus(player, boardSpace))
+        {
+            player->setBidIncludesMortgages(true);
+            int availableMortgageValue = Game::findAvailableMortgageValue(player);
+            player->setAuctionBid(player->getMoney() + availableMortgageValue - 1);
+        }
+        
+        else
+        {
+            player->setAuctionBid(player->getMoney() - palyer->getBuyingThreshold());
+        }
+    }
+    
+    Player* player1 = players[0];
+    Player* player2 = players[1];
+    
+    if (player1->getAuctionBid() < 1 && player2->getAuctionBid() < 1)
+        return;
+    
+    else if (player1->getAuctionBid() > 0 && player2->getAuctionBid() < 1)
+    {
+        winningBid = 1;
+        winningPlayer = player1;
+    }
+    
+    else if (player1->getAuctionBid() < 1 && player2->getAuctionBid() > 0)
+    {
+        winningBid = 1;
+        winningPlayer = player2;
+    }
+    
+    else if (player1->getAuctionBid() == player2->getAuctionBid())
+    {
+        // TODO: random choice of player
+    }
+    
+    else if (player1->getAuctionBid() > player2->getAuctionBid())
+    {
+        winningBid = player2->getAuctionBid() + 1;
+        winningPlayer = player1;
+    }
+    
+    else if (player2->getAuctionBid() > player1->getAuctionBid())
+    {
+        winningBid = player1->getAuctionBid() + 1;
+        winningPlayer = player2;
+    }
+    
+    else
+    {
+        winningPlayer = -1;
+        throw 20;
+        return;
+    }
+    
+    // Special buying procedure if the player wants to include mortgages.
+    if (winningPlayer->getBidIncludesMortgages())
+    {
+        winningPlayer->addMoney(-winningBid);
+        
+        // Make up the funds...
+        int propertyIndex = 0;
+        
+        while (winningPlayer->getMoney() <= 0)
+        {
+            BoardLocation* property = winningPlayer->getInventory()[propertyIndex];
+            
+            if (property->getBuildings() == 0 && !property->isMortgaged())
+            {
+                if (Game::mortgageCheck(property, winningPlayer))
+                {
+                    property->setMortgaged(true);
+                    winningPlayer->addMoney(property->getPrice() / 2);
+                }
+            }
+            
+            propertyIndex++;
+        }
+        
+        unownedProperties.erase(std::remove(unownedProperties.begin(), unownedProperties.end(), boardSpace), unownedProperties.end()); // This needs to change. TODO
+        
+        winningPlayer->appendToInventory(boardSpace);
+        winningPlayer->appendToMonopolies(boardSpace->getGroup());
+    }
+    
+    else
+    {
+        Game::buyProperty(winningPlayer, boardSpace, winningBid);
+    }
+}
+
+int Game::totalAssets(Player* player)
+{
+    int liquidProperty = 0; // Liquidated property wealth of player
+    for (auto boardSpace : player->getInventory())
+    {
+        liquidProperty += boardSpace->getPrice();
+    }
+    
+    int liquidBuildings = 0; // Cost of all buildings player owns
+    for (auto boardSpace : player->getInventory())
+    {
+        liquidBuildings += boardSpace->getBuildings() * boardSpace->getHouseCost();
+    }
+    
+    return (player->getMoney() + liquidBuildings + liquidProperty);
+}
+
+void Game::propertyAction(Player* player, BoardLocation* boardSpace)
+{
+    if (std:find(player->getInventory().begin(), player->getInventory().end(), boardSpace)) // Player owns property, nothing happens.
+    {
+        continue;
+    }
+    else if (boardSpace->isMortgaged()) // Property is mortgaged, nothing happens.
+    {
+        continue;
+    }
+    
+    else if (std::find(unownedProperties.begin(), unownedProperties.end(), boardSpace))
+    {
+        if (tripToStart && !player->hasPassedGo())
+        {
+            continue;
+        }
+        else
+        {
+            if (player->getMoney() - boardSpace->getPrice() >= player->getBuyingThreshold())
+            {
+                Game::buyProperty(player, boardSpace);
+            }
+            
+            else if (std::find(player->getGroupPreferences().begin(), player->getGroupPreferences().end(), boardSpace->getGroup()) && boardSpace->getPrice() > 0)
+            {
+                Game::buyProperty(player, boardSpace);
+            }
+            
+            else if (player->getCompleteMonopoly() == 1 && player->getMoney() - boardSpace->getPrice() > 0 && Game::monopolyStatus(player, boardSpace))
+            {
+                Game::buyProperty(player, boardSpace);
+            }
+            
+            else if (player->getCompleteMonopoly() == 2 && Game::monopolyStatus(player, boardSpace))
+            {
+                if ((player->getMoney() + Game::findAvailableMortgageValue(player)) - boardSpace->getPrice() > 0)
+                {
+                    player->addMoney(-boardSpace->getPrice())
+                    
+                    int propertyIndex = 0;
+                    while (player->getMoney() <= 0)
+                    {
+                        BoardLocation* cProperty = player->getInventory()[propertyIndex];
+                        if (cProperty->getBuildings() == 0 && !cProperty->isMortgaged())
+                        {
+                            if (Game::mortgageCheck(cProperty, player))
+                            {
+                                cProperty->setMortgaged(true);
+                                player->addMoney(cProperty->getPrice() / 2);
+                            }
+                        }
+                        propertyIndex++;
+                    }
+                    unownedProperties.erase(std::remove(unownedProperties.begin(), unownedProperties.end(), boardSpace), unownedProperties.end()); // This needs to change. TODO
+                    player->appendToMonopolies(boardSpace->getGroup());
+                }
+            }
+            
+            else // Player can't buy it or decides not to.
+            {
+                if (auctionsEnabled)
+                {
+                    Game::auction(boardSpace);
+                }
+            }
+        }
+    }
+    
+    else // Property is owned by another player.
+    {
+        Game::payRent(player);
+    }
+}
+
+void Game::boardAction(Player* player, BoardLocation* boardSpace)
+{
+    if (boardSpace->getName() == "Go" || boardSpace->getName() == "Just Visiting / In Jail")
+    {
+        continue;
+    }
+    
+    else if (boardSpace->getName() == "Go")
+    {
+        if (doubleOnGo)
+        {
+            Game::changeMoney(player, 200);
+        }
+    }
+    
+    else if (boardSpace->getName() == "Income Tax")
+    {
+        Game::changeMoney(player, -200);
+        
+        if (freeParkingPool)
+        {
+            moneyInFP += 200;
+        }
+    }
+    
+    else if (boardSpace->getName() == "Free Parking")
+    {
+        if (freeParkingPool)
+        {
+            Game::changeMoney(player, moneyInFP);
+            moneyInFP = 0;
+        }
+    }
+    
+    else if (boardSpace->getName() == "Chance")
+    {
+        Game::chance(player);
+    }
+    
+    else if (boardSpace->getName() == "Community Chest")
+    {
+        Game::communityChest(player);
+    }
+    
+    else if (boardSpace->getName() == "Go to Jail")
+    {
+        Game::goToJail(player);
+    }
+    
+    else if (boardSpace->getName() == "Luxury Tax")
+    {
+        Game::changeMoney(player, -100);
+        
+        if (freeParkingPool)
+        {
+            moneyInFP += 100;
+        }
+    }
+    
+    else
+    {
+        propertyAction(player, boardSpace);
+    }
+    
+    player->setCardRent(false);
+}
+
+void Game::takeTurn(Player* player)
+{
+    turnCounter++;
+    doublesCounter = 0;
+    
+    int die1 = Game::rollDie();
+    int die2 = Game::rollDie()
+    diceRoll = die1 + die2;
+    
+    if (snakeEyesBonus && die1 == die2 == 1)
+    {
+        Game::changeMoney(player, 500);
+    }
+    
+    if (player->isInJail())
+    {
+        player->incrementJailCounter();
+        
+        if (player->getJailCounter() - 1 == player->getJailTime() || (die1 != die2 && player->getJailCounter() == 3))
+        {
+            player->setJailCounter(0);
+            moveAgain = true;
+            Game::payOutOfJail(player);
+        }
+        
+        else if (die1 == die2)
+        {
+            player->setJailCounter(0);
+            moveAgain = true;
+        }
+        
+        else
+        {
+            moveAgain = false;
+        }
+    }
+    
+    else
+    {
+        moveAgain = true;
+    }
+    
+    while (moveAgain && player->getMoney() > 0)
+    {
+        if (doublesCounter > 0)
+        {
+            die1 = Game::rollDie();
+            die2 = Game::rollDie();
+            diceRoll = die1 + die2;
+            
+            if (snakeEyesBonus && die1 == die2 == 1)
+            {
+                Game::changeMoney(player, 500);
+            }
+        }
+        
+        if (die1 == die2 && !player->isInJail())
+        {
+            doublesCounter++;
+            if (doublesCounter == 3)
+            {
+                Game::goToJail(player);
+                return;
+            }
+            
+            else
+            {
+                moveAgain = true;
+            }
+        }
+        
+        else
+        {
+            player->setInJail(false);
+            moveAgain = false;
+        }
+        
+        Game::moveAhead(player, diceRoll);
+        BoardLocation* boardSpace = board[player->getPosition()];
+        
+        Game::boardAction(player, boardSpace);
+        
+        if (player->isInJail())
+        {
+            return;
+        }
+    }
+}
+
+void Game::updateStatus()
+{
+    for (auto player : players)
+    {
+        if (player->getMoney() <= 0)
+        {
+            gameStatus = false; // TODO: Should be bool or string?
+            if (player->getNumber() == 1)
+            {
+                result = 2;
+            }
+            else if (player->getNumber() == 2)
+            {
+                result = 1;
+            }
+        }
+    }
+    
+    if (turnCounter == cutoff)
+    {
+        gameStatus = false;
+        result = 0;
+    }
+}
+
+void Game::play()
+{
+    // TODO: Shuffle players
+    Player*[] playingOrder;
+    
+    int currentPlayerIndex = 0;
+    
+    while (gameStatus)
+    {
+        if (0 == currentPlayerIndex)
+        {
+            Game::developProperties(players[0]);
+            Game::developProperties(players[1]);
+        }
+        else
+        {
+            Game::developProperties(players[1]);
+            Game::developProperties(players[0]);
+        }
+        
+        Game::takeTurn(players[playingOrder[currentPlayerIndex] - 1]);
+        
+        currentPlayerIndex = (currentPlayerIndex + 1) & numberOfPlayers;
+        
+        Game::updateStatus();
+    }
+    
+    // TODO: Return heterogeneous results.
+}
+
+int Game::rollDie()
+{
+    std::uniform_int_distribution<int> distribution(0, 7); // off by one?
+    std::mt19937 engine;
+    auto generator = std::bind(distribution, engine);
+    return (generator());
 }

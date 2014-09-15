@@ -43,13 +43,14 @@ public:
 	int getID();
 	std::string* getName();
 	int getPrice();
-	std::vector<int> getRents();
+	int getRents(int position);
 	int getHouseCost();
 	std::string* getGroup();
 	int getBuildings();
 	int getVisits();
 	void incrementVisits();
 	bool isMortgaged();
+    void setMortgaged(bool val);
 
 	// Instance methods
 	void flipMortgaged();
