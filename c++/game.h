@@ -29,8 +29,8 @@ struct endReport
 {
     int result;
     int turnCounter;
-    std::vector<std::string*> player0Monopolies;
-    std::vector<std::string*> player1Monopolies;
+    std::unordered_set<std::string*> player0Monopolies;
+    std::unordered_set<std::string*> player1Monopolies;
     int player0Money;
     int player1Money;
 };
@@ -67,7 +67,7 @@ class Game
 	int chanceIndex = 0;
 	int communityChestIndex = 0;
 
-	std::vector<BoardLocation*> unownedProperties;
+	std::unordered_set<BoardLocation*> unownedProperties;
 
 	// Miscellaneous
 	int moneyInFP = 0;

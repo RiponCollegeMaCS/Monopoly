@@ -21,6 +21,7 @@
 
 #include "boardlocation.h"
 #include<vector>
+#include<unordered_set>
 #include<string>
 
 class Player
@@ -34,7 +35,7 @@ class Player
 	int initJailTime = 3; // ??????
 	bool smartJailStrategy = false;
 	int completeMonopoly = 0;
-	std::vector<int> groupPreferences;
+    std::unordered_set<std::string*> groupPreferences;
 	int developmentThreshold = 0;
 
 	// Parameters
@@ -46,20 +47,23 @@ class Player
 	bool inJail = false;
 	int jailCounter = 0;
 	bool cardRent = false;
-	std::vector<std::string*> monopolies; // implementation of these has to be checked for efficiency
+	std::unordered_set<std::string*> monopolies;
 	int auctionBid = 0;
 	bool passedGo = false;
-	std::vector<BoardLocation*> inventory;
+	std::unordered_set<BoardLocation*> inventory;
 	bool bidIncludesMortgages = false;
 
 public:
-    Player(int num, std::vector<int> groupPreferencers, int buy_thresh, int build_thresh, int jt, bool sjs, int cm, int dt);
+    Player(int num, std::unordered_set<std::string*> groupPreferences, int buy_thresh, int build_thresh, int jt, bool sjs, int cm, int dt);
 
     void reset_values();
     void changePosition(int delta);
     void passGo();
     void appendToInventory(BoardLocation* boardSpace);
+    bool isInInventory(BoardLocation* boardSpace);
     void appendToMonopolies(std::string group);
+    bool isInMonopolies(std::string group); // pointer?
+    bool isInGroupPreferences(std::string group);
 
     // Getters and setters
     int getNumber();
@@ -71,14 +75,14 @@ public:
     int getInitJailTime();
     bool hasSmartJailStrategy();
     int getCompleteMonopoly();
-    std::vector<int> getGroupPreferences();
+    std::unordered_set<std::string*>* getGroupPreferences();
     int getDevelopmentThreshold();
     void flipCommunityChestCard();
     bool hasCommunityChestCard();
     void flipChanceCard();
     bool hasChanceCard();
-    std::vector<std::string*> getMonopolies();
-    std::vector<BoardLocation*> getInventory();
+    std::unordered_set<std::string*>* getMonopolies();
+    std::unordered_set<BoardLocation*>* getInventory();
     int getPosition();
     void setPosition(int pos);
     bool isInJail();

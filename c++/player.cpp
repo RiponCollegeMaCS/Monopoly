@@ -21,7 +21,7 @@
 #include<iostream>
 #include<vector>
 
-Player::Player(int num, std::vector<int> groupPreferences, int buy_thresh=100, int build_thresh=5, int jt=3, bool sjs=false, int cm=0, int dt=0)
+Player::Player(int num, std::unordered_set<std::string*> groupPreferences, int buy_thresh=100, int build_thresh=5, int jt=3, bool sjs=false, int cm=0, int dt=0)
 {
 	number = num;
 	buyingThreshold = buy_thresh;
@@ -62,12 +62,42 @@ void Player::passGo()
 
 void Player::appendToInventory(BoardLocation* boardSpace)
 {
-    inventory.push_back(boardSpace);
+    inventory.insert(boardSpace);
+}
+
+bool Player::isInInventory(BoardLocation* boardSpace)
+{
+    if (inventory.find(boardSpace) != inventory.end()) // ...what if it's not the same pointer? TODO: check
+    {
+        return (true);
+    }
+    
+    return (false);
 }
 
 void Player::appendToMonopolies(std::string group)
 {
-    monopolies.push_back(&group); // TODO: check
+    monopolies.insert(&group); // TODO: check
+}
+
+bool Player::isInMonopolies(std::string group)
+{
+    if (monopolies.find(&group) != monopolies.end())
+    {
+        return (true);
+    }
+    
+    return (false);
+}
+
+bool Player::isInGroupPreferences(std::string group)
+{
+    if (groupPreferences.find(&group) != groupPreferences.end())
+    {
+        return (true);
+    }
+    
+    return (false);
 }
 
 // Getters and setters
@@ -80,14 +110,14 @@ void Player::setJailTime(int jailtime) { jailTime = jailtime; }
 int Player::getInitJailTime() { return (initJailTime); }
 bool Player::hasSmartJailStrategy() { return (smartJailStrategy); }
 int Player::getCompleteMonopoly() { return (completeMonopoly); }
-std::vector<int> Player::getGroupPreferences() { return (groupPreferences); }
+std::unordered_set<std::string*>* Player::getGroupPreferences() { return (&groupPreferences); }
 int Player::getDevelopmentThreshold() { return (developmentThreshold); }
 void Player::flipCommunityChestCard() { communityChestCard = !communityChestCard; }
 bool Player::hasCommunityChestCard() { return (communityChestCard); }
 void Player::flipChanceCard() { chanceCard = !chanceCard; }
 bool Player::hasChanceCard() { return (chanceCard); }
-std::vector<std::string*> Player::getMonopolies() { return (monopolies); }
-std::vector<BoardLocation*> Player::getInventory() { return (inventory); }
+std::unordered_set<std::string*>* Player::getMonopolies() { return (&monopolies); }
+std::unordered_set<BoardLocation*>* Player::getInventory() { return (&inventory); }
 int Player::getPosition() { return (position); }
 void Player::setPosition(int pos) { position = pos; }
 bool Player::isInJail() { return (inJail); }
