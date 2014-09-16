@@ -42,7 +42,7 @@ class Game
 
 	bool gameStatus = true;
 	int numberOfPlayers;
-	std::vector<BoardLocation*> board;
+	BoardLocation* board[40];
 	std::vector<Player*> players;
 	int turnCounter = 0;
 	int doublesCounter = 0;
@@ -78,6 +78,7 @@ class Game
 	void createBoard();
 
 public:
+	Game(std::vector<Player*> players, int cutoff);
 	Game(std::vector<Player*> players, bool auct, bool fpp, bool dog, bool nrij, bool tts, bool seb, int cutoff);
 
 	void communityChest(Player* player);

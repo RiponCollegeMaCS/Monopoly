@@ -22,6 +22,9 @@
 #include<string>
 #include<vector>
 
+/**
+ * A class meant to represent a location in a Monopoly gameboard.
+ */
 class BoardLocation
 {
 	int id;
