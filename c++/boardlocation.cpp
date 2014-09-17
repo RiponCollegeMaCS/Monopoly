@@ -20,12 +20,37 @@
 
 #include<vector>
 
+BoardLocation::BoardLocation()
+{
+    id = -1;
+    name = "Uninitialized";
+}
+/**
+ * Basic BoardLocation constructor for non-properties
+ *
+ * Needed for creation of some of the "non-property" spaces.
+ *
+ * @param id Numerical id of the location, where 0 is Go and 40 is Boardwalk
+ * @param name Friendly name of the location
+ */
 BoardLocation::BoardLocation(int id, std::string name)
 {
 	BoardLocation::id = id;
 	BoardLocation::name = name;
+
+
 }
 
+/**
+ * More detailed BoardLocation constructor for railroads, etc
+ *
+ * This is what some properties such as railroads use.
+ *
+ * @param id Numerical id of the location, where 0 is Go and 40 is Boardwalk
+ * @param name Friendly name of the location
+ * @param price Integer price of the property
+ * @param group Color group the property belongs to, e.g. "Red"
+ */
 BoardLocation::BoardLocation(int id, std::string name, int price, std::string group)
 {
 	BoardLocation::id = id;
@@ -34,6 +59,18 @@ BoardLocation::BoardLocation(int id, std::string name, int price, std::string gr
 	BoardLocation::group = group;
 }
 
+/**
+ * Most detailed BoardLocation constructor for properties
+ *
+ * This is what most properties use as it fills in most information.
+ *
+ * @param id Numerical id of the location, where 0 is Go and 40 is Boardwalk
+ * @param name Friendly name of the location
+ * @param price Integer price of the property
+ * @param group Color group the property belongs to, e.g. "Red"
+ * @param rents List of the 6 rents on property (singleton, monopoly, 1-4 houses, hotel)
+ * @param houseCost The cost to buy/build one house on the property
+ */
 BoardLocation::BoardLocation(int id, std::string name, int price, std::string group, std::vector<int> rents, int houseCost)
 {
 	BoardLocation::id = id;
@@ -45,18 +82,131 @@ BoardLocation::BoardLocation(int id, std::string name, int price, std::string gr
 }
 
 // Getters and Setters
-int BoardLocation::getID() { return (id); }
-std::string* BoardLocation::getName() { return (&name); }
-int BoardLocation::getPrice() { return (price); }
-int BoardLocation::getRents(int position) { return (rents[position]); }
-int BoardLocation::getHouseCost() { return (houseCost); }
-std::string* BoardLocation::getGroup() { return (&group); }
-int BoardLocation::getBuildings() { return (buildings); }
-int BoardLocation::getVisits() { return (visits); }
-bool BoardLocation::isMortgaged() { return (mortgaged); }
-void BoardLocation::setMortgaged(bool val) { mortgaged = val; }
+/**
+ * Gets the space ID (0..40) of the location
+ * @return numerical positional identifier
+ */
+int BoardLocation::getID()
+{
+	return (id);
+}
+
+/**
+ * Gets the friendly name of the property
+ * @return pointer to a string containing the name
+ */
+std::string* BoardLocation::getName()
+{
+	return (&name);
+}
+
+/**
+ * Gets the purchase price of the property, as displayed on the card
+ * @return price of property
+ */
+int BoardLocation::getPrice()
+{
+	return (price);
+}
+
+/**
+ * Gets the rent for a specific case
+ * @param position the rent to get, where 0 is a singleton and 5 is a hotel
+ * @return the rent in Monopoly dollars
+ */
+int BoardLocation::getRents(int position)
+{
+	return (rents[position]);
+}
+
+/**
+ * Gets the cost to buy/build a house
+ * @return the cost in Monopoly dollars
+ */
+int BoardLocation::getHouseCost()
+{
+	return (houseCost);
+}
+
+/**
+ * Gets the color group the property belongs to, e.g. "Red"
+ * @return a pointer to the color group
+ */
+std::string* BoardLocation::getGroup()
+{
+	return (&group);
+}
+
+/**
+ * Gets the number of buildings on the property
+ *
+ * 0: no buildings
+ * 1-4: that many houses
+ * 5: a hotel
+ * @return the number of buildings on the property
+ */
+int BoardLocation::getBuildings()
+{
+	return (buildings);
+}
+
+/**
+ * Gets the number of times the property has been visited
+ * @return the counter of times a player has landed on property
+ */
+int BoardLocation::getVisits()
+{
+	return (visits);
+}
+
+/**
+ * Is this property currently mortgaged (i.e. out of play)?
+ * @return true if mortgaged, else false
+ */
+bool BoardLocation::isMortgaged()
+{
+	return (mortgaged);
+}
+
+/**
+ * Set the mortgaged value of the property
+ * @param val true if mortgaged, else false
+ */
+void BoardLocation::setMortgaged(bool val)
+{
+	mortgaged = val;
+}
 
 // Instance methods
-void BoardLocation::flipMortgaged() { mortgaged = !mortgaged; }
-void BoardLocation::incrementVisits() { visits++; }
+/**
+ * Sets the mortgaged status of the property to whatever it's not
+ *
+ * Thus, if the property is mortgaged, it sets it to unmortgaged, and
+ * if it's unmortgage, it sets it to mortgaged.
+ *
+ * Born of laziness.
+ */
+void BoardLocation::flipMortgaged()
+{
+	mortgaged = !mortgaged;
+}
+
+/**
+ * Increments the visit counter of the space
+ *
+ * When a player lands on a space, it needs to be incremented by one.
+ * This is more convenient and accurate than a pure setter.
+ */
+void BoardLocation::incrementVisits()
+{
+	visits++;
+}
+
+/**
+ * Changes the number of buildings on the property by a given quantity
+ *
+ * Increases or decreases the buildings by the count.  Doesn't do
+ * any sanity checking.
+ * @param delta the change in buildings
+ */
 void BoardLocation::changeBuildings(int delta) { buildings += delta; }

@@ -28,6 +28,13 @@
 #include<random>
 #include<functional>
 
+Game::Game(std::vector<Player*> players, int cutoff)
+{
+	Game::players = players;
+	Game::numberOfPlayers = (players.size());
+	Game::cutoff = cutoff;
+}
+
 Game::Game(std::vector<Player*> players, bool auct, bool fpp, bool dog, bool nrij, bool tts, bool seb, int cutoff=300)
 {
 	Game::players = players;
@@ -39,6 +46,14 @@ Game::Game(std::vector<Player*> players, bool auct, bool fpp, bool dog, bool nri
 	Game::tripToStart = Game::tripToStart && tts;
 	Game::snakeEyesBonus = Game::snakeEyesBonus && seb;
 	Game::cutoff = cutoff;
+}
+
+Game::~Game()
+{
+    for (int i = 0; i < 40; i++)
+    {
+        delete board[i];
+    }
 }
 
 void Game::createCards()
@@ -55,49 +70,48 @@ void Game::createCards()
 
 void Game::createBoard()
 	{
+		board[0] = (new BoardLocation(0, "Go"));
+		board[1] = (new BoardLocation(1, "Mediterranean Ave.", 60, "Brown", std::vector<int> {2, 10, 30, 90, 160, 250} , 50));
+		board[2] = (new BoardLocation(2, "Community Chest"));
+		board[3] = (new BoardLocation(3, "Baltic Ave.", 60, "Brown", std::vector<int> {4, 20, 60, 180, 320, 450}, 50));
+		board[4] = (new BoardLocation(4, "Income Tax"));
+		board[5] = (new BoardLocation(5, "Reading Railroad", 200, "Railroad"));
+		board[6] = (new BoardLocation(6, "Oriental Ave.", 100, "Light Blue", std::vector<int> {6, 30, 90, 270, 400, 550}, 50));
+		board[7] = (new BoardLocation(7, "Chance"));
+		board[8] = (new BoardLocation(8, "Vermont Ave.", 100, "Light Blue", std::vector<int> {6, 30, 90, 270, 400, 550}, 50));
+		board[9] = (new BoardLocation(9, "Connecticut Ave.", 120, "Light Blue", std::vector<int> {8, 40, 100, 300, 450, 600}, 50));
+		board[10] = (new BoardLocation(10, "Just Visiting / In Jail"));
+		board[11] = (new BoardLocation(11, "St. Charles Place", 140, "Pink", std::vector<int> {10, 50, 150, 450, 625, 750}, 100));
+		board[12] = (new BoardLocation(12, "Electric Company", 150, "Utility"));
+		board[13] = (new BoardLocation(13, "States Ave.", 140, "Pink", std::vector<int> {10, 50, 150, 450, 625, 750}, 100));
+		board[14] = (new BoardLocation(14, "Virginia Ave.", 160, "Pink", std::vector<int> {12, 60, 180, 500, 700, 900}, 100));
+		board[15] = (new BoardLocation(15, "Pennsylvania Railroad", 200, "Railroad"));
+		board[16] = (new BoardLocation(16, "St. James Place", 180, "Orange", std::vector<int> {14, 70, 200, 550, 750, 950}, 100));
+		board[17] = (new BoardLocation(17, "Community Chest"));
+		board[18] = (new BoardLocation(18, "Tennessee Ave.", 180, "Orange", std::vector<int> {14, 70, 200, 550, 750, 950}, 100));
+		board[19] = (new BoardLocation(19, "New York Ave.", 200, "Orange", std::vector<int> {16, 80, 220, 600, 800, 1000}, 100));
+		board[20] = (new BoardLocation(20, "Free Parking"));
+		board[21] = (new BoardLocation(21, "Kentucky Ave.", 220, "Red", std::vector<int> {18, 90, 250, 700, 875, 1050}, 150));
+		board[22] = (new BoardLocation(22, "Chance"));
+		board[23] = (new BoardLocation(23, "Indiana Ave.", 220, "Red", std::vector<int> {18, 90, 250, 700, 875, 1050}, 150));
+		board[24] = (new BoardLocation(24, "Illinois Ave.", 240, "Red", std::vector<int> {20, 100, 300, 750, 925, 1100}, 150));
+		board[25] = (new BoardLocation(25, "B. & O. Railroad", 200, "Railroad"));
+		board[26] = (new BoardLocation(26, "Atlantic Ave.", 260, "Yellow", std::vector<int> {22, 110, 330, 800, 975, 1150}, 150));
+		board[27] = (new BoardLocation(27, "Ventnor Ave.", 260, "Yellow", std::vector<int> {22, 110, 330, 800, 975, 1150}, 150));
+		board[28] = (new BoardLocation(28, "Water Works", 150, "Utility"));
+		board[29] = (new BoardLocation(29, "Marvin Gardens", 280, "Yellow", std::vector<int> {24, 120, 360, 850, 1025, 1200}, 150));
+		board[30] = (new BoardLocation(30, "Go to Jail"));
+		board[31] = (new BoardLocation(31, "Pacific Ave.", 300, "Green", std::vector<int> {26, 130, 390, 900, 1100, 1275}, 200));
+		board[32] = (new BoardLocation(32, "North Carolina Ave.", 300, "Green", std::vector<int> {26, 130, 390, 900, 1100, 1275}, 200));
+		board[33] = (new BoardLocation(33, "Community Chest"));
+		board[34] = (new BoardLocation(34, "Pennsylvania Ave.", 320, "Green", std::vector<int> {28, 150, 450, 1000, 1200, 1400}, 200));
+		board[35] = (new BoardLocation(35, "Short Line Railroad", 200, "Railroad"));
+		board[36] = (new BoardLocation(36, "Chance"));
+		board[37] = (new BoardLocation(37, "Park Place", 350, "Dark Blue", std::vector<int> {35, 175, 500, 1100, 1300, 1500}, 200));
+		board[38] = (new BoardLocation(38, "Luxury Tax"));
+		board[39] = (new BoardLocation(39, "Boardwalk", 400, "Dark Blue", std::vector<int> {50, 200, 600, 1400, 1700, 2000}, 200));
 
-		board.push_back(new BoardLocation(0, "Go"));
-		board.push_back(new BoardLocation(1, "Mediterranean Ave.", 60, "Brown", std::vector<int> {2, 10, 30, 90, 160, 250} , 50));
-		board.push_back(new BoardLocation(2, "Community Chest"));
-		board.push_back(new BoardLocation(3, "Baltic Ave.", 60, "Brown", std::vector<int> {4, 20, 60, 180, 320, 450}, 50));
-		board.push_back(new BoardLocation(4, "Income Tax"));
-		board.push_back(new BoardLocation(5, "Reading Railroad", 200, "Railroad"));
-		board.push_back(new BoardLocation(6, "Oriental Ave.", 100, "Light Blue", std::vector<int> {6, 30, 90, 270, 400, 550}, 50));
-		board.push_back(new BoardLocation(7, "Chance"));
-		board.push_back(new BoardLocation(9, "Vermont Ave.", 100, "Light Blue", std::vector<int> {6, 30, 90, 270, 400, 550}, 50));
-		board.push_back(new BoardLocation(10, "Connecticut Ave.", 120, "Light Blue", std::vector<int> {8, 40, 100, 300, 450, 600}, 50));
-		board.push_back(new BoardLocation(11, "Just Visiting / In Jail"));
-		board.push_back(new BoardLocation(12, "St. Charles Place", 140, "Pink", std::vector<int> {10, 50, 150, 450, 625, 750}, 100));
-		board.push_back(new BoardLocation(13, "Electric Company", 150, "Utility"));
-		board.push_back(new BoardLocation(14, "States Ave.", 140, "Pink", std::vector<int> {10, 50, 150, 450, 625, 750}, 100));
-		board.push_back(new BoardLocation(15, "Virginia Ave.", 160, "Pink", std::vector<int> {12, 60, 180, 500, 700, 900}, 100));
-		board.push_back(new BoardLocation(16, "Pennsylvania Railroad", 200, "Railroad"));
-		board.push_back(new BoardLocation(17, "St. James Place", 180, "Orange", std::vector<int> {14, 70, 200, 550, 750, 950}, 100));
-		board.push_back(new BoardLocation(18, "Community Chest"));
-		board.push_back(new BoardLocation(19, "Tennessee Ave.", 180, "Orange", std::vector<int> {14, 70, 200, 550, 750, 950}, 100));
-		board.push_back(new BoardLocation(20, "New York Ave.", 200, "Orange", std::vector<int> {16, 80, 220, 600, 800, 1000}, 100));
-		board.push_back(new BoardLocation(21, "Free Parking"));
-		board.push_back(new BoardLocation(22, "Kentucky Ave.", 220, "Red", std::vector<int> {18, 90, 250, 700, 875, 1050}, 150));
-		board.push_back(new BoardLocation(23, "Chance"));
-		board.push_back(new BoardLocation(24, "Indiana Ave.", 220, "Red", std::vector<int> {18, 90, 250, 700, 875, 1050}, 150));
-		board.push_back(new BoardLocation(25, "Illinois Ave.", 240, "Red", std::vector<int> {20, 100, 300, 750, 925, 1100}, 150));
-		board.push_back(new BoardLocation(26, "B. & O. Railroad", 200, "Railroad"));
-		board.push_back(new BoardLocation(27, "Atlantic Ave.", 260, "Yellow", std::vector<int> {22, 110, 330, 800, 975, 1150}, 150));
-		board.push_back(new BoardLocation(28, "Ventnor Ave.", 260, "Yellow", std::vector<int> {22, 110, 330, 800, 975, 1150}, 150));
-		board.push_back(new BoardLocation(29, "Water Works", 150, "Utility"));
-		board.push_back(new BoardLocation(30, "Marvin Gardens", 280, "Yellow", std::vector<int> {24, 120, 360, 850, 1025, 1200}, 150));
-		board.push_back(new BoardLocation(31, "Go to Jail"));
-		board.push_back(new BoardLocation(32, "Pacific Ave.", 300, "Green", std::vector<int> {26, 130, 390, 900, 1100, 1275}, 200));
-		board.push_back(new BoardLocation(33, "North Carolina Ave.", 300, "Green", std::vector<int> {26, 130, 390, 900, 1100, 1275}, 200));
-		board.push_back(new BoardLocation(34, "Community Chest"));
-		board.push_back(new BoardLocation(35, "Pennsylvania Ave.", 320, "Green", std::vector<int> {28, 150, 450, 1000, 1200, 1400}, 200));
-		board.push_back(new BoardLocation(36, "Short Line Railroad", 200, "Railroad"));
-		board.push_back(new BoardLocation(37, "Chance"));
-		board.push_back(new BoardLocation(38, "Park Place", 350, "Dark Blue", std::vector<int> {35, 175, 500, 1100, 1300, 1500}, 200));
-		board.push_back(new BoardLocation(39, "Luxury Tax"));
-		board.push_back(new BoardLocation(40, "Boardwalk", 400, "Dark Blue", std::vector<int> {50, 200, 600, 1400, 1700, 2000}, 200));
-
-        std::copy(board.begin(), board.end(), std::inserter(unownedProperties, unownedProperties.end())); // doublecheck
+        std::copy(board, board + 40, std::inserter(unownedProperties, unownedProperties.end())); // doublecheck
 	}
 
 void Game::communityChest(Player* player)
@@ -309,6 +323,7 @@ void Game::moveAhead(Player* player, int numberOfSpaces)
 	}
 	player->setPosition(newPosition);
 	board[newPosition]->incrementVisits();
+//	std::cout << "Hello" << std::endl;
 }
 
 void Game::moveTo(Player* player, int newPosition)
@@ -393,6 +408,10 @@ void Game::payRent(Player* player)
 {
 	BoardLocation* currentProperty = board[player->getPosition()];
 	Player* owner = Game::propertyOwner(currentProperty);
+    if (owner == NULL)
+    {
+        return;
+    }
 
 	int rent = 0;
 
@@ -791,9 +810,9 @@ bool Game::monopolyStatus(Player* player, BoardLocation* boardSpace)
     }
     else if (propertyCounter == 2 && (group == "Dark Blue" || group == "Brown"))
     {
-        return true;
+        return (true);
     }
-    return false;
+    return (false);
 }
 
 int Game::findAvailableMortgageValue(Player* player)
@@ -830,7 +849,7 @@ int Game::findAvailableMortgageValue(Player* player)
 void Game::auction(BoardLocation* boardSpace)
 {
     int winningBid = 0;
-    Player* winningPlayer;
+    Player* winningPlayer = NULL;
     
     for (auto player : players)
     {
@@ -879,7 +898,8 @@ void Game::auction(BoardLocation* boardSpace)
     
     else if (player1->getAuctionBid() == player2->getAuctionBid())
     {
-        // TODO: random choice of player
+        winningPlayer = player1->getNumber() == 0 ? player1 : player2;
+        winningBid = winningPlayer->getAuctionBid();
     }
     
     else if (player1->getAuctionBid() > player2->getAuctionBid())
@@ -896,7 +916,6 @@ void Game::auction(BoardLocation* boardSpace)
     
     else
     {
-        winningPlayer = NULL;
         throw 20;
         return;
     }
@@ -1109,7 +1128,7 @@ void Game::takeTurn(Player* player)
     int die2 = Game::rollDie();
     diceRoll = die1 + die2;
     
-    if (snakeEyesBonus && die1 == die2 == 1)
+    if (snakeEyesBonus && die1 == 1 && die2 == 1)
     {
         Game::changeMoney(player, 500);
     }
@@ -1150,7 +1169,7 @@ void Game::takeTurn(Player* player)
             die2 = Game::rollDie();
             diceRoll = die1 + die2;
             
-            if (snakeEyesBonus && die1 == die2 == 1)
+            if (snakeEyesBonus && die1 == 1 && die2 == 1)
             {
                 Game::changeMoney(player, 500);
             }
@@ -1216,10 +1235,13 @@ void Game::updateStatus()
 
 endReport Game::play()
 {
-    // TODO: Shuffle players
-    int playingOrder[2]; // TODO: check
+    int playingOrder[2];
+    playingOrder[0] = Game::chooseRandomPlayer();
+    playingOrder[1] = playingOrder[0] == 0 ? 1 : 0;
     
     int currentPlayerIndex = 0;
+    
+    Game::createBoard();
     
     while (gameStatus)
     {
@@ -1234,9 +1256,9 @@ endReport Game::play()
             Game::developProperties(players[0]);
         }
         
-        Game::takeTurn(players[playingOrder[currentPlayerIndex] - 1]);
+        Game::takeTurn(players[playingOrder[currentPlayerIndex]]);
         
-        currentPlayerIndex = (currentPlayerIndex + 1) & numberOfPlayers;
+        currentPlayerIndex = (currentPlayerIndex + 1) % numberOfPlayers;
         
         Game::updateStatus();
     }
@@ -1255,6 +1277,14 @@ endReport Game::play()
 int Game::rollDie()
 {
     std::uniform_int_distribution<int> distribution(0, 7); // off by one?
+    std::mt19937 engine;
+    auto generator = std::bind(distribution, engine);
+    return (generator());
+}
+
+int Game::chooseRandomPlayer()
+{
+    std::uniform_int_distribution<int> distribution(0, 2); // off by one?
     std::mt19937 engine;
     auto generator = std::bind(distribution, engine);
     return (generator());

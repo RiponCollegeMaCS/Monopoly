@@ -22,6 +22,9 @@
 #include<string>
 #include<vector>
 
+/**
+ * A class meant to represent a location in a Monopoly gameboard.
+ */
 class BoardLocation
 {
 	int id;
@@ -35,6 +38,7 @@ class BoardLocation
 	bool mortgaged = false;
 
 public:
+    BoardLocation();
 	BoardLocation(int id, std::string name);
 	BoardLocation(int id, std::string name, int price, std::string group);
 	BoardLocation(int id, std::string name, int price, std::string group, std::vector<int> rents, int houseCost);
