@@ -38,7 +38,6 @@ class BoardLocation
 	bool mortgaged = false;
 
 public:
-    BoardLocation();
 	BoardLocation(int id, std::string name);
 	BoardLocation(int id, std::string name, int price, std::string group);
 	BoardLocation(int id, std::string name, int price, std::string group, std::vector<int> rents, int houseCost);

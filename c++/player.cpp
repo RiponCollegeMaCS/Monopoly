@@ -33,7 +33,7 @@ Player::Player(int num, std::unordered_set<std::string*> groupPreferences, int b
 	Player::groupPreferences = groupPreferences;
 }
 
-void Player::reset_values()
+void Player::resetValues()
 {
 	successIndicator = 0;
 	position = 0;

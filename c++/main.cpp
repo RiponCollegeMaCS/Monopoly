@@ -20,8 +20,14 @@
 #include<vector>
 #include<algorithm>
 #include<unordered_set>
+#include<ctime>
 #include "game.h"
 #include "player.h"
+
+const int NUMBER_OF_GAMES = 1000;
+const int NUMBER_OF_TURNS = 1000;
+std::string CRAPPY_MONOPOLY = "Brown";
+
 
 void pyMain()
 {
@@ -29,24 +35,75 @@ void pyMain()
 	Player goodPlayer1(1, noPrefs, 100, 5, 0, true, 1, 1);
 	Player grandma(2, noPrefs, 1000, 5, 3, false, 0, 0);
 
-	int numberOfGames = 1000;
-	int resultsList[1000];
+	int resultsList[NUMBER_OF_GAMES];
 
 
-	for (int i = 0; i< numberOfGames; i++)
+	for (int i = 0; i < NUMBER_OF_GAMES; i++)
 	{
-		goodPlayer1.reset_values();
-		grandma.reset_values();
+		goodPlayer1.resetValues();
+		grandma.resetValues();
 		std::vector<Player*> players = {&goodPlayer1, &grandma};
-		Game gameObject(players, 1000);
+		Game gameObject(players, NUMBER_OF_TURNS);
 		resultsList[i] = gameObject.play().result;
 	}
 
-	std::cout << (std::count(resultsList, resultsList + 1000, 1) * 100 / 1000) << "%" << std::endl;
+	std::cout << (std::count(resultsList, resultsList + NUMBER_OF_GAMES, 1) * 100 / NUMBER_OF_GAMES) << "%" << std::endl;
+}
+
+void monopolyTest()
+{
+	std::unordered_set<std::string*> noPrefs;
+	Player player1(1, noPrefs, 1000, 5, 3, false, 0, 0);
+	Player player2(2, noPrefs, 1000, 5, 3, false, 0, 0);
+
+	int endedEarlyNoMonopolies = 0;
+	int finishedGamesWithNoMonopolies = 0;
+
+	int resultsList[NUMBER_OF_GAMES];
+
+	for (int i = 0; i < NUMBER_OF_GAMES; i++)
+	{
+		player1.resetValues();
+		player2.resetValues();
+		std::vector<Player*> players = {&player1, &player2};
+		Game gameObject(players, NUMBER_OF_TURNS);
+
+		endReport results = gameObject.play();
+		resultsList[i] = results.result;
+
+		if (0 == results.result)
+		{
+			if ((results.player0Monopolies.empty() && results.player1Monopolies.empty()) || (results.player0Monopolies.find(&CRAPPY_MONOPOLY) != results.player0Monopolies.end() && results.player0Monopolies.size() == 1) || (results.player1Monopolies.find(&CRAPPY_MONOPOLY) != results.player1Monopolies.end() && results.player1Monopolies.size() == 1))
+			{
+				endedEarlyNoMonopolies++;
+			}
+			else
+			{
+				std::cout << "Resultant monos: TBD" << std::cout;
+			}
+		}
+
+		else
+		{
+			if ((results.player0Monopolies.empty() && results.player1Monopolies.empty()) || (results.player0Monopolies.find(&CRAPPY_MONOPOLY) != results.player0Monopolies.end() && results.player0Monopolies.size() == 1) || (results.player1Monopolies.find(&CRAPPY_MONOPOLY) != results.player1Monopolies.end() && results.player1Monopolies.size() == 1))
+			{
+				finishedGamesWithNoMonopolies++;
+			}
+		}
+	}
+
+	std::cout << "Ended early: " << std::count(resultsList, resultsList + NUMBER_OF_GAMES, 0) << std::endl;
+	std::cout << "Ended early & no monos or just brown: " << endedEarlyNoMonopolies << std::endl;
+	std::cout << "Finished games with no monos or just brown: " << finishedGamesWithNoMonopolies << std::endl;
 }
 
 int main()
 {
+	std::clock_t begin = std::clock();
 	pyMain();
+	monopolyTest();
+	std::clock_t end = clock();
+	double elapsedSecs = double(end - begin) / CLOCKS_PER_SEC;
+	std::cout << "Time elapsed: " << elapsedSecs << std::endl;
 	return (0);
 }

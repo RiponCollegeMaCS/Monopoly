@@ -24,8 +24,9 @@
 #include<string>
 #include<vector>
 #include<algorithm>
+#include<cstdlib>
+#include<ctime>
 #include<cmath>
-#include<random>
 #include<functional>
 
 Game::Game(std::vector<Player*> players, int cutoff)
@@ -127,6 +128,7 @@ void Game::communityChest(Player* player)
 	case 1: // Get out of jail free
 		player->flipCommunityChestCard();
 		communityChestCards[communityChestIndex] = 0;
+		communityChestJailIndex = communityChestIndex;
 		break;
 	case 2: // Pay school tax of $150
 		Game::changeMoney(player, -150);
@@ -221,6 +223,7 @@ void Game::chance(Player* player)
 	case 1: // Get out of jail free
 		player->flipChanceCard();
 		chanceCards[chanceIndex] = 0;
+		chanceJailIndex = chanceIndex;
 		break;
 	case 2: // Go directly to jail
 		Game::goToJail(player);
@@ -342,12 +345,12 @@ void Game::payOutOfJail(Player* player)
 	if (player->hasChanceCard())
 	{
 		player->flipChanceCard();
-		// TODO: add jail card back into deck.
+		chanceCards[chanceJailIndex] = 1;
 	}
 	else if (player->hasCommunityChestCard())
 	{
 		player->flipCommunityChestCard();
-		// TODO: add jail card back into deck.
+		communityChestCards[communityChestJailIndex] = 1;
 	}
 	else
 	{
@@ -590,7 +593,7 @@ void Game::changeMoney(Player* player, int amount)
                 {
                     if (player->isInMonopolies(*boardSpace->getGroup()))
                     {
-                        throw 2; // ???
+                        //throw 2; // ???
                     }
                     
                     int mortgageValue = boardSpace->getPrice() / 2;
@@ -679,8 +682,8 @@ void Game::developProperties(Player* player)
                     {
                         if (boardSpace->getBuildings() < player->getBuildingThreshold())
                         {
-                            if (boardSpace->isMortgaged())
-                                throw 2;
+                            if (boardSpace->isMortgaged());
+                                //throw 2;
                             
                             int availableCash = 0, availableMorgageValue = 0;
                             // Calculate current cash available
@@ -731,9 +734,9 @@ void Game::developProperties(Player* player)
                                     boardSpace->changeBuildings(1);
                                     player->addMoney(-boardSpace->getHouseCost());
                                     
-                                    if (player->getDevelopmentThreshold() != 2 && player->getMoney() < 0)
+                                    if (player->getDevelopmentThreshold() != 2 && player->getMoney() < 0);
                                         
-                                        throw 20;
+                                        //throw 20;
                                     
                                     if (player->getDevelopmentThreshold() == 2)
                                     {
@@ -916,7 +919,7 @@ void Game::auction(BoardLocation* boardSpace)
     
     else
     {
-        throw 20;
+        //throw 20;
         return;
     }
     
@@ -1276,16 +1279,12 @@ endReport Game::play()
 
 int Game::rollDie()
 {
-    std::uniform_int_distribution<int> distribution(0, 7); // off by one?
-    std::mt19937 engine;
-    auto generator = std::bind(distribution, engine);
-    return (generator());
+	std::srand(std::time(NULL) + rand());
+	return (std::rand() % 6 + 1);
 }
 
 int Game::chooseRandomPlayer()
 {
-    std::uniform_int_distribution<int> distribution(0, 2); // off by one?
-    std::mt19937 engine;
-    auto generator = std::bind(distribution, engine);
-    return (generator());
+	std::srand(std::time(NULL) + rand());
+	return (std::rand() % 1 + 1);
 }

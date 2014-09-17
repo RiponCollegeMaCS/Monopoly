@@ -66,6 +66,8 @@ class Game
 	int communityChestCards[16];
 	int chanceIndex = 0;
 	int communityChestIndex = 0;
+	int chanceJailIndex = -1;
+	int communityChestJailIndex = -1;
 
 	std::unordered_set<BoardLocation*> unownedProperties;
 

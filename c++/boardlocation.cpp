@@ -20,11 +20,6 @@
 
 #include<vector>
 
-BoardLocation::BoardLocation()
-{
-    id = -1;
-    name = "Uninitialized";
-}
 /**
  * Basic BoardLocation constructor for non-properties
  *
