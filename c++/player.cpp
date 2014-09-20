@@ -102,6 +102,7 @@ bool Player::isInGroupPreferences(std::string group)
 
 // Getters and setters
 int Player::getNumber() { return (number); }
+void Player::setNumber(int num) { number = num; }
 int Player::getBuyingThreshold() { return (buyingThreshold); }
 int Player::getBuildingThreshold() { return (buildingThreshold); }
 bool Player::hasPassedGo() { return (passedGo); }

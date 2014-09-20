@@ -32,7 +32,7 @@
 Game::Game(std::vector<Player*> players, int cutoff)
 {
 	Game::players = players;
-	Game::numberOfPlayers = (players.size());
+	Game::numberOfPlayers = (int) (players.size());
 	Game::cutoff = cutoff;
 }
 
@@ -1279,12 +1279,12 @@ endReport Game::play()
 
 int Game::rollDie()
 {
-	std::srand(std::time(NULL) + rand());
+	std::srand((int) std::time(NULL) + rand());
 	return (std::rand() % 6 + 1);
 }
 
 int Game::chooseRandomPlayer()
 {
-	std::srand(std::time(NULL) + rand());
+	std::srand((int) std::time(NULL) + rand());
 	return (std::rand() % 1 + 1);
 }

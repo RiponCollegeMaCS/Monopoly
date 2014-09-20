@@ -67,6 +67,7 @@ public:
 
     // Getters and setters
     int getNumber();
+    void setNumber(int num);
     int getBuyingThreshold();
     int getBuildingThreshold();
     bool hasPassedGo();
