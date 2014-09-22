@@ -130,15 +130,15 @@ void Game::communityChest(Player* player)
 		communityChestCards[communityChestIndex] = 0;
 		communityChestJailIndex = communityChestIndex;
 		break;
-	case 2: // Pay school tax of $150
-		Game::changeMoney(player, -150);
-		moneyInFP += 150;
+	case 2: // Pay school fees of $50 [2008 update]
+		Game::changeMoney(player, -50);
+		moneyInFP += 50;
 		break;
-	case 3: // Collect $50 from every player
+	case 3: // It is your birthday \ Collect $10 from every player [2008 update]
             for (auto i : players)
 		{
-			Game::changeMoney(i, -50);
-			Game::changeMoney(player, 50);
+			Game::changeMoney(i, -10);
+			Game::changeMoney(player, 10);
 		}
 		break;
 	case 4: // Xmas fund matures / Collect $100
@@ -156,7 +156,7 @@ void Game::communityChest(Player* player)
 	case 8: // Bank error in your favor / collect $200
 		Game::changeMoney(player, 200);
 		break;
-	case 9: // Receive for services $25
+	case 9: // Receive $25 \ Consultancy fee [2008 update - wording change]
 		Game::changeMoney(player, 25);
 		break;
 	case 10: // Advance to go (collect $200)
@@ -195,8 +195,8 @@ void Game::communityChest(Player* player)
 		Game::changeMoney(player, -50);
 		moneyInFP += 50;
 		break;
-	case 14: // From sale of stock / You get $45
-		Game::changeMoney(player, 45);
+	case 14: // From sale of stock / You get $50 [2008 update]
+		Game::changeMoney(player, 50);
 		break;
 	case 15: // Pay hospital $100
 		Game::changeMoney(player, -100);
@@ -474,22 +474,22 @@ void Game::payRent(Player* player)
             {
                 rent = currentProperty->getRents(0) * 2;
                 
-                // If a property in the monopoly is mortgaged, redefine the rest.
-                for (auto i : *owner->getInventory())
-                {
-                    if (i->getGroup() == currentProperty->getGroup() && i->isMortgaged())
-                    {
-                        rent = currentProperty->getRents(0);
-                    }
-                    else // The player does not have a monopoly
-                    {
-                        rent = currentProperty->getRents(0);
-                    }
-                }
+                /*// If a property in the monopoly is mortgaged, redefine the rent.
+                 for (auto i : *owner->getInventory())
+                 {
+                 if (i->getGroup() == currentProperty->getGroup() && i->isMortgaged())
+                 {
+                 rent = currentProperty->getRents(0);
+                 }*/
             }
-		}
-	}
-    
+            else // The player does not have a monopoly
+            {
+                rent = currentProperty->getRents(0);
+            }
+        }
+    }
+
+
     // Let's pay this rent!
     Game::changeMoney(player, -rent);
     Game::changeMoney(owner, rent);
@@ -824,11 +824,11 @@ int Game::findAvailableMortgageValue(Player* player)
     bool addMyValue;
     for (auto property : *player->getInventory())
     {
-        if (property->getBuildings() == 0 && !property->isMortgaged())
+        if (property->getBuildings() == 0 && !property->isMortgaged() && !player->isInMonopolies(*property->getGroup()))
         {
             addMyValue = true;
             
-            if (player->isInMonopolies(*property->getGroup()))
+            /*if (player->isInMonopolies(*property->getGroup()))
             {
                 for (auto aProperty : *player->getInventory())
                 {
@@ -837,7 +837,7 @@ int Game::findAvailableMortgageValue(Player* player)
                         addMyValue = false;
                     }
                 }
-            }
+            }*/
             
             if (addMyValue)
             {
@@ -937,7 +937,7 @@ void Game::auction(BoardLocation* boardSpace)
                 break;
             }
             
-            if (property->getBuildings() == 0 && !property->isMortgaged())
+            if (property->getBuildings() == 0 && !property->isMortgaged() && !winningPlayer->isInMonopolies(*property->getGroup()))
             {
                 if (Game::mortgageCheck(property, winningPlayer))
                 {
@@ -1024,7 +1024,7 @@ void Game::propertyAction(Player* player, BoardLocation* boardSpace)
                         {
                             break;
                         }
-                        if (cProperty->getBuildings() == 0 && !cProperty->isMortgaged())
+                        if (cProperty->getBuildings() == 0 && !cProperty->isMortgaged() && !player->isInMonopolies(*cProperty->getGroup()))
                         {
                             if (Game::mortgageCheck(cProperty, player))
                             {
