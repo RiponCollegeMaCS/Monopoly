@@ -9,6 +9,8 @@
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
+#include <thread>
+#include <functional>
 #include "success.h"
 #include "player.h"
 #include "game.h"
@@ -76,8 +78,17 @@ float successIndicator(Player* basePlayer, int numberOfGames = 1000, int procs =
 {
     int results[numberOfGames];
     
-    // Do processes later.
-    playSet(basePlayer, numberOfGames, staticOpponent, results);
+    std::vector<std::thread> threads;
+    
+    for (int i = 0; i < procs; i++)
+    {
+        threads.push_back(std::thread(playSet, std::ref(basePlayer), numberOfGames / 4, std::ref(staticOpponent), results));
+    }
+
+    for (auto i : threads)
+    {
+        i.join();
+    }
     
     return (float) sumArray(results, numberOfGames) / numberOfGames; // ?
 }
