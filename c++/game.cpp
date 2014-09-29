@@ -1244,6 +1244,7 @@ endReport Game::play()
     
     int currentPlayerIndex = 0;
     
+    Game::createCards();
     Game::createBoard();
     
     while (gameStatus)
