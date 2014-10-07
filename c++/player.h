@@ -15,14 +15,13 @@
  *
  * =====================================================================================
  */
-#pragma once
 #ifndef PLAYER_H_
 #define PLAYER_H_
 
 #include "boardlocation.h"
-#include<vector>
-#include<unordered_set>
-#include<string>
+#include <vector>
+#include <unordered_set>
+#include <string>
 
 class Player
 {
@@ -64,6 +63,14 @@ public:
     void appendToMonopolies(std::string group);
     bool isInMonopolies(std::string group); // pointer?
     bool isInGroupPreferences(std::string group);
+
+    // Strategy methods
+    void payOutOfJail(Game* game);
+    bool buyProperty(BoardLocation* property, int customPrice);
+    void developProperties(); // I wish I didn't have to access so much info internal to Game
+    int findAvailableMortgageValue();
+    int getTotalAssets();
+
 
     // Getters and setters
     int getNumber();

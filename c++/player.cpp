@@ -100,6 +100,34 @@ bool Player::isInGroupPreferences(std::string group)
     return (false);
 }
 
+// Strategy methods
+void Player::payOutOfJail(Game* game)
+{
+	if (Player::hasChanceCard())
+	{
+		Player::flipChanceCard();
+		game->addChanceCardToDeck();
+	}
+	else if (Player::hasCommunityChestCard())
+	{
+		Player::flipCommunityChestCard();
+		game->addCommunityChestCardToDeck();
+	}
+	else
+	{
+		game->changeMoney(this, -50);
+	}
+}
+
+bool Player::buyProperty(BoardLocation* property, int customPrice=0)
+{
+	if (customPrice)
+	{
+		return true;
+	}
+	return false;
+}
+
 // Getters and setters
 int Player::getNumber() { return (number); }
 void Player::setNumber(int num) { number = num; }

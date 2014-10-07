@@ -62,6 +62,8 @@ void playSet(Player* basePlayer, int numberOfGames, Player* staticOpponent, int 
             player1->resetValues();
             
             Player* opponent = generateRandomPlayer(2);
+            // if i don't generate a new random player,
+            // would this speed it up to linear?
             
             // Let's play!
             std::vector<Player*> players = {player1, opponent};
@@ -78,19 +80,20 @@ float successIndicator(Player* basePlayer, int numberOfGames = 1000, int procs =
 {
     int results[numberOfGames];
     
-    std::vector<std::thread> threads;
+    playSet(basePlayer, numberOfGames, staticOpponent, results);
+//    std::vector<std::thread> threads;
+//
+//    for (int i = 0; i < procs; i++)
+//    {
+//        threads.push_back(std::thread(playSet, std::ref(basePlayer), numberOfGames / 4, std::ref(staticOpponent), results));
+//    }
+//
+//    for (auto i : threads)
+//    {
+//        i.join();
+//    }
     
-    for (int i = 0; i < procs; i++)
-    {
-        threads.push_back(std::thread(playSet, std::ref(basePlayer), numberOfGames / 4, std::ref(staticOpponent), results));
-    }
-
-    for (auto i : threads)
-    {
-        i.join();
-    }
-    
-    return (float) sumArray(results, numberOfGames) / numberOfGames; // ?
+    return ((float) sumArray(results, numberOfGames) / numberOfGames); // ?
 }
 
 void shortBruteForce(int numberOfGames=5000)

@@ -15,15 +15,15 @@
  *
  * =====================================================================================
  */
-#pragma once
+
 #ifndef GAME_H_
 #define GAME_H_
 
 #include "boardlocation.h"
 #include "player.h"
 
-#include<string>
-#include<vector>
+#include <string>
+#include <vector>
 
 struct endReport
 {
@@ -111,6 +111,10 @@ public:
     endReport play();
     int rollDie();
     int chooseRandomPlayer();
+
+    // For breaking out into players
+    void addChanceCardToDeck();
+    void addCommunityChestCardToDeck();
 };
 
 
