@@ -23,6 +23,8 @@
 #include <unordered_set>
 #include <string>
 
+class Game;
+
 class Player
 {
 	int number;

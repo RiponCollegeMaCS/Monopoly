@@ -17,6 +17,7 @@
  */
 
 #include "player.h"
+#include "game.h"
 
 #include<iostream>
 #include<vector>
