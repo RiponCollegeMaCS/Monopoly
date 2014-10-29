@@ -43,7 +43,7 @@ void pyMain()
 		grandma.resetValues();
 		std::vector<Player*> players = {&goodPlayer1, &grandma};
 		Game gameObject(players, NUMBER_OF_TURNS);
-		resultsList[i] = gameObject.play().result;
+		resultsList[i] = gameObject.play().winner;
 	}
 
 	std::cout << (std::count(resultsList, resultsList + NUMBER_OF_GAMES, 1) * 100 / NUMBER_OF_GAMES) << "%" << std::endl;
@@ -67,9 +67,9 @@ void monopolyTest()
 		Game gameObject(players, NUMBER_OF_TURNS);
 
 		endReport results = gameObject.play();
-		resultsList[i] = results.result;
+		resultsList[i] = results.winner;
 
-		if (0 == results.result)
+		if (0 == results.winner)
 		{
 			if ((results.player0Monopolies.empty() && results.player1Monopolies.empty()) || (results.player0Monopolies.find(&CRAPPY_MONOPOLY) != results.player0Monopolies.end() && results.player0Monopolies.size() == 1) || (results.player1Monopolies.find(&CRAPPY_MONOPOLY) != results.player1Monopolies.end() && results.player1Monopolies.size() == 1))
 			{

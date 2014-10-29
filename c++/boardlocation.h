@@ -49,10 +49,11 @@ public:
 	int getRents(int position);
 	int getHouseCost();
 	std::string* getGroup();
-	int getBuildings();
+	int exchangeMoney();
 	int getVisits();
 	bool isMortgaged();
     void setMortgaged(bool val);
+    int getUnmortgagePrice();
 
 	// Instance methods
 	void flipMortgaged();

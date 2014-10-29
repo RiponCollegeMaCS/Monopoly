@@ -50,7 +50,7 @@ void playSet(Player* basePlayer, int numberOfGames, Player* staticOpponent, int 
             // Let's play!
             std::vector<Player*> players = {player1, opponent};
             Game currentGame(players, NUMBER_OF_TURNS);
-            results[i] = currentGame.play().result;
+            results[i] = currentGame.play().winner;
         }
     }
     
@@ -68,7 +68,7 @@ void playSet(Player* basePlayer, int numberOfGames, Player* staticOpponent, int 
             // Let's play!
             std::vector<Player*> players = {player1, opponent};
             Game currentGame(players, NUMBER_OF_TURNS);
-            int result = currentGame.play().result;
+            int result = currentGame.play().winner;
             results[i] = result;
             
             delete opponent;
