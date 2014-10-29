@@ -95,7 +95,6 @@ class Player:
 
                                     # Check if there is a building available.
                                     if building_supply > 0:
-
                                         # Build!
                                         if building == "house":
                                             game_info.houses -= 1  # Take 1 house.
