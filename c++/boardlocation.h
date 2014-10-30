@@ -47,6 +47,7 @@ public:
 	std::string* getName();
 	int getPrice();
 	int getRents(int position);
+    int getBuildings();
 	int getHouseCost();
 	std::string* getGroup();
 	int exchangeMoney();

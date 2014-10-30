@@ -21,6 +21,7 @@
 
 #include "boardlocation.h"
 #include "player.h"
+#include "moneypool.h"
 
 #include <string>
 #include <vector>
@@ -72,8 +73,8 @@ class Game
 	std::unordered_set<BoardLocation*> unownedProperties;
 
 	// Money sturf
-	int bank = 12500;
-	int freeParking = 0;
+    MoneyPool bank;
+    MoneyPool freeParking;
 
 	// Miscellaneous
     int houses = 32;
@@ -95,12 +96,17 @@ public:
 	void moveTo(Player* player, int location);
 	void payOutOfJail(Player* player);
 	void goToJail(Player* player);
-    void buyProperty(Player* player, BoardLocation* boardSpace, int customPrice);
+    void buyProperty(Player* player, BoardLocation* boardSpace, int customPrice=0);
     Player* propertyOwner(BoardLocation* property);
     void payRent(Player* player);
     int unmortgagePrice(BoardLocation* property);
     void sellBuilding(Player* player, BoardLocation* property, std::string building);
-    void exchangeMoney(void* giver, void* receiver, int amount);
+    
+    void exchangeMoney(Player* giver, Player* receiver, int amount);
+    void exchangeMoney(Player* giver, MoneyPool* receiver, int amount);
+    void exchangeMoney(MoneyPool* giver, Player* receiver, int amount);
+    void exchangeMoney(Player* giver, int amount);
+    
     bool evenSellingTest(BoardLocation* property, Player* player);
     bool evenBuildingTest(BoardLocation* property, Player* player);
     bool mortgageCheck(BoardLocation* property, Player* player);

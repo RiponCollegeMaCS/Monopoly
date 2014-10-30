@@ -49,7 +49,7 @@ class Player
 	bool inJail = false;
 	int jailCounter = 0;
 	bool cardRent = false;
-	std::unordered_set<BoardLocation*> monopolies;
+    std::unordered_set<std::string*> monopolies;
 	int auctionBid = 0;
 	bool passedGo = false;
 	std::unordered_set<BoardLocation*> inventory;
@@ -64,8 +64,8 @@ public:
     void passGo();
     void appendToInventory(BoardLocation* boardSpace);
     bool isInInventory(BoardLocation* boardSpace);
-    void appendToMonopolies(BoardLocation* boardSpace);
-    bool isInMonopolies(BoardLocation* boardSpace);
+    void appendToMonopolies(std::string* group);
+    bool isInMonopolies(std::string* group);
     bool isInGroupPreferences(std::string group);
 
     // Strategy methods

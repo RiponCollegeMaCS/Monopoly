@@ -77,14 +77,14 @@ bool Player::isInInventory(BoardLocation* boardSpace)
     return (false);
 }
 
-void Player::appendToMonopolies(BoardLocation* boardSpace)
+void Player::appendToMonopolies(std::string* group)
 {
-    monopolies.insert(boardSpace); // TODO: check
+    monopolies.insert(group); // TODO: check
 }
 
-bool Player::isInMonopolies(BoardLocation* boardSpace)
+bool Player::isInMonopolies(std::string* group)
 {
-    if (monopolies.find(boardSpace) != monopolies.end())
+    if (monopolies.find(group) != monopolies.end())
     {
         return (true);
     }
@@ -135,7 +135,7 @@ void Player::developProperties(Game* game)
 	// First, unmortgage if we can
 	for (auto boardSpace : inventory)
 	{
-		if (boardSpace->isMortgaged && Player::isInMonopolies(boardSpace))
+		if (boardSpace->isMortgaged() && Player::isInMonopolies(boardSpace->getGroup()))
 		{
 			int unmortgagePrice = boardSpace->getUnmortgagePrice();
 
@@ -159,9 +159,9 @@ void Player::developProperties(Game* game)
 		{
 			keepBuilding = false;
 
-			for (auto boardSpace : monopolies)
+            for (auto boardSpace : Player::inventory)
 			{
-				if (Player::isInMonopolies(boardSpace))
+				if (Player::isInMonopolies(boardSpace->getGroup()))
 				{
 					if (Player::evenBuildingTest(boardSpace))
 					{
@@ -183,7 +183,7 @@ void Player::developProperties(Game* game)
 								int availableMortgageValue = 0;
 								for (auto property : inventory)
 								{
-									if (!Player::isInMonopolies(property) && !property->isMortgaged())
+									if (!Player::isInMonopolies(property->getGroup()) && !property->isMortgaged())
 									{
 										availableMortgageValue += property->getPrice() / 2;
 									}
@@ -200,12 +200,12 @@ void Player::developProperties(Game* game)
 							{
 								int buildingSupply = 0;
 								std::string building;
-								if (boardSpace->exchangeMoney < 4)
+								if (boardSpace->getBuildings() < 4)
 								{
 									buildingSupply = game->getAvailableHouses();
 									building = "house";
 								}
-								else if (boardSpace->exchangeMoney == 4)
+								else if (boardSpace->getBuildings() == 4)
 								{
 									buildingSupply = game->getAvailableHotels();
 									building = "hotel";
@@ -243,7 +243,7 @@ void Player::developProperties(Game* game)
 											}
 											else
 											{
-												if (!Player::isInMonopolies(cProperty) && !cProperty->isMortgaged())
+												if (!Player::isInMonopolies(cProperty->getGroup()) && !cProperty->isMortgaged())
 												{
 													cProperty->flipMortgaged();
 													money += cProperty->getPrice() / 2;
@@ -253,7 +253,7 @@ void Player::developProperties(Game* game)
 									}
 
 									keepBuilding = true; // Allow the player to build again
-									game->firstBuilding(); // Buildings have been built.
+									game->hasFirstBuilding(); // Buildings have been built.
 								}
 							}
 						}
@@ -325,9 +325,9 @@ void Player::makeFunds(Game* game)
 
 	for (auto boardSpace : Player::inventory)
 	{
-		if (!Player::isInMonopolies(boardSpace) && !boardSpace->isMortgaged())
+		if (!Player::isInMonopolies(boardSpace->getGroup()) && !boardSpace->isMortgaged())
 		{
-			int mortgageValue = boardSpace->getPrice / 2;
+			int mortgageValue = boardSpace->getPrice() / 2;
 			Player::money += mortgageValue;
 			boardSpace->flipMortgaged();
 			if (Player::money > 0)
@@ -390,7 +390,7 @@ void Player::makeFunds(Game* game)
 	{
 		if (!boardSpace->isMortgaged())
 		{
-			if (isInMonopolies(boardSpace))
+			if (isInMonopolies(boardSpace->getGroup()))
 			{
 				throw 2;
 			}
@@ -446,7 +446,7 @@ int Player::findAvailableMortgageValue()
 
 	for (auto property : Player::inventory)
 	{
-		if (0 == property->exchangeMoney() && !property->isMortgaged() && !Player::isInMonopolies(property))
+		if (0 == property->exchangeMoney() && !property->isMortgaged() && !Player::isInMonopolies(property->getGroup()))
 		{
 			available += property->getPrice() / 2;
 		}
@@ -499,10 +499,10 @@ void Player::makeAuctionFunds(BoardLocation* property, Game* game, int winningBi
 				break; // deviation alert
 			}
 
-			if (0 == property->exchangeMoney() && !property->isMortgaged() && !isInMonopolies(property))
+			if (0 == property->exchangeMoney() && !property->isMortgaged() && !isInMonopolies(property->getGroup()))
 			{
 				property->flipMortgaged();
-				Player::money = property->getPrice / 2;
+				Player::money = property->getPrice() / 2;
 			}
 		}
 
@@ -520,7 +520,7 @@ bool Player::unownedPropertyAction(Game* game, BoardLocation* property)
 	}
 
 	// The player has a preference for the group and will pay any money they have
-	if (Player::isInGroupPreferences(*property->getGroup()) && Player::money - property->getPrice > 0)
+	if (Player::isInGroupPreferences(*property->getGroup()) && Player::money - property->getPrice() > 0)
 	{
 		game->buyProperty(this, property);
 		return true;
@@ -534,7 +534,7 @@ bool Player::unownedPropertyAction(Game* game, BoardLocation* property)
 	}
 
 	// The player will mortgage other properties to buy it if it completes a group
-	if (2 == Player::completeMonopoly && game->monopolyStatus, this, property)
+	if (2 == Player::completeMonopoly && game->monopolyStatus(this, property))
 	{
 		if ((Player::money + Player::findAvailableMortgageValue()) - property->getPrice() > 0)
 		{
@@ -546,7 +546,7 @@ bool Player::unownedPropertyAction(Game* game, BoardLocation* property)
 				{
 					break;
 				}
-				if (0 == cProperty->exchangeMoney && !cProperty->isMortgaged() && !Player::isInMonopolies(cProperty))
+				if (0 == cProperty->getBuildings() && !cProperty->isMortgaged() && !Player::isInMonopolies(cProperty->getGroup()))
 				{
 					cProperty->flipMortgaged();
 					Player::money += cProperty->getPrice() / 2;
@@ -555,7 +555,7 @@ bool Player::unownedPropertyAction(Game* game, BoardLocation* property)
 
 			game->removeFromUnownedProperties(property);
 			Player::inventory.insert(property);
-			Player::monopolies.insert(property);
+			Player::monopolies.insert(property->getGroup());
 			return true;
 		}
 	}

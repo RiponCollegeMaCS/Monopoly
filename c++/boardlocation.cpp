@@ -123,6 +123,11 @@ int BoardLocation::getHouseCost()
 	return (houseCost);
 }
 
+int BoardLocation::getBuildings()
+{
+    return (buildings);
+}
+
 /**
  * Gets the color group the property belongs to, e.g. "Red"
  * @return a pointer to the color group

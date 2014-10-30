@@ -18,14 +18,17 @@
 
 #include "moneypool.h"
 
-class MoneyPool
+MoneyPool::MoneyPool()
 {
-	int money = 0;
+    MoneyPool::money = 0;
+}
 
-public:
-	int getMoney() { return money; }
-	void setMoney(int newMoney) { money += newMoney; }
-	void addMoney(int add) { money += add; }
+MoneyPool::MoneyPool(int start)
+{
+    MoneyPool::money = start;
+}
 
-	char getType() { return 'm'; }
-};
+int MoneyPool::getMoney() { return money; }
+void MoneyPool::setMoney(int newMoney) { money += newMoney; }
+void MoneyPool::addMoney(int add) { money += add; }
+char MoneyPool::getType() { return 'm'; }

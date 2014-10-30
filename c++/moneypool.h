@@ -13,6 +13,9 @@ class MoneyPool
 	int money = 0;
 
 public:
+    MoneyPool();
+    MoneyPool(int start);
+    
 	int getMoney();
 	void setMoney(int newMoney);
 	void addMoney(int add);
