@@ -609,5 +609,10 @@ int Player::getJailCounter() { return (jailCounter); }
 void Player::setJailCounter(int count) { jailCounter = count; }
 void Player::incrementJailCounter() { jailCounter++; }
 
+void Player::endGame()
+{
+	Player::moveAgain = false;
+}
+
 char Player::getType() { return 'p'; }
 

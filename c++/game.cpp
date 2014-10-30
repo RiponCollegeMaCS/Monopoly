@@ -1260,7 +1260,6 @@ endReport Game::play()
         
         currentPlayerIndex = (currentPlayerIndex + 1) % 2; // todo: fixme
         
-        Game::updateStatus();
     }
     
     endReport report;
