@@ -101,8 +101,8 @@ int main()
 {
 	std::clock_t begin = std::clock();
 	pyMain();
-	monopolyTest();
-    shortBruteForce(NUMBER_OF_GAMES);
+//	monopolyTest();
+//    shortBruteForce(NUMBER_OF_GAMES);
 	std::clock_t end = clock();
 	double elapsedSecs = double(end - begin) / CLOCKS_PER_SEC;
 	std::cout << "Time elapsed: " << elapsedSecs << std::endl;
