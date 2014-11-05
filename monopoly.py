@@ -610,7 +610,7 @@ class Game:
 
                         # Kick the player out.
                         current_party.move_again = False  # Stop the player's current turn.
-                        self.inactive_players.append(current_party)  # Add the player to the inactive players list.
+                        self.inactive_players.append(current_party)  # And the player to the inactive players list.
                         self.active_players.remove(current_party)  # Remove the player from the active player's list.
 
                         # If there are still other players, give away the player's assets.
