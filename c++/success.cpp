@@ -34,8 +34,10 @@ int sumArray(int results[], int numberResults)
     return (sum);
 }
 
-void playSet(Player* basePlayer, int numberOfGames, Player* staticOpponent, int results[])
+int playSet(Player* basePlayer, int numberOfGames, Player* staticOpponent, int results[])
 {
+	int num1won = 0;
+
     if (staticOpponent != NULL)
     {
         for (int i = 0; i < numberOfGames; i++)
@@ -50,7 +52,12 @@ void playSet(Player* basePlayer, int numberOfGames, Player* staticOpponent, int 
             // Let's play!
             std::vector<Player*> players = {player1, opponent};
             Game currentGame(players, NUMBER_OF_TURNS);
-            results[i] = currentGame.play().winner;
+            int winner = currentGame.play().winner;
+            results[i] = winner;
+            if (1 == winner)
+            {
+            	num1won++;
+            }
         }
     }
     
@@ -68,19 +75,26 @@ void playSet(Player* basePlayer, int numberOfGames, Player* staticOpponent, int 
             // Let's play!
             std::vector<Player*> players = {player1, opponent};
             Game currentGame(players, NUMBER_OF_TURNS);
-            int result = currentGame.play().winner;
-            results[i] = result;
+            int winner = currentGame.play().winner;
+            results[i] = winner;
+            if (1 == winner)
+            	{
+                	num1won++;
+                }
             
             delete opponent;
         }
     }
+
+    return (num1won);
 }
 
 float successIndicator(Player* basePlayer, int numberOfGames = 1000, int procs = 2, Player* staticOpponent = NULL)
 {
     int results[numberOfGames];
     
-    playSet(basePlayer, numberOfGames, staticOpponent, results);
+    int success = playSet(basePlayer, numberOfGames, staticOpponent, results);
+
 //    std::vector<std::thread> threads;
 //
 //    for (int i = 0; i < procs; i++)
@@ -93,7 +107,7 @@ float successIndicator(Player* basePlayer, int numberOfGames = 1000, int procs =
 //        i.join();
 //    }
     
-    return ((float) sumArray(results, numberOfGames) / numberOfGames); // ?
+    return ((float) success / (float) numberOfGames); // ?
 }
 
 void shortBruteForce(int numberOfGames=5000)
