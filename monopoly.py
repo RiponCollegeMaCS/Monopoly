@@ -13,8 +13,8 @@ getcontext().rounding = ROUND_HALF_UP
 
 # Define the Player class.
 class Player:
-    def __init__(self, number, buying_threshold=100, building_threshold=5, jail_time=3, smart_jail_strategy=False,
-                 complete_monopoly=2, group_preferences=(), development_threshold=0):
+    def __init__(self, number, buying_threshold=100, building_threshold=5, jail_time=3, smart_jail_strategy=True,
+                 complete_monopoly=2, group_preferences=(), development_threshold=2):
         self.number = number
         self.reset_values()  # Reset the player's attributes if the player is used again.
 
@@ -43,20 +43,21 @@ class Player:
         self.passed_go = False
         self.inventory = []  # A list of the player's properties.
         self.bid_includes_mortgages = False
+        self.mortgage_auctioned_property = False
 
     # Un-mortgage properties and buy buildings as desired.
     def develop_properties(self, game_info):
 
         # # Un-mortgage properties in monopolies, if possible. # #
         for board_space in self.inventory:
-            if (board_space.mortgaged) and (board_space.group in self.monopolies):
+            if board_space.mortgaged and board_space.group in self.monopolies:
                 unmortgage_price = game_info.unmortgage_price(board_space)
                 if self.money - unmortgage_price >= self.buying_threshold:
                     self.money -= unmortgage_price  # Pay un-mortgage price.
                     board_space.mortgaged = False  # Un-mortgage property.
+                    pass  # ##print("player",self.number,"unmortgaged",board_space.name)
                 else:
                     return
-        # TODO Bug
 
         # # Buy buildings. # #
         if self.monopolies:
@@ -65,13 +66,12 @@ class Player:
                 keep_building = False  # Don't keep building unless something is bought.
                 for board_space in self.inventory:  # Cycle through player inventory.
                     if board_space.group in self.monopolies:  # and not board_space.mortgaged:  # It's in a monopoly.
-                        if self.even_building_test(board_space):  # Building "evenly".
+                        if self.even_building_test(board_space) and not board_space.mortgaged:  # Building "evenly".
                             if board_space.buildings < self.building_threshold:  # Check player's building limit.
-                                if board_space.mortgaged:
-                                    print('error 10', board_space.name)
 
                                 # Calculate current cash available.
                                 if self.development_threshold == 1:
+                                    # The player will use all but $1 to buy.
                                     available_cash = self.money - 1
                                 elif self.development_threshold == 2:
                                     # Find available mortgage value.
@@ -107,7 +107,7 @@ class Player:
                                         self.money -= board_space.house_cost  # Pay building cost.
 
                                         if self.development_threshold != 2 and self.money < 0:
-                                            print("error 9", self.money)
+                                            pass  # ##print("error 9", self.money)
 
                                         # Mortgage properties to pay for building.
                                         if self.development_threshold == 2:
@@ -116,6 +116,7 @@ class Player:
                                                 c_property = self.inventory[property_index]
                                                 if c_property.group not in self.monopolies and not c_property.mortgaged:
                                                     c_property.mortgaged = True
+                                                    pass  # ##print("player",self.number,"mortgaged",board_space.name)
                                                     self.money += c_property.price / 2
                                                 property_index += 1
 
@@ -129,6 +130,7 @@ class Player:
                 if self.money - unmortgage_price >= self.buying_threshold:
                     self.money -= unmortgage_price  # Pay un-mortgage price.
                     board_space.mortgaged = False  # Un-mortgage property.
+                    pass  # ##print("player",self.number,"unmortgaged",board_space.name)
                 else:
                     return  # Exit if the player doesn't have enough money to continue.
 
@@ -179,6 +181,7 @@ class Player:
                 mortgage_value = board_space.price / 2  # Find the mortgage value.
                 self.money += mortgage_value  # Gain the mortgage value.
                 board_space.mortgaged = True  # Mortgage property.
+                pass  # ##print("player",self.number,"mortgaged",board_space.name)
                 if self.money > 0:  # Check if the player is out of the hole.
                     return  # Exit function.
 
@@ -213,10 +216,11 @@ class Player:
         for board_space in self.inventory:  # Cycle through all board spaces.
             if not board_space.mortgaged:
                 if board_space.group not in self.monopolies:
-                    print('eee error')
+                    pass  # ##print('eee error')
                 mortgage_value = board_space.price / 2  # Find the mortgage value.
                 self.money += mortgage_value  # Gain the mortgage value.
                 board_space.mortgaged = True  # Mortgage property.
+                pass  # ##print("player",self.number,"mortgaged",board_space.name)
                 if self.money > 0:  # Check if the player is out of the hole.
                     return  # Exit function.
 
@@ -254,7 +258,9 @@ class Player:
 
     # Decides how players make auction bids.
     def make_bid(self, property, game_info):
-        self.bid_includes_mortgages = False  # Reset this variable.
+        # Reset these variables.
+        self.bid_includes_mortgages = False
+        self.mortgage_auctioned_property = False
 
         # If the player has a preference for the group.
         if property.group in self.group_preferences:
@@ -275,11 +281,21 @@ class Player:
         else:
             self.auction_bid = self.money - self.buying_threshold
 
+        # The bid should be at least the mortgage value of the property.
+        if self.auction_bid < property.price / 2:
+            self.auction_bid = property.price / 2
+            self.mortgage_auctioned_property = True
+
     # Allows a player to gather the funds needed to complete an auction.
     def make_auction_funds(self, game_info, winning_bid, property):
+        # If the bid with intentions to mortgage it.
+        if self.mortgage_auctioned_property:
+            property.mortgaged = True
+            self.money += property.price / 2
+
         # Special buying procedure if the player wants to mortgage properties.
         if self.bid_includes_mortgages:
-            self.money += -winning_bid  # Pay for property.
+            self.money -= winning_bid  # Pay for property.
 
             # Make up the funds.
             property_index = 0
@@ -287,11 +303,13 @@ class Player:
                 c_property = self.inventory[property_index]
                 if c_property.buildings == 0 and not c_property.mortgaged and c_property.group not in self.monopolies:
                     c_property.mortgaged = True
+                    pass  # ##print("player",self.number,"mortgaged",c_property.name)
                     self.money += c_property.price / 2
                 property_index += 1
 
             self.money += winning_bid
 
+    # Decides what the player does when he lands on an unowned property.
     def unowned_property_action(self, game_info, property):
         # The player has enough money to buy the property.
         if self.money - property.price >= self.buying_threshold:
@@ -325,6 +343,7 @@ class Player:
                     c_property = self.inventory[property_index]
                     if c_property.buildings == 0 and not c_property.mortgaged and c_property.group not in self.monopolies:
                         c_property.mortgaged = True
+                        pass  # ##print("player",self.number,"unmortgaged",c_property.name)
                         self.money += c_property.price / 2
                     property_index += 1
 
@@ -366,7 +385,7 @@ class BoardLocation:
 # Define the Game class.
 class Game:
     def __init__(self, list_of_players, auctions_enabled=True, free_parking_pool=False,
-                 double_on_go=False, no_rent_in_jail=False, trip_to_start=False, snake_eyes_bonus=False, cutoff=300):
+                 double_on_go=False, no_rent_in_jail=False, trip_to_start=False, snake_eyes_bonus=False, cutoff=1000):
         self.create_board()  # Set-up the board.
         self.create_cards()  # Shuffle both card decks.
         self.active_players = list_of_players  # Create  a list of players.
@@ -610,7 +629,7 @@ class Game:
                     if current_party.money <= 0:
 
                         # Kick the player out.
-                        current_party.move_again = False  # Stop the player's current turn.
+                        self.move_again = False  # Stop the player's current turn.
                         self.inactive_players.append(current_party)  # And the player to the inactive players list.
                         self.active_players.remove(current_party)  # Remove the player from the active player's list.
 
@@ -675,9 +694,11 @@ class Game:
         # Allows a property to be bought at a custom price (used in auctions).
         if custom_price:
             self.exchange_money(amount=custom_price, giver=player, receiver=self.bank)
+            pass  # ##print("player",player.number,"bought",board_space.name,"(",board_space.group,") for",custom_price)
         else:
             # Pay the money for the property.
             self.exchange_money(amount=board_space.price, giver=player, receiver=self.bank)
+            pass  # ##print("player",player.number,"bought",board_space.name,"(",board_space.group,") for",board_space.price)
 
         self.unowned_properties.remove(board_space)  # Remove the property from the list of unowned properties.
         player.inventory.append(board_space)  # Give the property to the player.
@@ -685,6 +706,7 @@ class Game:
         # If the player has a completed a monopoly, add it to the player's list of monopolies.
         if self.monopoly_status(player, board_space):
             player.monopolies.append(board_space.group)
+            pass  # ##print("player",player.number,"MONOPOLIES",player.monopolies)
 
     # Determine the owner of a property.
     def property_owner(self, property):
@@ -787,10 +809,10 @@ class Game:
             winning_bid = player1.auction_bid + 1
             winning_player = player2
         else:
-            print('error 8')
+            pass  # ##print('error 8')
             return
 
-        winning_player.make_auction_funds(self, winning_bid, board_space)
+        winning_player.make_auction_funds(winning_bid=winning_bid, property=board_space, game_info=self)
         self.buy_property(winning_player, board_space, custom_price=winning_bid)
 
 
@@ -938,6 +960,8 @@ class Game:
 
         # Game loop. Continue if there is more than 1 player and we haven't reached the cutoff.
         while len(self.active_players) > 1 and self.turn_counter < self.cutoff:
+            # pass###print([self.active_players[0].money,self.active_players[1].money])
+
             # Create list of players starting with the player who is going.
             development_order = []
             development_order.extend(self.active_players[current_player_index - 1:])
