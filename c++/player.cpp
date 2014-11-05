@@ -117,7 +117,7 @@ void Player::payOutOfJail(Game* game)
 	}
 	else
 	{
-		game->exchangeMoney(this, -50);
+		game->exchangeMoney(this, 50);
 	}
 }
 
@@ -165,13 +165,13 @@ void Player::developProperties(Game* game)
 				{
 					if (Player::evenBuildingTest(boardSpace))
 					{
-						if (boardSpace->exchangeMoney() < buildingThreshold)
+						if (boardSpace->getBuildings() < buildingThreshold)
 						{
 							int availableCash;
 
 							if (boardSpace->isMortgaged())
 							{
-								throw 2;
+								std::cerr << "ee error" << __LINE__ << std::endl;
 							}
 
 							if (1 == developmentThreshold)
@@ -229,7 +229,7 @@ void Player::developProperties(Game* game)
 
 									if (developmentThreshold != 2 && money < 0)
 									{
-										throw 2;
+										std::cerr << "ee error" << __LINE__ <<  std::endl;
 									}
 
 									// Mortgage properties to pay for building
@@ -303,7 +303,7 @@ void Player::sellBuilding(BoardLocation* property, std::string building, Game* g
 
 	else if ("all" == building)
 	{
-		if (5 == property->exchangeMoney())
+		if (5 == property->getBuildings())
 		{
 			property->changeBuildings(-5);
 			game->changeHotels(1);
@@ -312,9 +312,9 @@ void Player::sellBuilding(BoardLocation* property, std::string building, Game* g
 
 		else
 		{
-			game->changeHouses(property->exchangeMoney());
-			Player::money += (property->getHouseCost() / 2) * property->exchangeMoney();
-			property->changeBuildings(-property->exchangeMoney());
+			game->changeHouses(property->getBuildings());
+			Player::money += (property->getHouseCost() / 2) * property->getBuildings();
+			property->changeBuildings(-property->getBuildings());
 		}
 	}
 }
@@ -339,7 +339,7 @@ void Player::makeFunds(Game* game)
 
 	// Sell houses and hotels
 
-	if (Player::monopolies.size() != 0)
+	if (Player::monopolies.size() > 0)
 	{
 		bool keepSelling = true;
 
@@ -350,10 +350,10 @@ void Player::makeFunds(Game* game)
 			for (auto boardSpace : Player::inventory)
 			{
 				// It has buildings and we are selling evenly
-				if (boardSpace->exchangeMoney() > 0 && Player::evenSellingTest(boardSpace))
+				if (boardSpace->getBuildings() > 0 && Player::evenSellingTest(boardSpace))
 				{
 					keepSelling = true;
-					if (5 == boardSpace->exchangeMoney())
+					if (5 == boardSpace->getBuildings())
 					{
 						if (game->getAvailableHouses() >= 4)
 						{
@@ -390,9 +390,9 @@ void Player::makeFunds(Game* game)
 	{
 		if (!boardSpace->isMortgaged())
 		{
-			if (isInMonopolies(boardSpace->getGroup()))
+			if (!isInMonopolies(boardSpace->getGroup()))
 			{
-				throw 2;
+				std::cerr << "eee error" << __LINE__ << std::endl;
 			}
 			Player::money += boardSpace->getPrice() / 2;
 			boardSpace->flipMortgaged();
@@ -418,7 +418,7 @@ bool Player::evenSellingTest(BoardLocation* property)
 {
 	for (auto boardSpace : Player::inventory)
 	{
-		if (boardSpace->getGroup() == property->getGroup() && boardSpace->exchangeMoney() - property->exchangeMoney() > 0)
+		if (boardSpace->getGroup() == property->getGroup() && boardSpace->getBuildings() - property->getBuildings() > 0)
 		{
 			return (false);
 		}
@@ -431,7 +431,7 @@ bool Player::evenBuildingTest(BoardLocation* property)
 {
 	for (auto boardSpace : Player::inventory)
 	{
-		if (boardSpace->getGroup() == property->getGroup() && property->exchangeMoney() - boardSpace->exchangeMoney() > 0)
+		if (boardSpace->getGroup() == property->getGroup() && property->getBuildings() - boardSpace->getBuildings() > 0)
 		{
 			return (false);
 		}
@@ -446,7 +446,7 @@ int Player::findAvailableMortgageValue()
 
 	for (auto property : Player::inventory)
 	{
-		if (0 == property->exchangeMoney() && !property->isMortgaged() && !Player::isInMonopolies(property->getGroup()))
+		if (0 == property->getBuildings() && !property->isMortgaged() && !Player::isInMonopolies(property->getGroup()))
 		{
 			available += property->getPrice() / 2;
 		}
@@ -499,7 +499,7 @@ void Player::makeAuctionFunds(BoardLocation* property, Game* game, int winningBi
 				break; // deviation alert
 			}
 
-			if (0 == property->exchangeMoney() && !property->isMortgaged() && !isInMonopolies(property->getGroup()))
+			if (0 == property->getBuildings() && !property->isMortgaged() && !isInMonopolies(property->getGroup()))
 			{
 				property->flipMortgaged();
 				Player::money = property->getPrice() / 2;
