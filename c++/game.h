@@ -21,13 +21,14 @@
 
 #include "boardlocation.h"
 #include "player.h"
+#include "moneypool.h"
 
 #include <string>
 #include <vector>
 
 struct endReport
 {
-    int result;
+    int winner;
     int turnCounter;
     std::unordered_set<std::string*> player0Monopolies;
     std::unordered_set<std::string*> player1Monopolies;
@@ -41,12 +42,12 @@ class Game
 	const int NUMBER_OF_CARDS = 16;
 
 	bool gameStatus = true;
-	int numberOfPlayers;
     BoardLocation* board[40];
-	std::vector<Player*> players;
+	std::vector<Player*> activePlayers;
+	std::vector<Player*> inactivePlayers;
 	int turnCounter = 0;
 	int doublesCounter = 0;
-	int result = 99;
+	int winner = 99;
 	int diceRoll = 0;
 	bool auctionsEnabled = false;
 	bool firstBuilding = false;
@@ -71,8 +72,11 @@ class Game
 
 	std::unordered_set<BoardLocation*> unownedProperties;
 
+	// Money sturf
+    MoneyPool bank;
+    MoneyPool freeParking;
+
 	// Miscellaneous
-	int moneyInFP = 0;
     int houses = 32;
     int hotels = 12;
 
@@ -86,16 +90,23 @@ public:
 
 	void communityChest(Player* player);
 	void chance(Player* player);
+	void addCommunityChestCardToDeck();
+	void addChanceCardToDeck();
 	void moveAhead(Player* player, int numberOfSpaces);
 	void moveTo(Player* player, int location);
 	void payOutOfJail(Player* player);
 	void goToJail(Player* player);
-    void buyProperty(Player* player, BoardLocation* boardSpace, int customPrice);
+    void buyProperty(Player* player, BoardLocation* boardSpace, int customPrice=0);
     Player* propertyOwner(BoardLocation* property);
     void payRent(Player* player);
     int unmortgagePrice(BoardLocation* property);
     void sellBuilding(Player* player, BoardLocation* property, std::string building);
-    void changeMoney(Player* player, int amount);
+    
+    void exchangeMoney(Player* giver, Player* receiver, int amount);
+    void exchangeMoney(Player* giver, MoneyPool* receiver, int amount);
+    void exchangeMoney(MoneyPool* giver, Player* receiver, int amount);
+    void exchangeMoney(Player* giver, int amount);
+    
     bool evenSellingTest(BoardLocation* property, Player* player);
     bool evenBuildingTest(BoardLocation* property, Player* player);
     bool mortgageCheck(BoardLocation* property, Player* player);
@@ -105,16 +116,20 @@ public:
     void auction(BoardLocation* boardSpace);
     int totalAssets(Player* player);
     void propertyAction(Player* player, BoardLocation* boardSpace);
-	void boardAction(Player* player, BoardLocation* boardLocation);
+	void boardAction(Player* player, BoardLocation* boardSpace);
     void takeTurn(Player* player);
     void updateStatus();
     endReport play();
     int rollDie();
     int chooseRandomPlayer();
 
-    // For breaking out into players
-    void addChanceCardToDeck();
-    void addCommunityChestCardToDeck();
+    int getAvailableHouses();
+    int getAvailableHotels();
+    void changeHouses(int delta);
+    void changeHotels(int delta);
+    bool hasFirstBuilding();
+    void removeFromUnownedProperties(BoardLocation* boardSpace);
+
 };
 
 

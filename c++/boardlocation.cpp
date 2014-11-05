@@ -123,6 +123,11 @@ int BoardLocation::getHouseCost()
 	return (houseCost);
 }
 
+int BoardLocation::getBuildings()
+{
+    return (buildings);
+}
+
 /**
  * Gets the color group the property belongs to, e.g. "Red"
  * @return a pointer to the color group
@@ -140,7 +145,7 @@ std::string* BoardLocation::getGroup()
  * 5: a hotel
  * @return the number of buildings on the property
  */
-int BoardLocation::getBuildings()
+int BoardLocation::exchangeMoney()
 {
 	return (buildings);
 }
@@ -170,6 +175,11 @@ bool BoardLocation::isMortgaged()
 void BoardLocation::setMortgaged(bool val)
 {
 	mortgaged = val;
+}
+
+int BoardLocation::getUnmortgagePrice()
+{
+	return BoardLocation::price * 1.1; // pay price + 10%
 }
 
 // Instance methods
