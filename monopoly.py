@@ -95,6 +95,7 @@ class Player:
 
                                     # Check if there is a building available.
                                     if building_supply > 0:
+
                                         # Build!
                                         if building == "house":
                                             game_info.houses -= 1  # Take 1 house.
@@ -628,13 +629,8 @@ class Game:
                     if current_party.money <= 0:
 
                         # Kick the player out.
-<<<<<<< HEAD
                         self.move_again = False  # Stop the player's current turn.
                         self.inactive_players.append(current_party)  # And the player to the inactive players list.
-=======
-                        current_party.move_again = False  # Stop the player's current turn.
-                        self.inactive_players.append(current_party)  # Add the player to the inactive players list.
->>>>>>> 5f006f26a93bd1e7001d8222f96bde0dfb5ad915
                         self.active_players.remove(current_party)  # Remove the player from the active player's list.
 
                         # If there are still other players, give away the player's assets.
