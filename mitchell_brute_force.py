@@ -40,7 +40,7 @@ def brute_force(number_of_games=10000):
                                     output_file.writerow(results)
 
 
-def short_brute_force(number_of_games=5000):
+def short_brute_force(number_of_games=1000):
     with open('brute_force000.csv', 'w', newline='') as csvfile:
         output_file = csv.writer(csvfile, quotechar=',')
 
@@ -56,9 +56,8 @@ def short_brute_force(number_of_games=5000):
                                         complete_monopoly=complete_monopoly,
                                         group_preferences=(),
                                         development_threshold=development_threshold)
-                        success = success_indicator(base_player=player,
-                                                    number_of_games=number_of_games,
-                                                    procs=4)
+                        success = simple_success_indicator(base_player=player,
+                                                    number_of_games=number_of_games)
                         results = [success,
                                    100,
                                    5,
