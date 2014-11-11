@@ -131,7 +131,7 @@ void Game::communityChest(Player* player)
 		Game::communityChest(player);
 		break;
 	case 1: // Get out of jail free
-		player->flipCommunityChestCard();
+		player->giveCommunityChestCard();
 		communityChestCards[communityChestIndex] = 0;
 		communityChestJailIndex = communityChestIndex;
 		break;
@@ -221,7 +221,7 @@ void Game::chance(Player* player)
 		Game::chance(player);
 		break;
 	case 1: // Get out of jail free
-		player->flipChanceCard();
+		player->giveChanceCard();
 		chanceCards[chanceIndex] = 0;
 		chanceJailIndex = chanceIndex;
 		break;

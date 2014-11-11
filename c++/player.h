@@ -96,9 +96,11 @@ public:
     int getCompleteMonopoly();
     std::unordered_set<std::string*>* getGroupPreferences();
     int getDevelopmentThreshold();
-    void flipCommunityChestCard();
+    void giveCommunityChestCard();
+    void takeCommunityChestCard();
     bool hasCommunityChestCard();
-    void flipChanceCard();
+    void giveChanceCard();
+    void takeChanceCard();
     bool hasChanceCard();
     std::unordered_set<std::string*>* getMonopolies();
     std::unordered_set<BoardLocation*>* getInventory();

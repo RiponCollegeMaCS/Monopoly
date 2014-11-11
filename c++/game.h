@@ -51,7 +51,7 @@ class Game
 	int diceRoll = 0;
 	bool auctionsEnabled = false;
 	bool firstBuilding = false;
-	int cutoff = 300;
+	int cutoff = 1000;
 
 	bool moveAgain = false;
 

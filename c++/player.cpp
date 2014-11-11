@@ -107,12 +107,12 @@ void Player::payOutOfJail(Game* game)
 {
 	if (Player::hasChanceCard())
 	{
-		Player::flipChanceCard();
+		Player::takeChanceCard();
 		game->addChanceCardToDeck();
 	}
 	else if (Player::hasCommunityChestCard())
 	{
-		Player::flipCommunityChestCard();
+		Player::takeCommunityChestCard();
 		game->addCommunityChestCardToDeck();
 	}
 	else
@@ -139,9 +139,9 @@ void Player::developProperties(Game* game)
 		{
 			int unmortgagePrice = boardSpace->getUnmortgagePrice();
 
-			if (money - unmortgagePrice >= buyingThreshold)
+			if (Player::money - unmortgagePrice >= Player::buyingThreshold)
 			{
-				money -= unmortgagePrice;
+				Player::money -= unmortgagePrice;
 				boardSpace->setMortgaged(false);
 			}
 			else
@@ -171,28 +171,30 @@ void Player::developProperties(Game* game)
 
 							if (boardSpace->isMortgaged())
 							{
-								std::cerr << "ee error" << __LINE__ << std::endl;
+								std::cerr << "error 10"  << boardSpace->getName() << __LINE__ << std::endl;
 							}
 
-							if (1 == developmentThreshold)
+                            // Calculate current cash available
+							if (1 == Player::developmentThreshold)
 							{
-								availableCash = money - 1;
+								availableCash = Player::money - 1;
 							}
-							else if (2 == developmentThreshold)
+							else if (2 == Player::developmentThreshold)
 							{
+							    // Find available mortgage value
 								int availableMortgageValue = 0;
-								for (auto property : inventory)
+								for (auto property : Player::inventory)
 								{
 									if (!Player::isInMonopolies(property->getGroup()) && !property->isMortgaged())
 									{
 										availableMortgageValue += property->getPrice() / 2;
 									}
 								}
-								availableCash = availableMortgageValue + money - 1;
+								availableCash = availableMortgageValue + Player::money - 1;
 							}
 							else
 							{
-								availableCash = money - buyingThreshold;
+								availableCash = Player::money - Player::buyingThreshold;
 							}
 
 							// The player can afford it.
@@ -200,12 +202,12 @@ void Player::developProperties(Game* game)
 							{
 								int buildingSupply = 0;
 								std::string building;
-								if (boardSpace->getBuildings() < 4)
+								if (boardSpace->getBuildings() < 4) // Ready for a house
 								{
 									buildingSupply = game->getAvailableHouses();
 									building = "house";
 								}
-								else if (boardSpace->getBuildings() == 4)
+								else if (boardSpace->getBuildings() == 4) // Ready for a hotel
 								{
 									buildingSupply = game->getAvailableHotels();
 									building = "hotel";
@@ -225,17 +227,17 @@ void Player::developProperties(Game* game)
 									}
 
 									boardSpace->changeBuildings(1);
-									money -= boardSpace->getHouseCost();
+									Player::money -= boardSpace->getHouseCost();
 
-									if (developmentThreshold != 2 && money < 0)
+									if (Player::developmentThreshold != 2 && Player::money < 0)
 									{
-										std::cerr << "ee error" << __LINE__ <<  std::endl;
+										std::cerr << "error 9" << Player::money << __LINE__ <<  std::endl;
 									}
 
 									// Mortgage properties to pay for building
-									if (2 == developmentThreshold)
+									if (2 == Player::developmentThreshold)
 									{
-										for (auto cProperty : inventory)
+										for (auto cProperty : Player::inventory)
 										{
 											if (money > 0)
 											{
@@ -245,7 +247,7 @@ void Player::developProperties(Game* game)
 											{
 												if (!Player::isInMonopolies(cProperty->getGroup()) && !cProperty->isMortgaged())
 												{
-													cProperty->flipMortgaged();
+													cProperty->mortgage();
 													money += cProperty->getPrice() / 2;
 												}
 											}
@@ -263,16 +265,16 @@ void Player::developProperties(Game* game)
 		}
 	}
 
-	for (auto boardSpace : inventory)
+	for (auto boardSpace : Player::inventory)
 	{
 		if (boardSpace->isMortgaged())
 		{
 			int unmortgagePrice = game->unmortgagePrice(boardSpace);
 
-			if (money - unmortgagePrice >= buyingThreshold)
+			if (Player::money - unmortgagePrice >= Player::buyingThreshold)
 			{
-				money -= unmortgagePrice;
-				boardSpace->flipMortgaged();
+				Player::money -= unmortgagePrice;
+				boardSpace->unmortgage();
 			}
 			else
 			{
@@ -297,7 +299,7 @@ void Player::sellBuilding(BoardLocation* property, std::string building, Game* g
 	{
 		property->changeBuildings(-1);
 		game->changeHotels(1);
-		game->changeHouses(4);
+		game->changeHouses(-4);
 		Player::money += property->getHouseCost() / 2;
 	}
 
@@ -329,7 +331,7 @@ void Player::makeFunds(Game* game)
 		{
 			int mortgageValue = boardSpace->getPrice() / 2;
 			Player::money += mortgageValue;
-			boardSpace->flipMortgaged();
+			boardSpace->mortgage();
 			if (Player::money > 0)
 			{
 				return;
@@ -395,7 +397,7 @@ void Player::makeFunds(Game* game)
 				std::cerr << "eee error" << __LINE__ << std::endl;
 			}
 			Player::money += boardSpace->getPrice() / 2;
-			boardSpace->flipMortgaged();
+			boardSpace->mortgage();
 			if (Player::money > 0)
 				return;
 		}
@@ -501,7 +503,7 @@ void Player::makeAuctionFunds(BoardLocation* property, Game* game, int winningBi
 
 			if (0 == property->getBuildings() && !property->isMortgaged() && !isInMonopolies(property->getGroup()))
 			{
-				property->flipMortgaged();
+				property->mortgage();
 				Player::money = property->getPrice() / 2;
 			}
 		}
@@ -548,7 +550,7 @@ bool Player::unownedPropertyAction(Game* game, BoardLocation* property)
 				}
 				if (0 == cProperty->getBuildings() && !cProperty->isMortgaged() && !Player::isInMonopolies(cProperty->getGroup()))
 				{
-					cProperty->flipMortgaged();
+					cProperty->mortgage();
 					Player::money += cProperty->getPrice() / 2;
 				}
 			}
@@ -586,9 +588,11 @@ bool Player::hasSmartJailStrategy() { return (smartJailStrategy); }
 int Player::getCompleteMonopoly() { return (completeMonopoly); }
 std::unordered_set<std::string*>* Player::getGroupPreferences() { return (&groupPreferences); }
 int Player::getDevelopmentThreshold() { return (developmentThreshold); }
-void Player::flipCommunityChestCard() { communityChestCard = !communityChestCard; }
+void Player::giveCommunityChestCard() { communityChestCard = true; }
+void Player::takeCommunityChestCard() { communityChestCard = false; }
 bool Player::hasCommunityChestCard() { return (communityChestCard); }
-void Player::flipChanceCard() { chanceCard = !chanceCard; }
+void Player::giveChanceCard() { chanceCard = true; }
+void Player::takeChanceCard() { chanceCard = false; }
 bool Player::hasChanceCard() { return (chanceCard); }
 std::unordered_set<std::string*>* Player::getMonopolies() { return (&monopolies); }
 std::unordered_set<BoardLocation*>* Player::getInventory() { return (&inventory); }

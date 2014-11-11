@@ -123,11 +123,6 @@ int BoardLocation::getHouseCost()
 	return (houseCost);
 }
 
-int BoardLocation::getBuildings()
-{
-    return (buildings);
-}
-
 /**
  * Gets the color group the property belongs to, e.g. "Red"
  * @return a pointer to the color group
@@ -145,7 +140,7 @@ std::string* BoardLocation::getGroup()
  * 5: a hotel
  * @return the number of buildings on the property
  */
-int BoardLocation::exchangeMoney()
+int BoardLocation::getBuildings()
 {
 	return (buildings);
 }
@@ -183,19 +178,15 @@ int BoardLocation::getUnmortgagePrice()
 }
 
 // Instance methods
-/**
- * Sets the mortgaged status of the property to whatever it's not
- *
- * Thus, if the property is mortgaged, it sets it to unmortgaged, and
- * if it's unmortgage, it sets it to mortgaged.
- *
- * Born of laziness.
- */
-void BoardLocation::flipMortgaged()
+void BoardLocation::mortgage()
 {
-	mortgaged = !mortgaged;
+    mortgaged = true;
 }
 
+void BoardLocation::unmortgage()
+{
+    mortgaged = false;
+}
 /**
  * Increments the visit counter of the space
  *

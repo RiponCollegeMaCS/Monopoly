@@ -34,67 +34,56 @@ int sumArray(int results[], int numberResults)
     return (sum);
 }
 
-int playSet(Player* basePlayer, int numberOfGames, Player* staticOpponent, int results[])
+int playSet(Player* basePlayer, int numberOfGames, Player* staticOpponent)
 {
-	int num1won = 0;
-
+    std::vector<int> resultsList;
     if (staticOpponent != NULL)
     {
         for (int i = 0; i < numberOfGames; i++)
         {
             Player* player1 = basePlayer;
             player1->resetValues();
-            
+
             Player* opponent = staticOpponent;
             opponent->resetValues();
             opponent->setNumber(2);
-            
+
             // Let's play!
             std::vector<Player*> players = {player1, opponent};
             Game currentGame(players, NUMBER_OF_TURNS);
             int winner = currentGame.play().winner;
-            results[i] = winner;
-            if (1 == winner)
-            {
-            	num1won++;
-            }
+            resultsList.push_back(winner);
         }
     }
-    
+
     else
     {
         for (int i = 0; i < numberOfGames; i++)
         {
             Player* player1 = basePlayer;
             player1->resetValues();
-            
+
             Player* opponent = generateRandomPlayer(2);
-            // if i don't generate a new random player,
-            // would this speed it up to linear?
-            
-            // Let's play!
+
             std::vector<Player*> players = {player1, opponent};
             Game currentGame(players, NUMBER_OF_TURNS);
             int winner = currentGame.play().winner;
-            results[i] = winner;
-            if (1 == winner)
-            	{
-                	num1won++;
-                }
-            
-            delete opponent;
+            resultsList.push_back(winner);
         }
     }
-
-    return (num1won);
+    return (std::count(resultsList.begin(), resultsList.end(), 1));
 }
 
 float successIndicator(Player* basePlayer, int numberOfGames = 1000, int procs = 2, Player* staticOpponent = NULL)
 {
     int results[numberOfGames];
-    
-    int success = playSet(basePlayer, numberOfGames, staticOpponent, results);
 
+    for (int i = 0; i < numberOfGames; i++)
+    {
+        results[i] = playSet(basePlayer, numberOfGames, staticOpponent);
+    }
+
+    int success = sumArray(results, numberOfGames);
 //    std::vector<std::thread> threads;
 //
 //    for (int i = 0; i < procs; i++)
@@ -107,7 +96,7 @@ float successIndicator(Player* basePlayer, int numberOfGames = 1000, int procs =
 //        i.join();
 //    }
     
-    return ((float) success / (float) numberOfGames); // ?
+    return 100 * ((float) success / (float) numberOfGames); // ?
 }
 
 void shortBruteForce(int numberOfGames=5000)
