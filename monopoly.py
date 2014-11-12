@@ -13,8 +13,8 @@ getcontext().rounding = ROUND_HALF_UP
 
 # Define the Player class.
 class Player:
-    def __init__(self, number, buying_threshold=100, building_threshold=5, jail_time=3, smart_jail_strategy=True,
-                 complete_monopoly=2, group_preferences=(), development_threshold=2):
+    def __init__(self, number, buying_threshold=500, building_threshold=5, jail_time=3, smart_jail_strategy=False,
+                 complete_monopoly=0, group_preferences=(), development_threshold=0):
         self.number = number
         self.reset_values()  # Reset the player's attributes if the player is used again.
 
