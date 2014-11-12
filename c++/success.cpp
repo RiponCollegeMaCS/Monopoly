@@ -43,11 +43,11 @@ int playSet(Player* basePlayer, int numberOfGames, Player* staticOpponent)
         {
             Player* player1 = basePlayer;
             player1->resetValues();
-
+            
             Player* opponent = staticOpponent;
             opponent->resetValues();
             opponent->setNumber(2);
-
+            
             // Let's play!
             std::vector<Player*> players = {player1, opponent};
             Game currentGame(players, NUMBER_OF_TURNS);
@@ -55,16 +55,16 @@ int playSet(Player* basePlayer, int numberOfGames, Player* staticOpponent)
             resultsList.push_back(winner);
         }
     }
-
+    
     else
     {
         for (int i = 0; i < numberOfGames; i++)
         {
             Player* player1 = basePlayer;
             player1->resetValues();
-
+            
             Player* opponent = generateRandomPlayer(2);
-
+            
             std::vector<Player*> players = {player1, opponent};
             Game currentGame(players, NUMBER_OF_TURNS);
             int winner = currentGame.play().winner;
@@ -77,24 +77,24 @@ int playSet(Player* basePlayer, int numberOfGames, Player* staticOpponent)
 float successIndicator(Player* basePlayer, int numberOfGames = 1000, int procs = 2, Player* staticOpponent = NULL)
 {
     int results[numberOfGames];
-
+    
     for (int i = 0; i < numberOfGames; i++)
     {
         results[i] = playSet(basePlayer, numberOfGames, staticOpponent);
     }
-
+    
     int success = sumArray(results, numberOfGames);
-//    std::vector<std::thread> threads;
-//
-//    for (int i = 0; i < procs; i++)
-//    {
-//        threads.push_back(std::thread(playSet, std::ref(basePlayer), numberOfGames / 4, std::ref(staticOpponent), results));
-//    }
-//
-//    for (auto i : threads)
-//    {
-//        i.join();
-//    }
+    //    std::vector<std::thread> threads;
+    //
+    //    for (int i = 0; i < procs; i++)
+    //    {
+    //        threads.push_back(std::thread(playSet, std::ref(basePlayer), numberOfGames / 4, std::ref(staticOpponent), results));
+    //    }
+    //
+    //    for (auto i : threads)
+    //    {
+    //        i.join();
+    //    }
     
     return 100 * ((float) success / (float) numberOfGames); // ?
 }

@@ -747,7 +747,8 @@ void Game::developProperties(Player* player)
                                     boardSpace->changeBuildings(1);
                                     player->addMoney(-boardSpace->getHouseCost());
                                     
-                                    if (player->getDevelopmentThreshold() != 2 && player->getMoney() < 0);
+                                    if (player->getDevelopmentThreshold() != 2 && player->getMoney() < 0)
+                                        ;
                                         
                                         //throw 20;
                                     
@@ -1149,7 +1150,7 @@ endReport Game::play()
     }
     
     endReport report;
-    report.winner = activePlayers[0]->getNumber();
+    report.winner = Game::activePlayers.size() == 2? 0 : activePlayers[0]->getNumber();
     report.turnCounter = turnCounter;
     report.player0Monopolies = *activePlayers[0]->getMonopolies();
     report.player1Monopolies = *activePlayers[1]->getMonopolies();
