@@ -1,5 +1,3 @@
-include_directories(${Monopoly_SOURCE_DIR}/include/game)
-include_directories(${Monopoly_SOURCE_DIR}/include/stats)
+add_executable(monopoly main.cpp boardlocation.cpp game.cpp moneypool.cpp player.cpp success.cpp)
 
-
-add_executable(src main.cpp)
+target_include_directories(monopoly PUBLIC ../include/game ../include/stats)
