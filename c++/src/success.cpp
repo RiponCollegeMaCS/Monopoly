@@ -11,16 +11,16 @@
 #include <ctime>
 #include <thread>
 #include <functional>
-#include "success.h"
-#include "player.h"
-#include "game.h"
+#include "../include/stats/success.h"
+#include "../include/game/player.h"
+#include "../include/game/game.h"
 
 std::unordered_set<std::string*> noGroupPrefs;
 
 Player* generateRandomPlayer(int number)
 {
     std::srand((int) std::time(NULL) + rand());
-    return new Player(number, noGroupPrefs, std::rand() % 500 + 1, std::rand() % 6, std::rand() % 3, std::rand() % 1, std::rand() % 2, std::rand() % 2); // check all these
+    return new Player(number, noGroupPrefs, std::rand() % 500 + 1, std::rand() % 6, std::rand() % 4, std::rand() % 2, std::rand() % 3, std::rand() % 3); // check all these
 }
 
 int sumArray(int results[], int numberResults)
@@ -122,7 +122,8 @@ void shortBruteForce(int numberOfGames=5000)
             {
                 for (int developmentThreshold = 0; developmentThreshold < 3; developmentThreshold++)
                 {
-                    Player player(1, noGroupPrefs, 100, 5, jailtime, smartJailStrategy, completeMonopoly, developmentThreshold);
+                    //Player player(1, noGroupPrefs, 100, 5, jailtime, smartJailStrategy, completeMonopoly, developmentThreshold);
+		    Player player(1, noGroupPrefs, 150, 5, 0, true, 1, 1);
                     std::cout << successIndicator(&player, numberOfGames, 4) << std::endl;
                 }
             }

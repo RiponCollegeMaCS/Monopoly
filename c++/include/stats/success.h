@@ -14,7 +14,7 @@
 #include "player.h"
 
 
-const int NUMBER_OF_GAMES = 500;
+const int NUMBER_OF_GAMES = 1000;
 const int NUMBER_OF_TURNS = 1000;
 
 

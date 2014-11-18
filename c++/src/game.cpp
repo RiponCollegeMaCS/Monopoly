@@ -16,10 +16,10 @@
  * =====================================================================================
  */
 
-#include "game.h"
-#include "player.h"
-#include "boardlocation.h"
-#include "moneypool.h"
+#include "../include/game/game.h"
+#include "../include/game/player.h"
+#include "../include/game/boardlocation.h"
+#include "../include/game/moneypool.h"
 
 #include<iostream>
 #include<string>

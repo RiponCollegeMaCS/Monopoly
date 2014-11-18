@@ -16,7 +16,7 @@
  * =====================================================================================
  */
 
-#include "moneypool.h"
+#include "../include/game/moneypool.h"
 
 MoneyPool::MoneyPool()
 {
