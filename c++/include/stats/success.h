@@ -11,7 +11,7 @@
 
 #include <unordered_map>
 #include <string>
-#include "player.h"
+#include "../game/player.h"
 
 
 const int NUMBER_OF_GAMES = 1000;
