@@ -122,7 +122,7 @@ public:
     void incrementJailCounter();
     void endGame();
 
-    char getType();
+    int* getInfo();
 };
 
 

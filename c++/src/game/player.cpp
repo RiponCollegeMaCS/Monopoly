@@ -16,9 +16,9 @@
  * =====================================================================================
  */
 
-#include "../include/game/player.h"
-#include "../include/game/boardlocation.h"
-#include "../include/game/game.h"
+#include "../../include/game/player.h"
+#include "../../include/game/boardlocation.h"
+#include "../../include/game/game.h"
 
 #include<iostream>
 #include<vector>
@@ -618,5 +618,17 @@ void Player::endGame()
 	Player::moveAgain = false;
 }
 
-char Player::getType() { return 'p'; }
+int* Player::getInfo()
+{
+    int* info = new int[6];
+
+    info[0] = Player::buyingThreshold;
+    info[1] = Player::buildingThreshold;
+    info[2] = Player::jailTime;
+    info[3] = Player::smartJailStrategy;
+    info[4] = Player::completeMonopoly;
+    info[5] = Player::developmentThreshold;
+
+    return info;
+}
 

@@ -11,9 +11,10 @@
 #include <ctime>
 #include <thread>
 #include <functional>
-#include "../include/stats/success.h"
-#include "../include/game/player.h"
-#include "../include/game/game.h"
+#include "../../include/stats/success.h"
+#include "../../include/game/player.h"
+#include "../../include/game/game.h"
+#include "../../include/util/csv.h"
 
 std::unordered_set<std::string*> noGroupPrefs;
 
@@ -113,6 +114,7 @@ float successIndicator(Player* basePlayer, int numberOfGames = 1000, int procs =
 void shortBruteForce(int numberOfGames=5000)
 {
     std::unordered_set<std::string*> noGroupPrefs;
+    CSV results("/Users/braxton/Development/git/monopoly/c++/src/success.csv");
     
     for (int jailtime = 0; jailtime < 4; jailtime++)
     {
@@ -122,9 +124,11 @@ void shortBruteForce(int numberOfGames=5000)
             {
                 for (int developmentThreshold = 0; developmentThreshold < 3; developmentThreshold++)
                 {
-                    //Player player(1, noGroupPrefs, 100, 5, jailtime, smartJailStrategy, completeMonopoly, developmentThreshold);
-		    Player player(1, noGroupPrefs, 150, 5, 0, true, 1, 1);
-                    std::cout << successIndicator(&player, numberOfGames, 4) << std::endl;
+                    Player player(1, noGroupPrefs, 100, 5, jailtime, smartJailStrategy, completeMonopoly, developmentThreshold);
+//                    Player player(1, noGroupPrefs, 100, 5, 0, 0, 0, 0);
+                    float s = successIndicator(&player, numberOfGames, 4);
+                    results.writeline(player.getInfo(), s);
+                    std::cout << s << std::endl;
                 }
             }
         }

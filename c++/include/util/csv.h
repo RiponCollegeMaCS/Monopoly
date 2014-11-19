@@ -19,22 +19,21 @@
 #ifndef __MONOPOLY_CSV_H
 #define __MONOPOLY_CSV_H
 
-#include <iostream>
 #include <string>
-#include <vector>
+#include <fstream>
 
 class CSV
 {
     const char SEPARATOR = ',';
     const char TERMINATOR = '\n';
 
-    std::string filename;
+    std::ofstream outfile;
 
 public:
-    CSV(std::string filename, int columns);
+    CSV(std::string filename);
     ~CSV();
 
-    writeLine()
+    void writeline(int* player, float result);
 
 };
 
