@@ -18,7 +18,7 @@
 
 #include <fstream>
 #include <string>
-#include "../../include/util/csv.h" // should include Player?
+#include "util/csv.h"
 
 CSV::CSV(std::string filename)
 {

@@ -16,7 +16,7 @@
  * =====================================================================================
  */
 
-#include "../../include/game/boardlocation.h"
+#include "game/boardlocation.h"
 
 #include<vector>
 

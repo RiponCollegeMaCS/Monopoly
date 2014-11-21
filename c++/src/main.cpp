@@ -22,9 +22,9 @@
 #include <unordered_set>
 #include <cstdlib>
 #include <ctime>
-#include "../include/game/game.h"
-#include "../include/game/player.h"
-#include "../include/stats/success.h"
+#include "game/game.h"
+#include "game/player.h"
+#include "stats/success.h"
 
 std::string CRAPPY_MONOPOLY = "Brown";
 std::unordered_set<std::string*> noPrefs;

@@ -16,9 +16,9 @@
  * =====================================================================================
  */
 
-#include "../../include/game/player.h"
-#include "../../include/game/boardlocation.h"
-#include "../../include/game/game.h"
+#include "game/player.h"
+#include "game/boardlocation.h"
+#include "game/game.h"
 
 #include<iostream>
 #include<vector>

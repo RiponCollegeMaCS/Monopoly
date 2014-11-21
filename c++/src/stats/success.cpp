@@ -11,10 +11,10 @@
 #include <ctime>
 #include <thread>
 #include <functional>
-#include "../../include/stats/success.h"
-#include "../../include/game/player.h"
-#include "../../include/game/game.h"
-#include "../../include/util/csv.h"
+#include "stats/success.h"
+#include "game/player.h"
+#include "game/game.h"
+#include "util/csv.h"
 
 std::unordered_set<std::string*> noGroupPrefs;
 
