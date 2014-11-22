@@ -461,17 +461,19 @@ void Player::makeBid(BoardLocation* property, Game* game)
 {
 	Player::bidIncludesMortgages = false;
 
+    std::vector<BoardLocation*> additional = {property};
+
 	if (isInGroupPreferences(*property->getGroup()))
 	{
 		Player::auctionBid = Player::money - 1;
 	}
 
-	else if (1 == Player::completeMonopoly && game->monopolyStatus(this, property))
+	else if (1 == Player::completeMonopoly && game->monopolyStatus(this, property, &additional))
 	{
 		Player::auctionBid = Player::money - 1;
 	}
 
-	else if (2 == Player::completeMonopoly && game->monopolyStatus(this, property))
+	else if (2 == Player::completeMonopoly && game->monopolyStatus(this, property, &additional))
 	{
 		Player::bidIncludesMortgages = true;
 
@@ -514,6 +516,7 @@ void Player::makeAuctionFunds(BoardLocation* property, Game* game, int winningBi
 
 bool Player::unownedPropertyAction(Game* game, BoardLocation* property)
 {
+    std::vector<BoardLocation*> additional = {property};
 	// The player has enough money to buy the property
 	if (Player::money - property->getPrice() >= Player::buyingThreshold)
 	{
@@ -529,14 +532,14 @@ bool Player::unownedPropertyAction(Game* game, BoardLocation* property)
 	}
 
 	// The player will gain a monopoly, they want to complete the group, they have the money
-	if (1 == Player::completeMonopoly && Player::money - property->getPrice() > 0 && game->monopolyStatus(this, property))
+	if (1 == Player::completeMonopoly && Player::money - property->getPrice() > 0 && game->monopolyStatus(this, property, &additional))
 	{
 		game->buyProperty(this, property);
 		return true;
 	}
 
 	// The player will mortgage other properties to buy it if it completes a group
-	if (2 == Player::completeMonopoly && game->monopolyStatus(this, property))
+	if (2 == Player::completeMonopoly && game->monopolyStatus(this, property, &additional))
 	{
 		if ((Player::money + Player::findAvailableMortgageValue()) - property->getPrice() > 0)
 		{

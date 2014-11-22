@@ -15,7 +15,7 @@
 
 
 const int NUMBER_OF_GAMES = 1000;
-const int NUMBER_OF_TURNS = 1000;
+const int NUMBER_OF_TURNS = 300;
 
 
 Player* generateRandomPlayer(int number);

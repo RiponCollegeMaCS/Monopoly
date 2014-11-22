@@ -832,6 +832,44 @@ bool Game::monopolyStatus(Player* player, BoardLocation* boardSpace)
     return (false);
 }
 
+bool Game::monopolyStatus(Player* player, BoardLocation* boardSpace, std::vector<BoardLocation*>* additionalProperties)
+{
+    std::string group = *boardSpace->getGroup();
+
+    if ("" == group || "Railroad" == group || "Utility" == group)
+    {
+        return (false);
+    }
+
+    int propertyCounter = 0;
+
+    for (auto property : *player->getInventory())
+    {
+        if (*property->getGroup() == group)
+        {
+            propertyCounter++;
+        }
+    }
+
+    for (auto property : *additionalProperties)
+    {
+        if (*property->getGroup() == group)
+        {
+            propertyCounter++;
+        }
+    }
+
+    if (propertyCounter == 3 && (group == "Light Blue" || group == "Pink" || group == "Orange" || group == "Red" || group == "Yellow" || group == "Green"))
+    {
+        return (true);
+    }
+    else if (propertyCounter == 2 && (group == "Dark Blue" || group == "Brown"))
+    {
+        return (true);
+    }
+    return (false);
+}
+
 int Game::findAvailableMortgageValue(Player* player)
 {
     int available = 0;

@@ -124,8 +124,8 @@ void shortBruteForce(int numberOfGames=5000)
             {
                 for (int developmentThreshold = 0; developmentThreshold < 3; developmentThreshold++)
                 {
-                    Player player(1, noGroupPrefs, 100, 5, jailtime, smartJailStrategy, completeMonopoly, developmentThreshold);
-//                    Player player(1, noGroupPrefs, 100, 5, 0, 0, 0, 0);
+//                    Player player(1, noGroupPrefs, 100, 5, jailtime, smartJailStrategy, completeMonopoly, developmentThreshold);
+                    Player player(1, noGroupPrefs, 100, 5, 0, 0, 0, 0);
                     float s = successIndicator(&player, numberOfGames, 4);
                     results.writeline(player.getInfo(), s);
                     std::cout << s << std::endl;
