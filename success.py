@@ -10,7 +10,7 @@ def generate_random_player(number):
                     building_threshold=5,  # choice([0, 1, 2, 3, 4, 5]),
                     development_threshold=choice([0, 1, 2]),
                     complete_monopoly=choice([0, 1, 2]),
-                    jail_time=choice([0, 1, 2, 3]),
+                    jail_time=choice([0, 1, 3]),
                     smart_jail_strategy=choice([True, False]),
                     group_preferences=()  # sample(list_of_groups, choice([0, 1, 2, 3]))
     )

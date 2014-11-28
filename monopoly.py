@@ -30,7 +30,7 @@ class Player:
 
     # Reset a player's parameters so the same player can play in a series of games.
     def reset_values(self):
-        self.success_indicator = 0
+        # General attributes.
         self.position = 0  # The player starts on "Go".
         self.money = 1500  # The player starts with $1,500.
         self.chance_card = False  # The player has no "Get Out of Jail Free" cards.
@@ -38,12 +38,16 @@ class Player:
         self.in_jail = False  # The player is not in jail.
         self.jail_counter = 0  # The "turns in jail" counter.
         self.card_rent = False
-        self.monopolies = []  # A list of the player's monopolies.
-        self.auction_bid = 0
-        self.passed_go = False
         self.inventory = []  # A list of the player's properties.
-        self.bid_includes_mortgages = False
+        self.monopolies = []  # A list of the player's monopolies.
+        self.passed_go = False  # Used for a house rule.
+
+        # For auctions
         self.mortgage_auctioned_property = False
+        self.auction_bid = 0
+
+        # For house rules.
+        self.bid_includes_mortgages = False
 
     # Un-mortgage properties and buy buildings as desired.
     def develop_properties(self, game_info):
@@ -65,7 +69,7 @@ class Player:
             while keep_building:
                 keep_building = False  # Don't keep building unless something is bought.
                 for board_space in self.inventory:  # Cycle through player inventory.
-                    if board_space.group in self.monopolies:  # and not board_space.mortgaged:  # It's in a monopoly.
+                    if board_space.group in self.monopolies:  # It's in a monopoly.
                         if self.even_building_test(board_space) and not board_space.mortgaged:  # Building "evenly".
                             if board_space.buildings < self.building_threshold:  # Check player's building limit.
 
@@ -74,12 +78,7 @@ class Player:
                                     # The player will use all but $1 to buy.
                                     available_cash = self.money - 1
                                 elif self.development_threshold == 2:
-                                    # Find available mortgage value.
-                                    available_mortgage_value = 0
-                                    for property in self.inventory:
-                                        if (property.group not in self.monopolies) and (not property.mortgaged):
-                                            available_mortgage_value += property.price / 2
-                                    available_cash = available_mortgage_value + self.money - 1
+                                    available_cash = self.find_available_mortgage_value() + + self.money - 1
                                 else:
                                     available_cash = self.money - self.buying_threshold
 
@@ -87,10 +86,10 @@ class Player:
                                 if available_cash - board_space.house_cost >= 0:
                                     building_supply = 0
                                     if board_space.buildings < 4:  # Ready for a house.
-                                        building_supply = game_info.houses
+                                        building_supply = game_info.houses  # The number of houses available
                                         building = "house"
                                     elif board_space.buildings == 4:  # Ready for a hotel.
-                                        building_supply = game_info.hotels
+                                        building_supply = game_info.hotels  # The number of hotels available
                                         building = "hotel"
 
                                     # Check if there is a building available.
@@ -162,12 +161,12 @@ class Player:
             self.money += property.house_cost / 2
 
         # Sell all buildings on the property.
-        elif building == "all":
+        elif building == "all":  # The property has a hotel.
             if property.buildings == 5:
                 property.buildings = 0
                 game_info.hotels += 1
                 self.money += (property.house_cost / 2) * 5
-            else:
+            else:  # The property has houses.
                 game_info.houses += property.buildings
                 self.money += (property.house_cost / 2) * property.buildings
                 property.buildings = 0
@@ -203,7 +202,7 @@ class Player:
                             if game_info.houses >= 4:  # Check if there are 4 houses to replace the hotel.
                                 self.sell_building(board_space, "hotel", game_info)  # Hotel - > 4 Houses
                             else:  # Not enough houses to break hotel.
-                                for board_space2 in self.inventory:
+                                for board_space2 in self.inventory:  # Sell back all buildings in GROUP.
                                     if board_space2.group == board_space.group:
                                         self.sell_building(board_space2, "all", game_info)
                         else:  # It's a house.
@@ -233,19 +232,17 @@ class Player:
 
     # Decides if the player is selling evenly or not.
     def even_selling_test(self, property):
-        test_result = True
         for board_space in self.inventory:
             if board_space.group == property.group and board_space.buildings - property.buildings > 0:
-                test_result = False
-        return test_result
+                return False
+        return True
 
     # Decides if the player is building evenly or not.
     def even_building_test(self, property):
-        test_result = True
         for board_space in self.inventory:
             if board_space.group == property.group and property.buildings - board_space.buildings > 0:
-                test_result = False
-        return test_result
+                return False
+        return True
 
     # Calculate how much money a player has available to mortgage
     def find_available_mortgage_value(self):
@@ -267,7 +264,7 @@ class Player:
             self.auction_bid = self.money - 1
 
         # If the player will complete their group and wants to.
-        elif self.complete_monopoly == 1 and \
+        if self.complete_monopoly == 1 and \
                 game_info.monopoly_status(player=self, current_property=property, additional_properties=[property]):
             self.auction_bid = self.money - 1
 
@@ -295,7 +292,7 @@ class Player:
 
         # Special buying procedure if the player wants to mortgage properties.
         if self.bid_includes_mortgages:
-            self.money -= winning_bid  # Pay for property.
+            self.money -= winning_bid  # Pay for property temporarily.
 
             # Make up the funds.
             property_index = 0
@@ -307,7 +304,7 @@ class Player:
                     self.money += c_property.price / 2
                 property_index += 1
 
-            self.money += winning_bid
+            self.money += winning_bid  # Pay money back.
 
     # Decides what the player does when he lands on an unowned property.
     def unowned_property_action(self, game_info, property):
@@ -394,7 +391,7 @@ class Game:
         self.doubles_counter = 0  # Reset doubles counter.
         self.houses = 32  # House supply.
         self.hotels = 12  # Hotel supply.
-        self.winner = 99  # Ending game data.
+        self.winner = 1000  # Ending game data.
         self.dice_roll = 0  # The current dice roll can be accessible everywhere.
         self.auctions_enabled = auctions_enabled  # A toggle to disable auctions.
         self.first_building = False  # Records whether a building has been bought for smart_jail_strategy
@@ -501,9 +498,9 @@ class Game:
         elif card == 10:  # ADVANCE TO GO (COLLECT $200)
             self.move_to(player, 0)  # Player moves to Go.
         elif card == 11:  # YOU ARE ASSESSED FOR STREET REPAIRS
-            house_counter = 0
-            hotel_counter = 0
             if player.monopolies:
+                house_counter = 0
+                hotel_counter = 0
                 for board_space in player.inventory:  # Cycle through all board spaces.
                     if board_space.buildings == 5:
                         hotel_counter += 1  # Add hotels.
@@ -523,8 +520,13 @@ class Game:
         elif card == 16:  # GO TO JAIL
             self.go_to_jail(player)  # Send player to jail.
 
-        self.community_chest_index = (self.community_chest_index + 1) % len(
-            self.community_chest_cards)  # Increase index.
+        if card == 1 and self.community_chest_index == 15:  # GOOJF card was at the end.
+            self.community_chest_index = 0  # Restart deck.
+        elif card == 1:  # GOOJF card was somewhere else.
+            pass  # Do not change index.
+        else:
+            self.community_chest_index = (self.community_chest_index + 1) % len(
+                self.community_chest_cards)  # Increase index.
 
     # Defines the actions of the Chance cards.
     def chance(self, player):
@@ -555,17 +557,17 @@ class Game:
             self.move_to(player, 24)
             self.board_action(player, self.board[player.position])
         elif card == 8:  # MAKE GENERAL REPAIRS ON ALL YOUR PROPERTY
-            house_counter = 0
-            hotel_counter = 0
             if player.monopolies:
+                house_counter = 0
+                hotel_counter = 0
                 for board_space in player.inventory:  # Cycle through all board spaces.
                     if board_space.buildings == 5:
                         hotel_counter += 1  # Add hotels.
                     else:
                         house_counter += board_space.buildings  # Add houses.
-            house_repairs = 45 * house_counter  # $45 PER HOUSE
-            hotel_repairs = 100 * hotel_counter  # $100 PER HOTEL
-            self.exchange_money(amount=house_repairs + hotel_repairs, giver=player, receiver=self.free_parking)
+                house_repairs = 45 * house_counter  # $45 PER HOUSE
+                hotel_repairs = 100 * hotel_counter  # $100 PER HOTEL
+                self.exchange_money(amount=house_repairs + hotel_repairs, giver=player, receiver=self.free_parking)
         elif card == 9:  # ADVANCE TO ST. CHARLES PLACE
             self.move_to(player, 11)
             self.board_action(player, self.board[player.position])
@@ -592,7 +594,12 @@ class Game:
         elif card == 16:  # BANK PAYS YOU DIVIDEND OF $50
             self.exchange_money(amount=50, giver=self.bank, receiver=player)
 
-        self.chance_index = (self.chance_index + 1) % len(self.chance_cards)  # Increase index.
+        if card == 1 and self.chance_index == 15:  # GOOJF card was at the end.
+            self.chance_index = 0  # Restart deck.
+        elif card == 1:  # GOOJF card was somewhere else.
+            pass  # Do not change index.
+        else:
+            self.chance_index = (self.chance_index + 1) % len(self.chance_cards)  # Increase index.
 
     # Moves a player ahead.
     def move_ahead(self, player, number_of_spaces):
@@ -627,7 +634,6 @@ class Game:
 
                     # Check if the player lost.
                     if current_party.money <= 0:
-
                         # Kick the player out.
                         self.move_again = False  # Stop the player's current turn.
                         self.inactive_players.append(current_party)  # And the player to the inactive players list.
@@ -649,6 +655,11 @@ class Game:
                                 # The player lost to another player.
                                 other_party.money += current_party.money
                                 other_party.inventory.extend(current_party.inventory)
+                                # Transfer GOOJF cards
+                                if current_party.chance_card:
+                                    other_party.chance_card = True
+                                if current_party.community_chest_card:
+                                    other_party.community_chest_card = True
 
 
     # Determines if the player owns all of the properties in the the given property's group.
@@ -836,12 +847,12 @@ class Game:
     # Decides what a player does on a property,
     def property_action(self, player, board_space):
         if board_space in player.inventory:
-            pass  # The player owns the property. Nothing happens.
+            return  # The player owns the property. Nothing happens.
         elif board_space.mortgaged:
-            pass  # The property is mortgaged. Nothing happens.
+            return  # The property is mortgaged. Nothing happens.
         elif board_space in self.unowned_properties:  # The property is unowned.
             if self.trip_to_start and (not player.passed_go):
-                pass  # The player has to wait to pass Go to buy/auction a property.
+                return  # The player has to wait to pass Go to buy/auction a property.
             else:  # The player can buy it.
                 if not player.unowned_property_action(game_info=self, property=board_space):
                     # The player can't buy it or decides not to.
@@ -852,7 +863,7 @@ class Game:
 
     # Decide what the player should do on a given board space.
     def board_action(self, player, board_space):
-        if board_space.name in ["Go", "Just Visiting / In Jail"]:
+        if board_space.name == "Just Visiting / In Jail":
             pass  # Nothing happens on Go or Just Visiting.
 
         elif board_space.name == "Go":
@@ -890,57 +901,60 @@ class Game:
 
     # An individual player takes a turn.
     def take_turn(self, player):
-        self.turn_counter += 1  # Increase turn counter
+        self.turn_counter += 1  # Increase master turn counter
         self.doubles_counter = 0  # Reset doubles counter.
-
-        # Roll the dice.
-        die1 = randint(1, 6)
-        die2 = randint(1, 6)
-        self.dice_roll = die1 + die2
-
-        # Check for snake eyes.
-        if self.snake_eyes_bonus and die1 == 1 == die2:
-            self.exchange_money(amount=500, giver=self.bank, receiver=player)
 
         # Is the player in jail?
         if player.in_jail:  # Player is in jail.
             player.jail_counter += 1  # Increase the jail turn counter
-            # The player wants to move or they have to.
-            if player.jail_decision(self) or (die1 != die2 and player.jail_counter == 3):
+            if player.jail_decision(self):
                 player.jail_counter = 0  # Reset the jail counter.
-                self.move_again = True  # The player can move.
                 player.pay_out_of_jail(game_info=self)  # Pay out using a card or $50.
-            elif die1 == die2:  # The player rolled doubles.
-                player.jail_counter = 0  # Reset the jail counter.
-                self.move_again = True  # The player can move out of jail
-            else:  # The player didn't roll doubles.
-                self.move_again = False  # The player can not move around the board.
-        else:  # The player is not in jail.
-            self.move_again = True  # The player can roll and move.
-
-        # The main loop.
-        while self.move_again and player.money > 0:
-            # Roll again for doubles.
-            if self.doubles_counter > 0:
+            else:
+                # Roll the dice.
                 die1 = randint(1, 6)
                 die2 = randint(1, 6)
                 self.dice_roll = die1 + die2
 
-                # Check for snakes eyes.
+                # Check for snake eyes.
                 if self.snake_eyes_bonus and die1 == 1 == die2:
                     self.exchange_money(amount=500, giver=self.bank, receiver=player)
 
+                # Make an action.
+                if die1 == die2:  # The player rolled doubles.
+                    player.jail_counter = 0  # Reset the jail counter.
+                    self.move_again = True  # The player can move out of jail
+                elif die1 != die2 and player.jail_counter == 3:
+                    player.jail_counter = 0  # Reset the jail counter.
+                    player.pay_out_of_jail(game_info=self)  # Pay out using a card or $50.
+                else:  # The player didn't roll doubles.
+                    return  # The player can not move around the board.
+
+        if player.money>0: # If the player did not go broke coming out of jail!
+            self.move_again = True  # Initial condition.
+
+        # The main loop.
+        while self.move_again:
+            self.move_again = False
+
+            # Roll the dice.
+            die1 = randint(1, 6)
+            die2 = randint(1, 6)
+            self.dice_roll = die1 + die2
+
+            # Check for snakes eyes.
+            if self.snake_eyes_bonus and die1 == 1 == die2:
+                self.exchange_money(amount=500, giver=self.bank, receiver=player)
+
             # Check for doubles.
-            if (die1 == die2) and (not player.in_jail):
+            if player.in_jail:
+                player.in_jail = False  # The player is no longer in jail, but can not move again regardless.
+            elif die1 == die2:
                 self.doubles_counter += 1  # Increase the doubles counter.
                 if self.doubles_counter == 3:  # The players is speeding.
                     self.go_to_jail(player)
                     return  # The function ends.
-                else:  # The player is not speeding.
-                    self.move_again = True  # The player rolled doubles.
-            else:
-                player.in_jail = False  # The player is no longer in jail.
-                self.move_again = False  # The player did not roll doubles.
+                self.move_again = True  # The player can move again.
 
             self.move_ahead(player, self.dice_roll)  # Move the player
             board_space = self.board[player.position]  # Find the current board space.
@@ -949,6 +963,7 @@ class Game:
             # If a card or board space brought the player to jail, end the function.
             if player.in_jail:
                 return
+
 
     # Plays a game object.
     def play(self):
@@ -985,3 +1000,8 @@ class Game:
 
         # Ending report.
         return [self.winner, self.turn_counter]
+
+# For quick testing.
+for i in range(1000):
+    game0 = Game([Player(number=1), Player(number=2)])
+    (game0.play())

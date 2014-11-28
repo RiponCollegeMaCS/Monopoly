@@ -92,5 +92,5 @@ def speed_test():
 
 if __name__ == '__main__':
     timer()
-    speed_test()
+    main3()
     timer()
