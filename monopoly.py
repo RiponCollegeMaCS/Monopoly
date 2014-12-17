@@ -1041,9 +1041,9 @@ class Game:
             self.loss_reason = "Tie"
 
         # Ending report.
-        results = {'winner': self.winner,
-                   'length': self.turn_counter,
-                   'end behavior': self.loss_reason,
-                   'monopolies': all_monopolies,
+        results = {'winner':        self.winner,
+                   'length':        self.turn_counter,
+                   'end behavior':  self.loss_reason,
+                   'monopolies':    all_monopolies,
         }
         return results

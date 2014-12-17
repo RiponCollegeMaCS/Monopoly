@@ -41,7 +41,7 @@ def brute_force(number_of_games=10000):
 
 
 def short_brute_force(number_of_games=10000):
-    with open('brute_force000.csv', 'w', newline='') as csvfile:
+    with open('results/brute_force000.csv', 'w', newline='') as csvfile:
         output_file = csv.writer(csvfile, quotechar=',')
         for buying_threshold in range(100, 501, 100):
             for jail_time in [0, 1, 3]:

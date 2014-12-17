@@ -12,7 +12,7 @@ def main():
     didnotend = 0
     didend = 0
 
-    with open('results\simple_players005.csv', 'w', newline='') as csvfile:
+    with open('results/all_house_rules.csv', 'w', newline='') as csvfile:
         output_file = csv.writer(csvfile, quotechar=',')
 
         for i in range(games_in_a_set):
@@ -33,7 +33,15 @@ def main():
                              building_threshold=5,
             )
             # Play game.
-            game0 = Game([player1, player2], cutoff=1000)
+            game0 = Game([player1, player2],
+                         cutoff=1000,
+                         auctions_enabled=True,
+                         free_parking_pool=True,
+                         double_on_go=True,
+                         no_rent_in_jail=True,
+                         trip_to_start=True,
+                         snake_eyes_bonus=True,
+                         )
             results = game0.play()
 
             # Store winner.
