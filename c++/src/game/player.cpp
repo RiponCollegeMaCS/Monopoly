@@ -20,8 +20,9 @@
 #include "game/boardlocation.h"
 #include "game/game.h"
 
-#include<iostream>
-#include<vector>
+#include <iostream>
+#include <vector>
+#include <unordered_set>
 
 Player::Player(int num, std::unordered_set<std::string*> groupPreferences, int buy_thresh=100, int build_thresh=5, int jt=3, bool sjs=false, int cm=0, int dt=0)
 {
@@ -33,6 +34,18 @@ Player::Player(int num, std::unordered_set<std::string*> groupPreferences, int b
 	completeMonopoly = cm;
 	developmentThreshold = dt;
 	Player::groupPreferences = groupPreferences;
+}
+
+Player::Player(const int* parameters)
+{
+	Player::number = parameters[0];
+	Player::buyingThreshold = parameters[1];
+	Player::buildingThreshold = parameters[2];
+	Player::jailTime = parameters[3];
+	Player::smartJailStrategy = parameters[4];
+	Player::completeMonopoly = parameters[5];
+	Player::developmentThreshold = parameters[6];
+	Player::groupPreferences = std::unordered_set<std::string*>();
 }
 
 void Player::resetValues()

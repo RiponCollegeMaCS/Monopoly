@@ -58,6 +58,7 @@ class Player
 
 public:
     Player(int num, std::unordered_set<std::string*> groupPreferences, int buy_thresh, int build_thresh, int jt, bool sjs, int cm, int dt);
+    Player(const int* parameters);
 
     void resetValues();
     void changePosition(int delta);

@@ -11,6 +11,7 @@
 #include <ctime>
 #include <thread>
 #include <functional>
+#include <future>
 #include "stats/success.h"
 #include "game/player.h"
 #include "game/game.h"
@@ -35,49 +36,49 @@ int sumArray(int results[], int numberResults)
     return (sum);
 }
 
-int playSet(Player* basePlayer, int numberOfGames, Player* staticOpponent, int results[])
+int playSet(const int* basePlayer, int numberOfGames)
 {
     int num1won = 0;
     
-    if (staticOpponent != NULL)
-    {
-        for (int i = 0; i < numberOfGames; i++)
-        {
-            Player* player1 = basePlayer;
-            player1->resetValues();
-            
-            Player* opponent = staticOpponent;
-            opponent->resetValues();
-            opponent->setNumber(2);
-            
-            // Let's play!
-            std::vector<Player*> players = {player1, opponent};
-            Game currentGame(players, NUMBER_OF_TURNS);
-            int winner = currentGame.play().winner;
-            results[i] = winner;
-            if (1 == winner)
-            {
-                num1won++;
-            }
-        }
-    }
+//    if (staticOpponent != NULL)
+//    {
+//        for (int i = 0; i < numberOfGames; i++)
+//        {
+//            Player player1(basePlayer);
+//
+//            Player* opponent = staticOpponent;
+//            opponent->resetValues();
+//            opponent->setNumber(2);
+//
+//            // Let's play!
+//            std::vector<Player*> players = {&player1, opponent};
+//            Game currentGame(players, NUMBER_OF_TURNS);
+//            int winner = currentGame.play().winner;
+//            results[i] = winner;
+//            if (1 == winner)
+//            {
+//                num1won++;
+//            }
+//        }
+//    }
     
-    else
-    {
-        for (int i = 0; i < numberOfGames; i++)
+//    else
+//    {
+
+//    std::vector<std::future<Game>> futures;
+
+    for (int i = 0; i < numberOfGames; i++)
         {
-            Player* player1 = basePlayer;
-            player1->resetValues();
-            
+            Player player1(basePlayer);
+
             Player* opponent = generateRandomPlayer(2);
-            // if i don't generate a new random player,
-            // would this speed it up to linear?
-            
+
             // Let's play!
-            std::vector<Player*> players = {player1, opponent};
+            std::vector<Player*> players = {&player1, opponent};
             Game currentGame(players, NUMBER_OF_TURNS);
+//            futures.push_back(std::async(std::launch::async, &Game::play, &currentGame));
             int winner = currentGame.play().winner;
-            results[i] = winner;
+//            results[i] = winner;
             if (1 == winner)
             {
                 num1won++;
@@ -85,30 +86,52 @@ int playSet(Player* basePlayer, int numberOfGames, Player* staticOpponent, int r
             
             delete opponent;
         }
-    }
+
+//    for (auto &t : futures)
+//    {
+//        int winner = t.get().winner;
+//
+//        if (1 == winner)
+//        {
+//            num1won++;
+//        }
+//    }
+//    }
     
     return (num1won);
 }
 
-float successIndicator(Player* basePlayer, int numberOfGames = 1000, int procs = 2, Player* staticOpponent = NULL)
+float successIndicator(const int* basePlayer, int numberOfGames = 1000, int procs = 2, Player* staticOpponent = NULL)
 {
     int results[numberOfGames];
+    int success = 0;
+
+    std::vector<std::future<int>> futures;
+
+    for (int i = 0; i < procs; i++)
+    {
+        futures.push_back(std::async(&playSet, basePlayer, numberOfGames / procs));
+    }
+
+    for (auto &i : futures)
+    {
+        success += i.get();
+    }
+//    int success = playSet(basePlayer, numberOfGames, staticOpponent, results);
+
+//        std::vector<std::thread> threads;
+//
+//        for (int i = 0; i < procs; i++)
+//        {
+//            threads.push_back(std::thread(playSet, std::ref(basePlayer), numberOfGames / 4, std::ref(staticOpponent), results));
+//        }
+//
+//        for (auto i : threads)
+//        {
+//            i.join();
+//        }
     
-    int success = playSet(basePlayer, numberOfGames, staticOpponent, results);
-    
-    //    std::vector<std::thread> threads;
-    //
-    //    for (int i = 0; i < procs; i++)
-    //    {
-    //        threads.push_back(std::thread(playSet, std::ref(basePlayer), numberOfGames / 4, std::ref(staticOpponent), results));
-    //    }
-    //
-    //    for (auto i : threads)
-    //    {
-    //        i.join();
-    //    }
-    
-    return ((float) success / (float) numberOfGames); // ?
+    return ((float) success / (float) numberOfGames);
 }
 
 void shortBruteForce(int numberOfGames=5000)
@@ -125,11 +148,11 @@ void shortBruteForce(int numberOfGames=5000)
                 for (int developmentThreshold = 0; developmentThreshold < 3; developmentThreshold++)
                 {
 //                    Player player(1, noGroupPrefs, 100, 5, jailtime, smartJailStrategy, completeMonopoly, developmentThreshold);
-                    Player player(1, noGroupPrefs, 100, 5, 0, 0, 0, 0);
-                    float s = successIndicator(&player, numberOfGames, 4);
-                    results.writeline(player.getInfo(), s);
+                    int params[7] = { 1, 100, 5, 0, 0, 0, 0 }; // send parameters to thread
+                    float s = successIndicator(params, numberOfGames, 4);
+//                    results.writeline(player.getInfo(), s);
                     std::cout << s << std::endl;
-                }
+                };
             }
         }
     }
