@@ -12,7 +12,7 @@ def main():
     didnotend = 0
     didend = 0
 
-    with open('results/all_house_rules.csv', 'w', newline='') as csvfile:
+    with open('results/with_trades.csv', 'w', newline='') as csvfile:
         output_file = csv.writer(csvfile, quotechar=',')
 
         for i in range(games_in_a_set):
@@ -36,11 +36,12 @@ def main():
             game0 = Game([player1, player2],
                          cutoff=1000,
                          auctions_enabled=True,
-                         free_parking_pool=True,
-                         double_on_go=True,
-                         no_rent_in_jail=True,
-                         trip_to_start=True,
-                         snake_eyes_bonus=True,
+                         trading_enabled=True,
+                         free_parking_pool=False,
+                         double_on_go=False,
+                         no_rent_in_jail=False,
+                         trip_to_start=False,
+                         snake_eyes_bonus=False,
                          )
             results = game0.play()
 
@@ -76,6 +77,9 @@ def main():
 
     # Print out winners (The ith slot represents the ith person's wins; 0=tie).
     print('winner_matrix', winner_matrix)
+    # Print out average game length.
+    print('average length',sum(length_matrix) / games_in_a_set)
+
 
 
 if __name__ == '__main__':

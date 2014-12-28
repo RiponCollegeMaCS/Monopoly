@@ -21,7 +21,7 @@ class Player:
                  development_threshold=0,
                  building_threshold=5,
                  group_preferences=(),
-                 ):
+    ):
         self.number = number
         self.reset_values()  # Reset the player's attributes if the player is used again.
 
@@ -139,6 +139,65 @@ class Player:
                     pass  # ##print("player",self.number,"unmortgaged",board_space.name)
                 else:
                     return  # Exit if the player doesn't have enough money to continue.
+
+        # # Trade to form monopolies. ## TODO
+        # Check if trading is enabled.
+        if game_info.trading_enabled:
+            group_number = {"Brown": 0, "Light Blue": 1,
+                            "Pink": 2, "Orange": 3,
+                            "Red": 4, "Yellow": 5,
+                            "Green": 6, "Dark Blue": 7}
+            group_name = ["Brown", "Light Blue", "Pink", "Orange",
+                          "Red", "Yellow", "Green", "Dark Blue"]
+            properties_in_group = [2, 3, 3, 3, 3, 3, 3, 2]
+
+            # Tally properties for playerA.
+            for playerA in game_info.active_players:
+                group_countsA = [0, 0, 0, 0, 0, 0, 0, 0]  # To store property counts.
+                # Loop through player's properties.
+                for property in playerA.inventory:
+                    if property.group not in ["Railroad", "Utility"]:
+                        group_num = group_number[property.group]
+                        group_countsA[group_num] += 1
+
+                # Tally properties for playerB.
+                for playerB in game_info.active_players:
+                    group_countsB = [0, 0, 0, 0, 0, 0, 0, 0]  # To store property counts.
+                    for property in playerB.inventory:
+                        if property.group not in ["Railroad", "Utility"]:
+                            group_num = group_number[property.group]
+                            group_countsB[group_num] += 1
+
+                    # Add the counts.
+                    group_counts = [sum(x) for x in zip(group_countsA, group_countsB)]
+
+                    # Check if consecutive property groups are complete.
+                    for i in [0, 1, 2, 3, 4, 5, 6]:
+                        j = i + 1  # The "forward" property group.
+                        # Check if we have all the properties in the group.
+                        if group_counts[i] == properties_in_group[i] and group_counts[j] == properties_in_group[j]:
+                            # Check if each player can contribute.
+                            if group_countsA[i] > 0 and group_countsB[i] > 0:
+                                if group_countsA[j] > 0 and group_countsB[j] > 0:
+
+                                    # Shuffle the names of the consecutive two groups.
+                                    group_names = [group_name[i], group_name[j]]
+                                    shuffle(group_names)
+
+                                    # playerB takes properties from playerA
+                                    for property in playerA.inventory:
+                                        if property.group == group_names[0]:
+                                            playerB.inventory.append(property)
+                                            playerA.inventory.remove(property)
+                                    playerB.monopolies.append(group_names[0])
+
+                                    # playerA takes properties from playerB
+                                    for property in playerB.inventory:
+                                        if property.group == group_names[1]:
+                                            playerA.inventory.append(property)
+                                            playerB.inventory.remove(property)
+                                    playerA.monopolies.append(group_names[1])
+
 
     # Determines how a player gets out of jail: use a GOOJF or pay $50.
     def pay_out_of_jail(self, game_info):
@@ -389,7 +448,7 @@ class BoardLocation:
 
 # Define the Game class.
 class Game:
-    def __init__(self, list_of_players, auctions_enabled=True, free_parking_pool=False,
+    def __init__(self, list_of_players, auctions_enabled=True, trading_enabled=True, free_parking_pool=False,
                  double_on_go=False, no_rent_in_jail=False, trip_to_start=False, snake_eyes_bonus=False, cutoff=1000):
         self.create_board()  # Set-up the board.
         self.create_cards()  # Shuffle both card decks.
@@ -402,6 +461,7 @@ class Game:
         self.winner = 1000  # Ending game data.
         self.dice_roll = 0  # The current dice roll can be accessible everywhere.
         self.auctions_enabled = auctions_enabled  # A toggle to disable auctions.
+        self.trading_enabled = trading_enabled
         self.first_building = False  # Records whether a building has been bought for smart_jail_strategy
         self.cutoff = cutoff  # Determines when a game should be terminated.
         self.loss_reason = []  # To store how a player lost the game.
@@ -1041,9 +1101,9 @@ class Game:
             self.loss_reason = "Tie"
 
         # Ending report.
-        results = {'winner':        self.winner,
-                   'length':        self.turn_counter,
-                   'end behavior':  self.loss_reason,
-                   'monopolies':    all_monopolies,
+        results = {'winner': self.winner,
+                   'length': self.turn_counter,
+                   'end behavior': self.loss_reason,
+                   'monopolies': all_monopolies,
         }
         return results
