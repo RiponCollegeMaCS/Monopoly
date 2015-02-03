@@ -21,8 +21,11 @@ class Player:
                  development_threshold=0,
                  building_threshold=5,
                  group_preferences=(),
+<<<<<<< HEAD
                  initial_inventory=False,
                  initial_money=False
+=======
+>>>>>>> 27165d4b8f6ac4716517fc4b5cb7e82147c45b9b
     ):
         self.number = number
         self.reset_values()  # Reset the player's attributes if the player is used again.
@@ -54,7 +57,10 @@ class Player:
         self.inventory = []  # A list of the player's properties.
         self.monopolies = []  # A list of the player's monopolies.
         self.passed_go = False  # Used for a house rule.
+<<<<<<< HEAD
         self.money_changes = []
+=======
+>>>>>>> 27165d4b8f6ac4716517fc4b5cb7e82147c45b9b
 
         # For auctions
         self.mortgage_auctioned_property = False
@@ -455,8 +461,15 @@ class BoardLocation:
 
 # Define the Game class.
 class Game:
+<<<<<<< HEAD
     def __init__(self, list_of_players, auctions_enabled=True, trading_enabled=False, free_parking_pool=False,
                  double_on_go=False, no_rent_in_jail=False, trip_to_start=False, snake_eyes_bonus=False, cutoff=1000):
+=======
+    def __init__(self, list_of_players, auctions_enabled=True, trading_enabled=True, free_parking_pool=False,
+                 double_on_go=False, no_rent_in_jail=False, trip_to_start=False, snake_eyes_bonus=False, cutoff=1000):
+        self.create_board()  # Set-up the board.
+        self.create_cards()  # Shuffle both card decks.
+>>>>>>> 27165d4b8f6ac4716517fc4b5cb7e82147c45b9b
         self.active_players = list_of_players  # Create  a list of players.
         self.inactive_players = []  # An empty list to store losing players.
         self.turn_counter = 0  # Reset turn counter.
@@ -470,9 +483,12 @@ class Game:
         self.first_building = False  # Records whether a building has been bought for smart_jail_strategy
         self.cutoff = cutoff  # Determines when a game should be terminated.
         self.loss_reason = []  # To store how a player lost the game.
+<<<<<<< HEAD
         self.starting_player = 0  # Store which player started.
         self.create_board()  # Set-up the board.
         self.create_cards()  # Shuffle both card decks.
+=======
+>>>>>>> 27165d4b8f6ac4716517fc4b5cb7e82147c45b9b
 
         # Money pools.
         self.bank = MoneyPool(12500)  # Create the bank.
@@ -1019,9 +1035,12 @@ class Game:
         self.turn_counter += 1  # Increase master turn counter
         self.doubles_counter = 0  # Reset doubles counter.
 
+<<<<<<< HEAD
         # Track the player's money.
         player.money_changes.append(player.money)
 
+=======
+>>>>>>> 27165d4b8f6ac4716517fc4b5cb7e82147c45b9b
         # Is the player in jail?
         if player.in_jail:  # Player is in jail.
             player.jail_counter += 1  # Increase the jail turn counter
@@ -1095,6 +1114,7 @@ class Game:
         self.starting_player = self.active_players[0].number
 
         # Game loop. Continue if there is more than 1 player and we haven't reached the cutoff.
+
         while len(self.active_players) > 1 and self.turn_counter < self.cutoff:
             # pass###print([self.active_players[0].money,self.active_players[1].money])
 
@@ -1134,8 +1154,11 @@ class Game:
                    'length': self.turn_counter,
                    'end behavior': self.loss_reason,
                    'monopolies': all_monopolies,
+<<<<<<< HEAD
                    'started': self.starting_player,
                    'players': self.active_players
 
+=======
+>>>>>>> 27165d4b8f6ac4716517fc4b5cb7e82147c45b9b
         }
         return results

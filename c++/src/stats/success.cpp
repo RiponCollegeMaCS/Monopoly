@@ -106,7 +106,7 @@ float successIndicator(const int* basePlayer, int numberOfGames = 1000, int proc
     int results[numberOfGames];
     int success = 0;
 
-    std::vector<std::future<int>> futures;
+    std::vector<std::future<int> > futures;
 
     for (int i = 0; i < procs; i++)
     {
@@ -148,7 +148,7 @@ void shortBruteForce(int numberOfGames=5000)
                 for (int developmentThreshold = 0; developmentThreshold < 3; developmentThreshold++)
                 {
 //                    Player player(1, noGroupPrefs, 100, 5, jailtime, smartJailStrategy, completeMonopoly, developmentThreshold);
-                    int params[7] = { 1, 100, 5, 0, 0, 0, 0 }; // send parameters to thread
+                    int params[7] = { 1, 100, 5, jailtime, smartJailStrategy, completeMonopoly, developmentThreshold }; // send parameters to thread
                     float s = successIndicator(params, numberOfGames, 4);
 //                    results.writeline(player.getInfo(), s);
                     std::cout << s << std::endl;
