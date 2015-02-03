@@ -22,9 +22,9 @@
 #include <unordered_set>
 #include <cstdlib>
 #include <ctime>
-#include "game.h"
-#include "player.h"
-#include "success.h"
+#include "game/game.h"
+#include "game/player.h"
+#include "stats/success.h"
 
 std::string CRAPPY_MONOPOLY = "Brown";
 std::unordered_set<std::string*> noPrefs;
@@ -102,7 +102,7 @@ int main()
 	std::clock_t begin = std::clock();
 	pyMain();
 	monopolyTest();
-    shortBruteForce(NUMBER_OF_GAMES);
+	shortBruteForce(NUMBER_OF_GAMES);
 	std::clock_t end = clock();
 	double elapsedSecs = double(end - begin) / CLOCKS_PER_SEC;
 	std::cout << "Time elapsed: " << elapsedSecs << std::endl;

@@ -51,7 +51,7 @@ class Game
 	int diceRoll = 0;
 	bool auctionsEnabled = false;
 	bool firstBuilding = false;
-	int cutoff = 300;
+	int cutoff = 1000;
 
 	bool moveAgain = false;
 
@@ -112,6 +112,7 @@ public:
     bool mortgageCheck(BoardLocation* property, Player* player);
     void developProperties(Player* player);
     bool monopolyStatus(Player* player, BoardLocation* boardSpace);
+    bool monopolyStatus(Player* player, BoardLocation* boardSpace, std::vector<BoardLocation*>* additionalProperties);
     int findAvailableMortgageValue(Player* player);
     void auction(BoardLocation* boardSpace);
     int totalAssets(Player* player);

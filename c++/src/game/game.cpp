@@ -16,10 +16,10 @@
  * =====================================================================================
  */
 
-#include "game.h"
-#include "player.h"
-#include "boardlocation.h"
-#include "moneypool.h"
+#include "game/game.h"
+#include "game/player.h"
+#include "game/boardlocation.h"
+#include "game/moneypool.h"
 
 #include<iostream>
 #include<string>
@@ -131,7 +131,7 @@ void Game::communityChest(Player* player)
 		Game::communityChest(player);
 		break;
 	case 1: // Get out of jail free
-		player->flipCommunityChestCard();
+		player->giveCommunityChestCard();
 		communityChestCards[communityChestIndex] = 0;
 		communityChestJailIndex = communityChestIndex;
 		break;
@@ -221,7 +221,7 @@ void Game::chance(Player* player)
 		Game::chance(player);
 		break;
 	case 1: // Get out of jail free
-		player->flipChanceCard();
+		player->giveChanceCard();
 		chanceCards[chanceIndex] = 0;
 		chanceJailIndex = chanceIndex;
 		break;
@@ -747,7 +747,8 @@ void Game::developProperties(Player* player)
                                     boardSpace->changeBuildings(1);
                                     player->addMoney(-boardSpace->getHouseCost());
                                     
-                                    if (player->getDevelopmentThreshold() != 2 && player->getMoney() < 0);
+                                    if (player->getDevelopmentThreshold() != 2 && player->getMoney() < 0)
+                                        ;
                                         
                                         //throw 20;
                                     
@@ -820,6 +821,44 @@ bool Game::monopolyStatus(Player* player, BoardLocation* boardSpace)
         }
     }
     
+    if (propertyCounter == 3 && (group == "Light Blue" || group == "Pink" || group == "Orange" || group == "Red" || group == "Yellow" || group == "Green"))
+    {
+        return (true);
+    }
+    else if (propertyCounter == 2 && (group == "Dark Blue" || group == "Brown"))
+    {
+        return (true);
+    }
+    return (false);
+}
+
+bool Game::monopolyStatus(Player* player, BoardLocation* boardSpace, std::vector<BoardLocation*>* additionalProperties)
+{
+    std::string group = *boardSpace->getGroup();
+
+    if ("" == group || "Railroad" == group || "Utility" == group)
+    {
+        return (false);
+    }
+
+    int propertyCounter = 0;
+
+    for (auto property : *player->getInventory())
+    {
+        if (*property->getGroup() == group)
+        {
+            propertyCounter++;
+        }
+    }
+
+    for (auto property : *additionalProperties)
+    {
+        if (*property->getGroup() == group)
+        {
+            propertyCounter++;
+        }
+    }
+
     if (propertyCounter == 3 && (group == "Light Blue" || group == "Pink" || group == "Orange" || group == "Red" || group == "Yellow" || group == "Green"))
     {
         return (true);
@@ -1149,7 +1188,7 @@ endReport Game::play()
     }
     
     endReport report;
-    report.winner = activePlayers[0]->getNumber();
+    report.winner = Game::activePlayers.size() == 2? 0 : activePlayers[0]->getNumber();
     report.turnCounter = turnCounter;
     report.player0Monopolies = *activePlayers[0]->getMonopolies();
     report.player1Monopolies = *activePlayers[1]->getMonopolies();

@@ -47,17 +47,17 @@ public:
 	std::string* getName();
 	int getPrice();
 	int getRents(int position);
-    int getBuildings();
 	int getHouseCost();
 	std::string* getGroup();
-	int exchangeMoney();
+	int getBuildings();
 	int getVisits();
 	bool isMortgaged();
-    void setMortgaged(bool val);
-    int getUnmortgagePrice();
+        void setMortgaged(bool val);
+        int getUnmortgagePrice();
 
 	// Instance methods
-	void flipMortgaged();
+    void mortgage();
+    void unmortgage();
 	void incrementVisits();
 	void changeBuildings(int);
 };
