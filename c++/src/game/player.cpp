@@ -46,7 +46,7 @@ Player::Player(const int* parameters)
 	Player::smartJailStrategy = parameters[4];
 	Player::completeMonopoly = parameters[5];
 	Player::developmentThreshold = parameters[6];
-    Player;:maxAuctionBid = parameters[7];
+    Player::maxAuctionBid = parameters[7];
 	Player::groupPreferences = std::unordered_set<std::string*>();
 }
 

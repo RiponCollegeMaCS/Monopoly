@@ -251,7 +251,7 @@ float BoardLocation::getAuctionModifier()
     }
 }
 
-static int BoardLocation::getGroupSize(std::string* groupName)
+int BoardLocation::getGroupSize(std::string* groupName)
 {
     if (*groupName == "Brown" || *groupName == "Dark Blue")
     {
