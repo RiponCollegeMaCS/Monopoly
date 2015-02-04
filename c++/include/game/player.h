@@ -50,14 +50,15 @@ class Player
 	int jailCounter = 0;
 	bool cardRent = false;
     std::unordered_set<std::string*> monopolies;
-	int auctionBid = 0;
+//	int auctionBid = 0;
+    int maxAuctionBid = 0;
 	bool passedGo = false;
 	std::unordered_set<BoardLocation*> inventory;
 	bool bidIncludesMortgages = false;
 	bool moveAgain = true;
 
 public:
-    Player(int num, std::unordered_set<std::string*> groupPreferences, int buy_thresh, int build_thresh, int jt, bool sjs, int cm, int dt);
+    Player(int num, std::unordered_set<std::string*> groupPreferences, int buy_thresh, int build_thresh, int jt, bool sjs, int cm, int dt, int maw);
     Player(const int* parameters);
 
     void resetValues();
@@ -79,10 +80,10 @@ public:
     bool evenSellingTest(BoardLocation* property);
     bool evenBuildingTest(BoardLocation* property);
     int findAvailableMortgageValue();
-    void makeBid(BoardLocation* property, Game* game);
-    void makeAuctionFunds(BoardLocation* property, Game* game, int winningBid);
+    int getMaxAuctionBid();
     bool unownedPropertyAction(Game* game, BoardLocation* property);
     bool jailDecision(Game* game);
+    bool completesMonopoly(BoardLocation* property);
 
     // Getters and setters
     int getNumber();

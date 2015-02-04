@@ -34,9 +34,9 @@ void CSV::writeline(int* player, float result)
 {
     CSV::outfile << result << CSV::SEPARATOR;
 
-    for (int i = 0; i < 6; i++)
+    for (int i = 0; i < 7; i++)
     {
-        if (i < 5)
+        if (i < 6)
             CSV::outfile << player[i] << CSV::SEPARATOR;
         else
             CSV::outfile << player[i];

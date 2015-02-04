@@ -24,7 +24,7 @@
 #include <vector>
 #include <unordered_set>
 
-Player::Player(int num, std::unordered_set<std::string*> groupPreferences, int buy_thresh=100, int build_thresh=5, int jt=3, bool sjs=false, int cm=0, int dt=0)
+Player::Player(int num, std::unordered_set<std::string*> groupPreferences, int buy_thresh=100, int build_thresh=5, int jt=3, bool sjs=false, int cm=0, int dt=0, int mab=0)
 {
 	number = num;
 	buyingThreshold = buy_thresh;
@@ -33,6 +33,7 @@ Player::Player(int num, std::unordered_set<std::string*> groupPreferences, int b
 	smartJailStrategy = sjs;
 	completeMonopoly = cm;
 	developmentThreshold = dt;
+    maxAuctionBid = mab;
 	Player::groupPreferences = groupPreferences;
 }
 
@@ -45,6 +46,7 @@ Player::Player(const int* parameters)
 	Player::smartJailStrategy = parameters[4];
 	Player::completeMonopoly = parameters[5];
 	Player::developmentThreshold = parameters[6];
+    Player;:maxAuctionBid = parameters[7];
 	Player::groupPreferences = std::unordered_set<std::string*>();
 }
 
@@ -59,7 +61,6 @@ void Player::resetValues()
 	jailCounter = 0;
 	cardRent = false;
 	monopolies.clear();
-	auctionBid = 0;
 	passedGo = false;
 	inventory.clear();
 	bidIncludesMortgages = false;
@@ -470,61 +471,66 @@ int Player::findAvailableMortgageValue()
 	return (available);
 }
 
-void Player::makeBid(BoardLocation* property, Game* game)
+//void Player::makeBid(BoardLocation* property, Game* game)
+//{
+//	Player::bidIncludesMortgages = false;
+//
+//    std::vector<BoardLocation*> additional = {property};
+//
+//	if (isInGroupPreferences(*property->getGroup()))
+//	{
+//		Player::auctionBid = Player::money - 1;
+//	}
+//
+//	else if (1 == Player::completeMonopoly && game->monopolyStatus(this, property, &additional))
+//	{
+//		Player::auctionBid = Player::money - 1;
+//	}
+//
+//	else if (2 == Player::completeMonopoly && game->monopolyStatus(this, property, &additional))
+//	{
+//		Player::bidIncludesMortgages = true;
+//
+//		int available = Player::findAvailableMortgageValue();
+//
+//		Player::auctionBid = Player::money + available - 1;
+//	}
+//
+//	else
+//	{
+//		Player::auctionBid = Player::money - Player::buyingThreshold;
+//	}
+//}
+//
+//void Player::makeAuctionFunds(BoardLocation* property, Game* game, int winningBid)
+//{
+//	// Special buying procedure if the player wants to mortgage properties.
+//	if (Player::bidIncludesMortgages)
+//	{
+//		Player::money -= winningBid;
+//
+//		// Make up the funds
+//		for (auto property : Player::inventory)
+//		{
+//			if (money > 0)
+//			{
+//				break; // deviation alert
+//			}
+//
+//			if (0 == property->getBuildings() && !property->isMortgaged() && !isInMonopolies(property->getGroup()))
+//			{
+//				property->mortgage();
+//				Player::money = property->getPrice() / 2;
+//			}
+//		}
+//
+//		Player::money += winningBid;
+//	}
+//}
+
+int Player::getMaxAuctionBid()
 {
-	Player::bidIncludesMortgages = false;
-
-    std::vector<BoardLocation*> additional = {property};
-
-	if (isInGroupPreferences(*property->getGroup()))
-	{
-		Player::auctionBid = Player::money - 1;
-	}
-
-	else if (1 == Player::completeMonopoly && game->monopolyStatus(this, property, &additional))
-	{
-		Player::auctionBid = Player::money - 1;
-	}
-
-	else if (2 == Player::completeMonopoly && game->monopolyStatus(this, property, &additional))
-	{
-		Player::bidIncludesMortgages = true;
-
-		int available = Player::findAvailableMortgageValue();
-
-		Player::auctionBid = Player::money + available - 1;
-	}
-
-	else
-	{
-		Player::auctionBid = Player::money - Player::buyingThreshold;
-	}
-}
-
-void Player::makeAuctionFunds(BoardLocation* property, Game* game, int winningBid)
-{
-	// Special buying procedure if the player wants to mortgage properties.
-	if (Player::bidIncludesMortgages)
-	{
-		Player::money -= winningBid;
-
-		// Make up the funds
-		for (auto property : Player::inventory)
-		{
-			if (money > 0)
-			{
-				break; // deviation alert
-			}
-
-			if (0 == property->getBuildings() && !property->isMortgaged() && !isInMonopolies(property->getGroup()))
-			{
-				property->mortgage();
-				Player::money = property->getPrice() / 2;
-			}
-		}
-
-		Player::money += winningBid;
-	}
+    return Player::maxAuctionBid > Player::money ? Player::money - 1 : Player::maxAuctionBid;
 }
 
 bool Player::unownedPropertyAction(Game* game, BoardLocation* property)
@@ -591,6 +597,24 @@ bool Player::jailDecision(Game* game)
 	return (false);
 }
 
+bool Player::completesMonopoly(BoardLocation *property)
+{
+    int count = 0;
+    for (auto aProperty : Player::inventory)
+    {
+        if (aProperty->getGroup() == property->getGroup())
+        {
+            count++;
+        }
+    }
+    if (BoardLocation::getGroupSize(property->getGroup()) == count)
+    {
+        return true;
+    }
+
+    return false;
+}
+
 // Getters and setters
 int Player::getNumber() { return (number); }
 void Player::setNumber(int num) { number = num; }
@@ -621,8 +645,6 @@ void Player::setMoney(int newMoney) { money = newMoney; }
 void Player::addMoney(int add) { money += add; }
 bool Player::getBidIncludesMortgages() { return (bidIncludesMortgages); }
 void Player::setBidIncludesMortgages(bool bid) { bidIncludesMortgages = bid; }
-int Player::getAuctionBid() { return (auctionBid); }
-void Player::setAuctionBid(int bid) { auctionBid = bid; }
 bool Player::getCardRent() { return (cardRent); }
 void Player::setCardRent(bool rent) { cardRent = rent; }
 int Player::getJailCounter() { return (jailCounter); }
@@ -644,6 +666,7 @@ int* Player::getInfo()
     info[3] = Player::smartJailStrategy;
     info[4] = Player::completeMonopoly;
     info[5] = Player::developmentThreshold;
+    info[6] = Player::maxAuctionBid;
 
     return info;
 }

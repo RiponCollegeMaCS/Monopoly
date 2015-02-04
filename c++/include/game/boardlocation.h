@@ -36,6 +36,7 @@ class BoardLocation
 	int buildings = 0;
 	int visits = 0;
 	bool mortgaged = false;
+    float auctionModifier;
 
 public:
 	BoardLocation(int id, std::string name);
@@ -60,6 +61,8 @@ public:
     void unmortgage();
 	void incrementVisits();
 	void changeBuildings(int);
+    float getAuctionModifier();
+    static int getGroupSize(std::string* groupName);
 };
 
 

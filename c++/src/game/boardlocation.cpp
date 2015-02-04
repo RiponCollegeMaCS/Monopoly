@@ -206,3 +206,68 @@ void BoardLocation::incrementVisits()
  * @param delta the change in buildings
  */
 void BoardLocation::changeBuildings(int delta) { buildings += delta; }
+
+float BoardLocation::getAuctionModifier()
+{
+    if (BoardLocation::group == "Brown")
+    {
+        return 0.1;
+    }
+    else if (BoardLocation::group == "Light Blue")
+    {
+        return 0.2;
+    }
+    else if (BoardLocation::group == "Pink")
+    {
+        return 0.3;
+    }
+    else if (BoardLocation::group == "Utility")
+    {
+        return 0.4;
+    }
+    else if (BoardLocation::group == "Railroad")
+    {
+        return 0.5;
+    }
+    else if (BoardLocation::group == "Orange")
+    {
+        return 0.6;
+    }
+    else if (BoardLocation::group == "Red")
+    {
+        return 0.7;
+    }
+    else if (BoardLocation::group == "Yellow")
+    {
+        return 0.8;
+    }
+    else if (BoardLocation::group == "Green")
+    {
+        return 0.9;
+    }
+    else if (BoardLocation::group == "Dark Blue")
+    {
+        return 1.0;
+    }
+}
+
+static int BoardLocation::getGroupSize(std::string* groupName)
+{
+    if (*groupName == "Brown" || *groupName == "Dark Blue")
+    {
+        return 2;
+    }
+    else if (*groupName == "Railroad")
+    {
+        return 4;
+    }
+    else if (*groupName == "Utility")
+    {
+        return 3;
+    }
+    else if (*groupName == "None")
+    {
+       return -1;
+    }
+    return 3;
+}
