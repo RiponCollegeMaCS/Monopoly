@@ -10,7 +10,7 @@ def generate_random_player(number):
                     building_threshold=5,  # choice([0, 1, 2, 3, 4, 5]),
                     development_threshold=choice([0, 1, 2]),
                     complete_monopoly=choice([0, 1, 2]),
-                    jail_time=choice([0, 1, 2, 3]),
+                    jail_time=choice([0, 1, 3]),
                     smart_jail_strategy=choice([True, False]),
                     group_preferences=()  # sample(list_of_groups, choice([0, 1, 2, 3]))
     )
@@ -44,7 +44,7 @@ def play_set(base_player, number_of_games, static_opponent, results_q):
             # Play the game.
             current_game = Game([player1, opponent])  # Create the game.
             current_game_result = current_game.play()  # Play the game.
-            results_list.append(current_game_result[0])  # Store the game's result.
+            results_list.append(current_game_result['winner'])  # Store the game's result.
 
     results_q.put(results_list.count(1))
 
@@ -79,6 +79,6 @@ def simple_success_indicator(base_player, number_of_games=10000):
         # Play the game.
         current_game = Game([player1, opponent])  # Create the game.
         current_game_result = current_game.play()  # Play the game.
-        results_list.append(current_game_result[0])  # Store the game's result.
+        results_list.append(current_game_result['winner'])  # Store the game's result.
     success_rate = float(results_list.count(1)) / float(number_of_games)
     return success_rate

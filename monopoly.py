@@ -21,9 +21,15 @@ class Player:
                  development_threshold=0,
                  building_threshold=5,
                  group_preferences=(),
+                 initial_inventory=False,
+                 initial_money=False
     ):
         self.number = number
         self.reset_values()  # Reset the player's attributes if the player is used again.
+        self.initial_inventory = initial_inventory
+        self.initial_money = initial_money
+        if initial_money:
+            self.money = initial_money
 
         # Strategy parameters.
         self.group_preferences = group_preferences
@@ -48,6 +54,7 @@ class Player:
         self.inventory = []  # A list of the player's properties.
         self.monopolies = []  # A list of the player's monopolies.
         self.passed_go = False  # Used for a house rule.
+        self.money_changes = []
 
         # For auctions
         self.mortgage_auctioned_property = False
@@ -448,10 +455,8 @@ class BoardLocation:
 
 # Define the Game class.
 class Game:
-    def __init__(self, list_of_players, auctions_enabled=True, trading_enabled=True, free_parking_pool=False,
+    def __init__(self, list_of_players, auctions_enabled=True, trading_enabled=False, free_parking_pool=False,
                  double_on_go=False, no_rent_in_jail=False, trip_to_start=False, snake_eyes_bonus=False, cutoff=1000):
-        self.create_board()  # Set-up the board.
-        self.create_cards()  # Shuffle both card decks.
         self.active_players = list_of_players  # Create  a list of players.
         self.inactive_players = []  # An empty list to store losing players.
         self.turn_counter = 0  # Reset turn counter.
@@ -465,6 +470,9 @@ class Game:
         self.first_building = False  # Records whether a building has been bought for smart_jail_strategy
         self.cutoff = cutoff  # Determines when a game should be terminated.
         self.loss_reason = []  # To store how a player lost the game.
+        self.starting_player = 0  # Store which player started.
+        self.create_board()  # Set-up the board.
+        self.create_cards()  # Shuffle both card decks.
 
         # Money pools.
         self.bank = MoneyPool(12500)  # Create the bank.
@@ -503,42 +511,58 @@ class Game:
         self.board.append(BoardLocation(5, "Reading Railroad", 200, "Railroad"))
         self.board.append(BoardLocation(6, "Oriental Ave.", 100, "Light Blue", (6, 30, 90, 270, 400, 550), 50))
         self.board.append(BoardLocation(7, "Chance"))
-        self.board.append(BoardLocation(9, "Vermont Ave.", 100, "Light Blue", (6, 30, 90, 270, 400, 550), 50))
-        self.board.append(BoardLocation(10, "Connecticut Ave.", 120, "Light Blue", (8, 40, 100, 300, 450, 600), 50))
-        self.board.append(BoardLocation(11, "Just Visiting / In Jail"))
-        self.board.append(BoardLocation(12, "St. Charles Place", 140, "Pink", (10, 50, 150, 450, 625, 750), 100))
-        self.board.append(BoardLocation(13, "Electric Company", 150, "Utility"))
-        self.board.append(BoardLocation(14, "States Ave.", 140, "Pink", (10, 50, 150, 450, 625, 750), 100))
-        self.board.append(BoardLocation(15, "Virginia Ave.", 160, "Pink", (12, 60, 180, 500, 700, 900), 100))
-        self.board.append(BoardLocation(16, "Pennsylvania Railroad", 200, "Railroad"))
-        self.board.append(BoardLocation(17, "St. James Place", 180, "Orange", (14, 70, 200, 550, 750, 950), 100))
-        self.board.append(BoardLocation(18, "Community Chest"))
-        self.board.append(BoardLocation(19, "Tennessee Ave.", 180, "Orange", (14, 70, 200, 550, 750, 950), 100))
-        self.board.append(BoardLocation(20, "New York Ave.", 200, "Orange", (16, 80, 220, 600, 800, 1000), 100))
-        self.board.append(BoardLocation(21, "Free Parking"))
-        self.board.append(BoardLocation(22, "Kentucky Ave.", 220, "Red", (18, 90, 250, 700, 875, 1050), 150))
-        self.board.append(BoardLocation(23, "Chance"))
-        self.board.append(BoardLocation(24, "Indiana Ave.", 220, "Red", (18, 90, 250, 700, 875, 1050), 150))
-        self.board.append(BoardLocation(25, "Illinois Ave.", 240, "Red", (20, 100, 300, 750, 925, 1100), 150))
-        self.board.append(BoardLocation(26, "B. & O. Railroad", 200, "Railroad"))
-        self.board.append(BoardLocation(27, "Atlantic Ave.", 260, "Yellow", (22, 110, 330, 800, 975, 1150), 150))
-        self.board.append(BoardLocation(28, "Ventnor Ave.", 260, "Yellow", (22, 110, 330, 800, 975, 1150), 150))
-        self.board.append(BoardLocation(29, "Water Works", 150, "Utility"))
-        self.board.append(BoardLocation(30, "Marvin Gardens", 280, "Yellow", (24, 120, 360, 850, 1025, 1200), 150))
-        self.board.append(BoardLocation(31, "Go to Jail"))
-        self.board.append(BoardLocation(32, "Pacific Ave.", 300, "Green", (26, 130, 390, 900, 1100, 1275), 200))
-        self.board.append(BoardLocation(33, "North Carolina Ave.", 300, "Green", (26, 130, 390, 900, 1100, 1275), 200))
-        self.board.append(BoardLocation(34, "Community Chest"))
-        self.board.append(BoardLocation(35, "Pennsylvania Ave.", 320, "Green", (28, 150, 450, 1000, 1200, 1400), 200))
-        self.board.append(BoardLocation(36, "Short Line Railroad", 200, "Railroad"))
-        self.board.append(BoardLocation(37, "Chance"))
-        self.board.append(BoardLocation(38, "Park Place", 350, "Dark Blue", (35, 175, 500, 1100, 1300, 1500), 200))
-        self.board.append(BoardLocation(39, "Luxury Tax"))
-        self.board.append(BoardLocation(40, "Boardwalk", 400, "Dark Blue", (50, 200, 600, 1400, 1700, 2000), 200))
+        self.board.append(BoardLocation(8, "Vermont Ave.", 100, "Light Blue", (6, 30, 90, 270, 400, 550), 50))
+        self.board.append(BoardLocation(9, "Connecticut Ave.", 120, "Light Blue", (8, 40, 100, 300, 450, 600), 50))
+        self.board.append(BoardLocation(10, "Just Visiting / In Jail"))
+        self.board.append(BoardLocation(11, "St. Charles Place", 140, "Pink", (10, 50, 150, 450, 625, 750), 100))
+        self.board.append(BoardLocation(12, "Electric Company", 150, "Utility"))
+        self.board.append(BoardLocation(13, "States Ave.", 140, "Pink", (10, 50, 150, 450, 625, 750), 100))
+        self.board.append(BoardLocation(14, "Virginia Ave.", 160, "Pink", (12, 60, 180, 500, 700, 900), 100))
+        self.board.append(BoardLocation(15, "Pennsylvania Railroad", 200, "Railroad"))
+        self.board.append(BoardLocation(16, "St. James Place", 180, "Orange", (14, 70, 200, 550, 750, 950), 100))
+        self.board.append(BoardLocation(17, "Community Chest"))
+        self.board.append(BoardLocation(18, "Tennessee Ave.", 180, "Orange", (14, 70, 200, 550, 750, 950), 100))
+        self.board.append(BoardLocation(19, "New York Ave.", 200, "Orange", (16, 80, 220, 600, 800, 1000), 100))
+        self.board.append(BoardLocation(20, "Free Parking"))
+        self.board.append(BoardLocation(21, "Kentucky Ave.", 220, "Red", (18, 90, 250, 700, 875, 1050), 150))
+        self.board.append(BoardLocation(22, "Chance"))
+        self.board.append(BoardLocation(23, "Indiana Ave.", 220, "Red", (18, 90, 250, 700, 875, 1050), 150))
+        self.board.append(BoardLocation(24, "Illinois Ave.", 240, "Red", (20, 100, 300, 750, 925, 1100), 150))
+        self.board.append(BoardLocation(25, "B. & O. Railroad", 200, "Railroad"))
+        self.board.append(BoardLocation(26, "Atlantic Ave.", 260, "Yellow", (22, 110, 330, 800, 975, 1150), 150))
+        self.board.append(BoardLocation(27, "Ventnor Ave.", 260, "Yellow", (22, 110, 330, 800, 975, 1150), 150))
+        self.board.append(BoardLocation(28, "Water Works", 150, "Utility"))
+        self.board.append(BoardLocation(29, "Marvin Gardens", 280, "Yellow", (24, 120, 360, 850, 1025, 1200), 150))
+        self.board.append(BoardLocation(30, "Go to Jail"))
+        self.board.append(BoardLocation(31, "Pacific Ave.", 300, "Green", (26, 130, 390, 900, 1100, 1275), 200))
+        self.board.append(BoardLocation(32, "North Carolina Ave.", 300, "Green", (26, 130, 390, 900, 1100, 1275), 200))
+        self.board.append(BoardLocation(33, "Community Chest"))
+        self.board.append(BoardLocation(34, "Pennsylvania Ave.", 320, "Green", (28, 150, 450, 1000, 1200, 1400), 200))
+        self.board.append(BoardLocation(35, "Short Line Railroad", 200, "Railroad"))
+        self.board.append(BoardLocation(36, "Chance"))
+        self.board.append(BoardLocation(37, "Park Place", 350, "Dark Blue", (35, 175, 500, 1100, 1300, 1500), 200))
+        self.board.append(BoardLocation(38, "Luxury Tax"))
+        self.board.append(BoardLocation(39, "Boardwalk", 400, "Dark Blue", (50, 200, 600, 1400, 1700, 2000), 200))
 
         # Copy the board to create a linked list of unowned properties.
         self.unowned_properties = []
         self.unowned_properties.extend(self.board)
+
+        # Remove initial properties.
+        for player in self.active_players:
+            if player.initial_inventory:
+                for id in player.initial_inventory:
+                    player.inventory.append(self.board[id])
+                    self.unowned_properties.remove(self.board[id])
+
+        # Test for monopolies.
+        for player in self.active_players:
+            for property in player.inventory:
+                if property.group not in ["Utility", "Railroad"]:
+                    property.buildings = 0
+                if property.group not in player.monopolies:
+                    if self.monopoly_status(player, property):
+                        player.monopolies.append(property.group)
 
 
     # Defines the actions of the Community Chest cards.
@@ -995,6 +1019,9 @@ class Game:
         self.turn_counter += 1  # Increase master turn counter
         self.doubles_counter = 0  # Reset doubles counter.
 
+        # Track the player's money.
+        player.money_changes.append(player.money)
+
         # Is the player in jail?
         if player.in_jail:  # Player is in jail.
             player.jail_counter += 1  # Increase the jail turn counter
@@ -1064,8 +1091,10 @@ class Game:
         # Initial condition.
         current_player_index = 0
 
-        # Game loop. Continue if there is more than 1 player and we haven't reached the cutoff.
+        # Store starting player for reference.
+        self.starting_player = self.active_players[0].number
 
+        # Game loop. Continue if there is more than 1 player and we haven't reached the cutoff.
         while len(self.active_players) > 1 and self.turn_counter < self.cutoff:
             # pass###print([self.active_players[0].money,self.active_players[1].money])
 
@@ -1105,5 +1134,8 @@ class Game:
                    'length': self.turn_counter,
                    'end behavior': self.loss_reason,
                    'monopolies': all_monopolies,
+                   'started': self.starting_player,
+                   'players': self.active_players
+
         }
         return results
