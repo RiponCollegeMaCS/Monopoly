@@ -911,7 +911,7 @@ void Game::auction(BoardLocation* property)
     for (auto player : Game::activePlayers)
     {
         int bid;
-        bid = player->getMaxAuctionBid() * auctionModifier; // Not 100% sure, but it should do float mult and then take the integer portion
+        bid = player->getMaxAuctionBid() * auctionModifier;
         if (player->completesMonopoly(property))
         {
             bid = player->getMoney() - 1;

@@ -249,6 +249,8 @@ float BoardLocation::getAuctionModifier()
     {
         return 1.0;
     }
+    
+    return -1;
 }
 
 int BoardLocation::getGroupSize(std::string* groupName)
