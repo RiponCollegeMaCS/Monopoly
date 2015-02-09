@@ -903,9 +903,9 @@ int Game::findAvailableMortgageValue(Player* player)
 
 void Game::auction(BoardLocation* property)
 {
-    // TODO: When player bids all their money, what if nobody else bids...
     float auctionModifier = property->getAuctionModifier();
     int highBid = property->getPrice() / 2;
+    int nextBid = 0;
     Player* winner = NULL;
 
     for (auto player : Game::activePlayers)
@@ -918,6 +918,7 @@ void Game::auction(BoardLocation* property)
             if (bid > highBid)
             {
                 winner = player;
+                nextBid = highBid;
                 highBid = bid;
             }
         }
@@ -925,71 +926,18 @@ void Game::auction(BoardLocation* property)
         else if (bid > highBid)
         {
             winner = player;
+            nextBid = highBid;
             highBid = bid;
         }
     }
 
     if (winner != NULL)
     {
+        highBid = nextBid + 1;
         Game::buyProperty(winner, property, highBid);
         // Winner winner chicken dinner!
     }
 }
-//void Game::auction(BoardLocation* boardSpace)
-//{
-//    int winningBid = 0;
-//    Player* winningPlayer = NULL;
-//
-//    for (auto player : activePlayers)
-//    {
-//        player->makeBid(boardSpace, this);
-//    }
-//
-//    Player* player1 = activePlayers[0];
-//    Player* player2 = activePlayers[1];
-//
-//    if (player1->getAuctionBid() < 1 && player2->getAuctionBid() < 1)
-//        return;
-//
-//    else if (player1->getAuctionBid() > 0 && player2->getAuctionBid() < 1)
-//    {
-//        winningBid = 1;
-//        winningPlayer = player1;
-//    }
-//
-//    else if (player1->getAuctionBid() < 1 && player2->getAuctionBid() > 0)
-//    {
-//        winningBid = 1;
-//        winningPlayer = player2;
-//    }
-//
-//    else if (player1->getAuctionBid() == player2->getAuctionBid())
-//    {
-//        winningPlayer = player1->getNumber() == 0 ? player1 : player2;
-//        winningBid = winningPlayer->getAuctionBid();
-//    }
-//
-//    else if (player1->getAuctionBid() > player2->getAuctionBid())
-//    {
-//        winningBid = player2->getAuctionBid() + 1;
-//        winningPlayer = player1;
-//    }
-//
-//    else if (player2->getAuctionBid() > player1->getAuctionBid())
-//    {
-//        winningBid = player1->getAuctionBid() + 1;
-//        winningPlayer = player2;
-//    }
-//
-//    else
-//    {
-//        //throw 20;
-//        return;
-//    }
-//
-//    winningPlayer->makeAuctionFunds(boardSpace, this, winningBid);
-//    Game::buyProperty(winningPlayer, boardSpace, winningBid);
-//}
 
 int Game::totalAssets(Player* player)
 {
