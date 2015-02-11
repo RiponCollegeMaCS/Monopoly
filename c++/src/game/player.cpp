@@ -471,66 +471,19 @@ int Player::findAvailableMortgageValue()
 	return (available);
 }
 
-//void Player::makeBid(BoardLocation* property, Game* game)
-//{
-//	Player::bidIncludesMortgages = false;
-//
-//    std::vector<BoardLocation*> additional = {property};
-//
-//	if (isInGroupPreferences(*property->getGroup()))
-//	{
-//		Player::auctionBid = Player::money - 1;
-//	}
-//
-//	else if (1 == Player::completeMonopoly && game->monopolyStatus(this, property, &additional))
-//	{
-//		Player::auctionBid = Player::money - 1;
-//	}
-//
-//	else if (2 == Player::completeMonopoly && game->monopolyStatus(this, property, &additional))
-//	{
-//		Player::bidIncludesMortgages = true;
-//
-//		int available = Player::findAvailableMortgageValue();
-//
-//		Player::auctionBid = Player::money + available - 1;
-//	}
-//
-//	else
-//	{
-//		Player::auctionBid = Player::money - Player::buyingThreshold;
-//	}
-//}
-//
-//void Player::makeAuctionFunds(BoardLocation* property, Game* game, int winningBid)
-//{
-//	// Special buying procedure if the player wants to mortgage properties.
-//	if (Player::bidIncludesMortgages)
-//	{
-//		Player::money -= winningBid;
-//
-//		// Make up the funds
-//		for (auto property : Player::inventory)
-//		{
-//			if (money > 0)
-//			{
-//				break; // deviation alert
-//			}
-//
-//			if (0 == property->getBuildings() && !property->isMortgaged() && !isInMonopolies(property->getGroup()))
-//			{
-//				property->mortgage();
-//				Player::money = property->getPrice() / 2;
-//			}
-//		}
-//
-//		Player::money += winningBid;
-//	}
-//}
 
-int Player::getMaxAuctionBid()
+int Player::makeBid(Game* game, BoardLocation* property)
 {
-    return Player::maxAuctionBid > Player::money ? Player::money - 1 : Player::maxAuctionBid;
+    float auctionModifier = property->getAuctionModifier();
+    int bid;
+    bid = (Player::money - Player::buyingThreshold) * auctionModifier;
+
+    if (Player::completesMonopoly(property) && Player::developmentThreshold > 0)
+    {
+        bid = Player::money - 1;
+    }
+
+    return bid;
 }
 
 bool Player::unownedPropertyAction(Game* game, BoardLocation* property)
@@ -666,7 +619,6 @@ int* Player::getInfo()
     info[3] = Player::smartJailStrategy;
     info[4] = Player::completeMonopoly;
     info[5] = Player::developmentThreshold;
-    info[6] = Player::maxAuctionBid;
 
     return info;
 }

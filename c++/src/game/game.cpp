@@ -903,27 +903,15 @@ int Game::findAvailableMortgageValue(Player* player)
 
 void Game::auction(BoardLocation* property)
 {
-    float auctionModifier = property->getAuctionModifier();
     int highBid = property->getPrice() / 2;
     int nextBid = 0;
     Player* winner = NULL;
 
     for (auto player : Game::activePlayers)
     {
-        int bid;
-        bid = player->getMaxAuctionBid() * auctionModifier;
-        if (player->completesMonopoly(property))
-        {
-            bid = player->getMoney() - 1;
-            if (bid > highBid)
-            {
-                winner = player;
-                nextBid = highBid;
-                highBid = bid;
-            }
-        }
+        int bid = player->makeBid(this, property);
 
-        else if (bid > highBid)
+        if (bid > highBid)
         {
             winner = player;
             nextBid = highBid;

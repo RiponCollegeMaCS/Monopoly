@@ -114,7 +114,7 @@ public:
     bool monopolyStatus(Player* player, BoardLocation* boardSpace);
     bool monopolyStatus(Player* player, BoardLocation* boardSpace, std::vector<BoardLocation*>* additionalProperties);
     int findAvailableMortgageValue(Player* player);
-    void auction(BoardLocation* boardSpace);
+    void auction(BoardLocation* property);
     int totalAssets(Player* player);
     void propertyAction(Player* player, BoardLocation* boardSpace);
 	void boardAction(Player* player, BoardLocation* boardSpace);

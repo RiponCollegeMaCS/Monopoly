@@ -50,8 +50,6 @@ class Player
 	int jailCounter = 0;
 	bool cardRent = false;
     std::unordered_set<std::string*> monopolies;
-//	int auctionBid = 0;
-    int maxAuctionBid = 0;
 	bool passedGo = false;
 	std::unordered_set<BoardLocation*> inventory;
 	bool bidIncludesMortgages = false;
@@ -80,7 +78,7 @@ public:
     bool evenSellingTest(BoardLocation* property);
     bool evenBuildingTest(BoardLocation* property);
     int findAvailableMortgageValue();
-    int getMaxAuctionBid();
+    int makeBid(Game* game, BoardLocation* property);
     bool unownedPropertyAction(Game* game, BoardLocation* property);
     bool jailDecision(Game* game);
     bool completesMonopoly(BoardLocation* property);
@@ -115,8 +113,6 @@ public:
     void addMoney(int add);
     bool getBidIncludesMortgages();
     void setBidIncludesMortgages(bool bid);
-    int getAuctionBid();
-    void setAuctionBid(int bid);
     bool getCardRent();
     void setCardRent(bool rent);
     int getJailCounter();
