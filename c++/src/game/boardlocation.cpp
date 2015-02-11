@@ -207,6 +207,15 @@ void BoardLocation::incrementVisits()
  */
 void BoardLocation::changeBuildings(int delta) { buildings += delta; }
 
+
+/**
+* Gets a modifier between 0 and 1 for auction bidding
+*
+* Right now these are arbitrarily set, but work is being done to
+* come up with actual useful numbers.
+*
+* @return a value between 0 and 1 based on color group
+*/
 float BoardLocation::getAuctionModifier()
 {
     if (BoardLocation::group == "Brown")
@@ -253,6 +262,15 @@ float BoardLocation::getAuctionModifier()
     return -1;
 }
 
+/**
+* Returns the size of the given color group
+*
+* Gets the size of the color group: 2, 3, or 4, otherwise returns
+* -1 if it's not a property.
+*
+* @param groupName the string group from the property
+* @return 2, 3, or 4 depending on group; else -1
+*/
 int BoardLocation::getGroupSize(std::string* groupName)
 {
     if (*groupName == "Brown" || *groupName == "Dark Blue")
@@ -262,10 +280,6 @@ int BoardLocation::getGroupSize(std::string* groupName)
     else if (*groupName == "Railroad")
     {
         return 4;
-    }
-    else if (*groupName == "Utility")
-    {
-        return 3;
     }
     else if (*groupName == "None")
     {
