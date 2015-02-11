@@ -24,7 +24,7 @@
 #include <vector>
 #include <unordered_set>
 
-Player::Player(int num, std::unordered_set<std::string*> groupPreferences, int buy_thresh=100, int build_thresh=5, int jt=3, bool sjs=false, int cm=0, int dt=0, int mab=0)
+Player::Player(int num, std::unordered_set<std::string*> groupPreferences, int buy_thresh=100, int build_thresh=5, int jt=3, bool sjs=false, int cm=0, int dt=0)
 {
 	number = num;
 	buyingThreshold = buy_thresh;
@@ -33,7 +33,6 @@ Player::Player(int num, std::unordered_set<std::string*> groupPreferences, int b
 	smartJailStrategy = sjs;
 	completeMonopoly = cm;
 	developmentThreshold = dt;
-    maxAuctionBid = mab;
 	Player::groupPreferences = groupPreferences;
 }
 
@@ -46,7 +45,6 @@ Player::Player(const int* parameters)
 	Player::smartJailStrategy = parameters[4];
 	Player::completeMonopoly = parameters[5];
 	Player::developmentThreshold = parameters[6];
-    Player::maxAuctionBid = parameters[7];
 	Player::groupPreferences = std::unordered_set<std::string*>();
 }
 
