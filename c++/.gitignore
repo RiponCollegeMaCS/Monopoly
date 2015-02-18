@@ -44,3 +44,5 @@ install_manifest.txt
 # no need to pull generated CSVs
 *.csv
 Doxyfile
+
+doc/
