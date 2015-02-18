@@ -36,6 +36,21 @@ Player::Player(int num, std::unordered_set<std::string*> groupPreferences, int b
 	Player::groupPreferences = groupPreferences;
 }
 
+Player::Player(int num, std::unordered_set<std::string*> groupPreferences, std::unordered_set<BoardLocation*> initInventory, int initMoney, int buy_thresh=100, int build_thresh=5, int jt=3, bool sjs=false, int cm=0, int dt=0)
+{
+	number = num;
+	buyingThreshold = buy_thresh;
+	buildingThreshold = build_thresh;
+	jailTime = jt;
+	smartJailStrategy = sjs;
+	completeMonopoly = cm;
+	developmentThreshold = dt;
+	Player::groupPreferences = groupPreferences;
+
+	money = initMoney;
+	inventory = initInventory;
+}
+
 Player::Player(const int* parameters)
 {
 	Player::number = parameters[0];

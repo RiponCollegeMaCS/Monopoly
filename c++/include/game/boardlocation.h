@@ -60,7 +60,8 @@ public:
     void mortgage();
     void unmortgage();
 	void incrementVisits();
-	void changeBuildings(int);
+	void changeBuildings(int delta);
+	void setBuildings(int number);
     float getAuctionModifier();
     static int getGroupSize(std::string* groupName);
 };

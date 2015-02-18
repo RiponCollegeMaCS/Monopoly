@@ -57,6 +57,8 @@ class Player
 
 public:
     Player(int num, std::unordered_set<std::string*> groupPreferences, int buy_thresh, int build_thresh, int jt, bool sjs, int cm, int dt);
+    Player(int num, std::unordered_set<std::string*> groupPreferences, std::unordered_set<BoardLocation*> initInventory, int initMoney, int buy_thresh, int build_thresh, int jt, bool sjs, int cm, int dt);
+
     Player(const int* parameters);
 
     void resetValues();

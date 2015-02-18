@@ -118,6 +118,38 @@ void Game::createBoard()
 		board[39] = (new BoardLocation(39, "Boardwalk", 400, "Dark Blue", std::vector<int> {50, 200, 600, 1400, 1700, 2000}, 200));
 
         std::copy(board, board + 40, std::inserter(unownedProperties, unownedProperties.end())); // doublecheck
+
+		// Remove initial properties - I do this differently but the effect is the same.
+		for (auto player : Game::activePlayers)
+		{
+			if (player->getInventory()->size() > 0)
+			{
+				for (auto property : *player->getInventory())
+				{
+					Game::unownedProperties.erase(property);
+				}
+			}
+		}
+
+		// Test for monopolies
+		for (auto player : Game:: activePlayers)
+		{
+			for (BoardLocation* property : *player->getInventory())
+			{
+				if (*property->getGroup() != "Utility" && *property->getGroup() != "Railroad")
+				{
+					property->setBuildings(0);
+				}
+
+				if (!player->isInMonopolies(property->getGroup()))
+				{
+					if (Game::monopolyStatus(player, property))
+					{
+						player->appendToMonopolies(property->getGroup());
+					}
+				}
+			}
+		}
 	}
 
 void Game::communityChest(Player* player)
@@ -333,7 +365,6 @@ void Game::moveAhead(Player* player, int numberOfSpaces)
 	}
 	player->setPosition(newPosition);
 	board[newPosition]->incrementVisits();
-//	std::cout << "Hello" << std::endl;
 }
 
 void Game::moveTo(Player* player, int newPosition)

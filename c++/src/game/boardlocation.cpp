@@ -206,7 +206,7 @@ void BoardLocation::incrementVisits()
  * @param delta the change in buildings
  */
 void BoardLocation::changeBuildings(int delta) { buildings += delta; }
-
+void BoardLocation::setBuildings(int number) { buildings = number; }
 
 /**
 * Gets a modifier between 0 and 1 for auction bidding
