@@ -24,6 +24,20 @@
 #include <vector>
 #include <unordered_set>
 
+/**
+* Most-used Player constructor. Allows for many options to be specified but provides sane defaults.
+*
+* The only options you need to specify are the player number (>=1) and some group preferences, due to C++ sometimes being a dumb.
+*
+* @param num each player has a unique number, starting at 1 and going up
+* @param groupPreferences any group the player prefers to own. This is rarely used.
+* @param buy_thresh the player's buying threshold, the amount of money they want to retain when buying properties
+* @param build_thresh the player's building threshold, the highest number of houses they will build on a property. Sane at 5
+* @param jt jail turns: the number of turns the player will use to try and roll doubles when in jail, 0 <= jt <= 3
+* @param sjs smart jail strategy: bumps the jail time of the player up to three once the first house is built on the board
+* @param cm complete monopoly: determines the player's strategy when they have the opportunity to complete a monopoly
+* @param dt development threshold: indirectly determines how much money a player will use to develop a complete color group
+*/
 Player::Player(int num, std::unordered_set<std::string*> groupPreferences, int buy_thresh=100, int build_thresh=5, int jt=3, bool sjs=false, int cm=0, int dt=0)
 {
 	number = num;
@@ -36,6 +50,22 @@ Player::Player(int num, std::unordered_set<std::string*> groupPreferences, int b
 	Player::groupPreferences = groupPreferences;
 }
 
+/**
+* Allows for starting games sort of in progress
+*
+* You need to specify the first 5 options. If you don't want to, use the other constructor.
+*
+* @param num each player has a unique number, starting at 1 and going up
+* @param groupPreferences any group the player prefers to own. This is rarely used.
+* @param buy_thresh the player's buying threshold, the amount of money they want to retain when buying properties
+* @param initInventory an inventory the player will start out with
+* @param initMoney how much money the player begins with
+* @param build_thresh the player's building threshold, the highest number of houses they will build on a property. Sane at 5
+* @param jt jail turns: the number of turns the player will use to try and roll doubles when in jail, 0 <= jt <= 3
+* @param sjs smart jail strategy: bumps the jail time of the player up to three once the first house is built on the board
+* @param cm complete monopoly: determines the player's strategy when they have the opportunity to complete a monopoly
+* @param dt development threshold: indirectly determines how much money a player will use to develop a complete color group
+*/
 Player::Player(int num, std::unordered_set<std::string*> groupPreferences, std::unordered_set<BoardLocation*> initInventory, int initMoney, int buy_thresh=100, int build_thresh=5, int jt=3, bool sjs=false, int cm=0, int dt=0)
 {
 	number = num;
@@ -51,6 +81,21 @@ Player::Player(int num, std::unordered_set<std::string*> groupPreferences, std::
 	inventory = initInventory;
 }
 
+/**
+* This constructor is for multithreading
+*
+* It takes a well-defined array by constant-reference to ease splitting games up into threads.
+* Does NOT allow for any group preferences.
+*
+* @param parameters
+* 	0: number
+*   1: buyingThreshold
+*   2: buildingThreshold
+*   3: jailTime
+*   4: smartJailStrategy
+*   5: completeMonopoly
+*   6: developmentThreshold
+*/
 Player::Player(const int* parameters)
 {
 	Player::number = parameters[0];
@@ -63,6 +108,9 @@ Player::Player(const int* parameters)
 	Player::groupPreferences = std::unordered_set<std::string*>();
 }
 
+/**
+* Reset a player in order to play a new game
+*/
 void Player::resetValues()
 {
 	successIndicator = 0;
@@ -79,6 +127,13 @@ void Player::resetValues()
 	bidIncludesMortgages = false;
 }
 
+/**
+* Change the position on the board of a player
+*
+* Does not do input checking
+*
+* @param delta the number of spaces to move
+*/
 void Player::changePosition(int delta)
 {
     position += delta;

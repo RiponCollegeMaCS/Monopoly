@@ -25,6 +25,12 @@
 
 class Game;
 
+/**
+* Represents a player in a game of Monopoly.
+*
+* Each player has a variety of strategy parameters and is asked to make many decisions
+* by the Game.
+*/
 class Player
 {
 	int number;

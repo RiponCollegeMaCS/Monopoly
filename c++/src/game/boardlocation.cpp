@@ -206,6 +206,13 @@ void BoardLocation::incrementVisits()
  * @param delta the change in buildings
  */
 void BoardLocation::changeBuildings(int delta) { buildings += delta; }
+
+/**
+* Sets the number of buildings on the property to a specific quantity
+*
+* Assumes the number is a valid, sane number.
+* @param number the new number of properties
+*/
 void BoardLocation::setBuildings(int number) { buildings = number; }
 
 /**
