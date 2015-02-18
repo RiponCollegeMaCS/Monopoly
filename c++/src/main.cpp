@@ -31,8 +31,8 @@ std::unordered_set<std::string*> noPrefs;
 
 void pyMain()
 {
-	Player goodPlayer1(1, noPrefs, 100, 5, 0, true, 1, 1, 400);
-	Player grandma(2, noPrefs, 1000, 5, 3, false, 0, 0, 100);
+	Player goodPlayer1(1, noPrefs, 100, 5, 0, true, 1, 1);
+	Player grandma(2, noPrefs, 1000, 5, 3, false, 0, 0);
 
 	int resultsList[NUMBER_OF_GAMES];
 
@@ -51,8 +51,8 @@ void pyMain()
 
 void monopolyTest()
 {
-	Player player1(1, noPrefs, 1000, 5, 3, false, 0, 0, 400);
-	Player player2(2, noPrefs, 1000, 5, 3, false, 0, 0, 400);
+	Player player1(1, noPrefs, 1000, 5, 3, false, 0, 0);
+	Player player2(2, noPrefs, 1000, 5, 3, false, 0, 0);
 
 	int endedEarlyNoMonopolies = 0;
 	int finishedGamesWithNoMonopolies = 0;
