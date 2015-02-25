@@ -5,7 +5,7 @@ from monopoly import *
 # game002 = pickle.load( open( "entry.pickle", "rb" ) )
 
 def main():
-    main_counter = 0
+    main_counter = 20183
     while main_counter < 50000:
         # Play game.
         player1 = Player(1)

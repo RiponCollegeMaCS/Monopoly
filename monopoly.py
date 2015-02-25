@@ -833,6 +833,66 @@ class Game:
         # Return false is the property is unowned.
         return False
 
+    # Determines the rent owed on a property.
+    def calculate_rent(self, property, owner):
+        # Rent for Railroads.
+        if property.group == "Railroad":
+            pass
+            '''railroad_counter = 0
+            for property in owner.inventory:
+                if property.group == "Railroad":
+                    railroad_counter += 1
+            rent = 25 * pow(2, railroad_counter - 1)  # The rent.'''
+
+        # Rent for Utilities.
+        elif property.group == "Utility":
+            pass
+            '''# Roll the dice.
+            self.dice_roll = 7
+
+            utility_counter = 0
+            for property in owner.inventory:
+                if property.group == "Utility":
+                    utility_counter += 1
+            if utility_counter == 2:
+                rent = self.dice_roll * 10  # If the player owns both utilities, pay 10 times the dice.
+            else:
+                rent = self.dice_roll * 4  # If the player owns one utility, pay 4 times the dice.'''
+
+
+        # Rent for color-group properties.
+        else:
+            if property.buildings == 5:  # Check to see if there is a hotel.
+                rent = property.rents[5]  # Pay the 5th rent for a hotel.
+            elif 0 < property.buildings < 5:  # The property has houses.
+                rent = property.rents[property.buildings]
+            else:
+                if property.group in owner.monopolies:  # If the player has a monopoly...
+                    rent = property.rents[0] * 2  # Rent is doubled.
+                else:  # The player does not have a monopoly.
+                    rent = property.rents[0]
+
+        return rent
+
+    def calculate_rent_proportion(self, property, owner):
+        # Rent for Railroads.
+        if property.group == "Railroad":
+            rent = 200
+            max_rent = 200
+
+        # Rent for Utilities.
+        elif property.group == "Utility":
+            rent = 70
+            max_rent = 70
+
+        # Rent for color-group properties.
+        else:
+            max_rent = property.rents[5]
+            rent = self.calculate_rent(property, owner)
+
+        return rent / max_rent
+
+
     # The player passed through pays rent to the player who owns the property the original player sits on..
     def pay_rent(self, player):
         # Find the property.
