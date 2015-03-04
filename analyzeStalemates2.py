@@ -89,7 +89,7 @@ def find_all_subinventories():
 def main():
     all_inventories = []
     sub_inventories = []
-    total = 25000
+    total = 100
     for i in range(total):
         game = pickle.load(open('results/stalemates/long/game' + str(i) + '.pickle', "rb"))
 

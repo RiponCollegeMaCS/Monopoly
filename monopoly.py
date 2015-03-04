@@ -85,14 +85,14 @@ class Player:
                 for board_space in self.inventory:  # Cycle through player inventory.
                     if board_space.group in self.monopolies:  # It's in a monopoly.
                         if self.even_building_test(board_space) and not board_space.mortgaged:  # Building "evenly".
-                            if board_space.buildings < self.building_threshold:  # Check player's building limit.
+                            if board_space.buildings < 5:#self.building_threshold:  # Check player's building limit.
 
                                 # Calculate current cash available.
                                 if self.development_threshold == 1:
                                     # The player will use all but $1 to buy.
                                     available_cash = self.money - 1
                                 elif self.development_threshold == 2:
-                                    available_cash = self.find_available_mortgage_value() + + self.money - 1
+                                    available_cash = self.find_available_mortgage_value() + self.money - 1
                                 else:
                                     available_cash = self.money - self.buying_threshold
 
@@ -135,7 +135,7 @@ class Player:
 
                                         keep_building = True  # Allow the player to build again.
                                         game_info.first_building = True  # Buildings have been built.
-
+        # # Buy hotels if we have exhausted houses
         # # Un-mortgage singleton properties. # #
         for board_space in self.inventory:
             if board_space.mortgaged:
@@ -837,27 +837,22 @@ class Game:
     def calculate_rent(self, property, owner):
         # Rent for Railroads.
         if property.group == "Railroad":
-            pass
-            '''railroad_counter = 0
+            railroad_counter = 0
             for property in owner.inventory:
                 if property.group == "Railroad":
                     railroad_counter += 1
-            rent = 25 * pow(2, railroad_counter - 1)  # The rent.'''
+            rent = 25 * pow(2, railroad_counter - 1)  # The rent.
 
         # Rent for Utilities.
         elif property.group == "Utility":
-            pass
-            '''# Roll the dice.
-            self.dice_roll = 7
-
             utility_counter = 0
             for property in owner.inventory:
                 if property.group == "Utility":
                     utility_counter += 1
             if utility_counter == 2:
-                rent = self.dice_roll * 10  # If the player owns both utilities, pay 10 times the dice.
+                rent = 70  # If the player owns both utilities, pay 10 times the dice.
             else:
-                rent = self.dice_roll * 4  # If the player owns one utility, pay 4 times the dice.'''
+                rent = 28  # If the player owns one utility, pay 4 times the dice.
 
 
         # Rent for color-group properties.
@@ -877,13 +872,14 @@ class Game:
     def calculate_rent_proportion(self, property, owner):
         # Rent for Railroads.
         if property.group == "Railroad":
-            rent = 200
             max_rent = 200
+            rent = self.calculate_rent(property, owner) #200
+
 
         # Rent for Utilities.
         elif property.group == "Utility":
             rent = 70
-            max_rent = 70
+            max_rent = self.calculate_rent(property, owner) #70
 
         # Rent for color-group properties.
         else:
