@@ -26,8 +26,11 @@ class Player:
     ):
         self.number = number
         self.reset_values()  # Reset the player's attributes if the player is used again.
+
+        # Define initial conditions.
         self.initial_inventory = initial_inventory
         self.initial_money = initial_money
+
         if initial_money:
             self.money = initial_money
 
@@ -85,7 +88,7 @@ class Player:
                 for board_space in self.inventory:  # Cycle through player inventory.
                     if board_space.group in self.monopolies:  # It's in a monopoly.
                         if self.even_building_test(board_space) and not board_space.mortgaged:  # Building "evenly".
-                            if board_space.buildings < 5:#self.building_threshold:  # Check player's building limit.
+                            if board_space.buildings < 5:  # self.building_threshold:  # Check player's building limit.
 
                                 # Calculate current cash available.
                                 if self.development_threshold == 1:
@@ -135,7 +138,62 @@ class Player:
 
                                         keep_building = True  # Allow the player to build again.
                                         game_info.first_building = True  # Buildings have been built.
-        # # Buy hotels if we have exhausted houses
+
+        if 0==1:#game_info.hotel_upgrade:
+            # # Buy hotels if we have exhausted houses # #
+            if game_info.houses == 0:
+                for group in self.monopolies:
+                    house_disparity = 0
+                    properties_in_group = 0
+                    house_cost = 0
+                    houses_found = 0
+                    for board_space in self.inventory:
+                        if board_space.group == group:
+                            properties_in_group += 1
+                            house_cost = board_space.house_cost
+                            house_disparity += 5 - board_space.buildings
+                            houses_found += board_space.buildings
+
+                    if house_disparity > 0:
+                        # Check if there are enough hotels available.
+                        if game_info.hotels >= properties_in_group:
+
+                            # Calculate current cash available.
+                            if self.development_threshold == 1:
+                                # The player will use all but $1 to buy.
+                                available_cash = self.money - 1
+                            elif self.development_threshold == 2:
+                                available_cash = self.find_available_mortgage_value() + self.money - 1
+                            else:
+                                available_cash = self.money - self.buying_threshold
+
+                            # Check if we can afford it.
+                            if available_cash - (house_disparity * house_cost) >= 0:
+
+                                # Build!
+                                for property in self.inventory:
+                                    if property.group == group:
+                                        property.buildings = 5
+                                        game_info.hotels -= 1
+                                        game_info.houses += houses_found
+
+                                # Pay for it.
+                                self.money -= house_cost * house_disparity
+
+                                if self.development_threshold != 2 and self.money < 0:
+                                    print("error 9", self.money)
+
+                                # Mortgage properties to pay for buildings.
+                                if self.development_threshold == 2:
+                                    property_index = 0
+                                    while self.money <= 0:
+                                        c_property = self.inventory[property_index]
+                                        if c_property.group not in self.monopolies and not c_property.mortgaged:
+                                            c_property.mortgaged = True
+                                            pass  # ##print("player",self.number,"mortgaged",board_space.name)
+                                            self.money += c_property.price / 2
+                                        property_index += 1
+
         # # Un-mortgage singleton properties. # #
         for board_space in self.inventory:
             if board_space.mortgaged:
@@ -455,7 +513,7 @@ class BoardLocation:
 
 # Define the Game class.
 class Game:
-    def __init__(self, list_of_players, auctions_enabled=True, trading_enabled=False, free_parking_pool=False,
+    def __init__(self, list_of_players, hotel_upgrade=True, auctions_enabled=True, trading_enabled=False, free_parking_pool=False,
                  double_on_go=False, no_rent_in_jail=False, trip_to_start=False, snake_eyes_bonus=False, cutoff=1000):
         self.active_players = list_of_players  # Create  a list of players.
         self.inactive_players = []  # An empty list to store losing players.
@@ -467,6 +525,7 @@ class Game:
         self.dice_roll = 0  # The current dice roll can be accessible everywhere.
         self.auctions_enabled = auctions_enabled  # A toggle to disable auctions.
         self.trading_enabled = trading_enabled
+        self.hotel_upgrade = hotel_upgrade
         self.first_building = False  # Records whether a building has been bought for smart_jail_strategy
         self.cutoff = cutoff  # Determines when a game should be terminated.
         self.loss_reason = []  # To store how a player lost the game.
@@ -560,9 +619,9 @@ class Game:
             for property in player.inventory:
                 if property.group not in ["Utility", "Railroad"]:
                     property.buildings = 0
-                if property.group not in player.monopolies:
-                    if self.monopoly_status(player, property):
-                        player.monopolies.append(property.group)
+                    if property.group not in player.monopolies:
+                        if self.monopoly_status(player, property):
+                            player.monopolies.append(property.group)
 
 
     # Defines the actions of the Community Chest cards.
@@ -873,13 +932,13 @@ class Game:
         # Rent for Railroads.
         if property.group == "Railroad":
             max_rent = 200
-            rent = self.calculate_rent(property, owner) #200
+            rent = self.calculate_rent(property, owner)  # 200
 
 
         # Rent for Utilities.
         elif property.group == "Utility":
             rent = 70
-            max_rent = self.calculate_rent(property, owner) #70
+            max_rent = self.calculate_rent(property, owner)  # 70
 
         # Rent for color-group properties.
         else:

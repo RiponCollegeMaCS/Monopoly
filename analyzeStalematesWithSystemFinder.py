@@ -4,7 +4,7 @@ from timer import *
 from monopoly import *
 import numpy
 from copy import deepcopy
-
+from sympy.matrices import *
 
 def main():
     convert_group = {"Brown": 0, "Light Blue": 1, "Pink": 2, "Orange": 3,
@@ -22,13 +22,12 @@ def main():
     no_solution = True
     counter = 0
     while no_solution:
-        counter += 1
         print(counter)
         # Find games with broken groups.
         games_to_use = []
         all_groups_found = []
         all_groups_found_group_vars = []
-        while len(all_groups_found) < 10 or len(all_groups_found_group_vars) < 10:
+        while len(all_groups_found) < 10 and len(all_groups_found_group_vars) < 10:
             game = pickle.load(open('results/stalemates/long/game' + str(randint(0, 49999)) + '.pickle', "rb"))
 
             players = [game.active_players[0], game.active_players[1]]
@@ -117,9 +116,20 @@ def main():
             matrix.append(coefficients)
 
             # Add constant.
-            money_totals.append((players[0].money - players[1].money) / (players[0].money + players[1].money))
+            #money_totals.append((players[0].money - players[1].money) / (players[0].money + players[1].money))
+            money_totals.append(players[0].money - players[1].money)
 
-        solution = []
+        print(money_totals)
+        for i in range(len(matrix)):
+            matrix[i].append(money_totals[i])
+
+        print("!",Matrix(matrix))
+
+        matrix = Matrix.rref(Matrix(matrix))
+        print(matrix)
+        counter += 1
+
+        '''solution = []
         try:
             print(money_totals)
             solution = numpy.linalg.solve(matrix, money_totals)
@@ -127,7 +137,7 @@ def main():
             print("!!!!!!!!!!!!!!!!!!!!!!!!!!!")
             no_solution = False
         except:
-            print("No solution!")
+            print("No solution!")'''
 
 
 
