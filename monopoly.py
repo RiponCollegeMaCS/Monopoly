@@ -139,7 +139,7 @@ class Player:
                                         keep_building = True  # Allow the player to build again.
                                         game_info.first_building = True  # Buildings have been built.
 
-        if 0==1:#game_info.hotel_upgrade:
+        if game_info.hotel_upgrade:
             # # Buy hotels if we have exhausted houses # #
             if game_info.houses == 0:
                 for group in self.monopolies:
@@ -513,7 +513,7 @@ class BoardLocation:
 
 # Define the Game class.
 class Game:
-    def __init__(self, list_of_players, hotel_upgrade=True, auctions_enabled=True, trading_enabled=False, free_parking_pool=False,
+    def __init__(self, list_of_players, hotel_upgrade=False, auctions_enabled=True, trading_enabled=False, free_parking_pool=False,
                  double_on_go=False, no_rent_in_jail=False, trip_to_start=False, snake_eyes_bonus=False, cutoff=1000):
         self.active_players = list_of_players  # Create  a list of players.
         self.inactive_players = []  # An empty list to store losing players.
