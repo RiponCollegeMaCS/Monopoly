@@ -1,29 +1,24 @@
-cmake_minimum_required(VERSION 2.8.9)
+cmake_minimum_required(VERSION 2.8.12)
 project(Monopoly)
-
-add_definitions("-I${CMAKE_CURRENT_SOURCE_DIR}/include")
-if(APPLE)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-else()
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -std=c++11")
-endif()
-set(EXECUTABLE_OUTPUT_PATH bin)
 
 add_subdirectory(src build)
 
+set(EXECUTABLE_OUTPUT_PATH bin)
+
+target_include_directories(monopoly PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
+
+target_compile_options(monopoly PUBLIC "-std=c++11")
+target_compile_options(monopoly PUBLIC "$<$<NOT:$<PLATFORM_ID:APPLE>>:-pthread>")
+
+option(OPTIMIZATIONS "Compile with -O3" ON)
+
+target_compile_options(monopoly PUBLIC "$<$<BOOL:OPTIMIZATIONS>:-O3>")
 ## command line build/compile options
 # build as library, e.g. for Julia
 option(LIBRARY_BUILD "Build and link as library" OFF)
 
-if(LIBRARY_BUILD)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -shared -fPIC")
-endif()
-
-option(OPTIMIZATIONS "Compile with -O3" ON)
-
-if(OPTIMIZATIONS)
-	set(CMAKE_CXX_FLAGS "-O3 ${CMAKE_CXX_FLAGS}")
-endif()
+target_compile_options(monopoly PUBLIC "$<$<BOOL:LIBRARY_BUILD>:-shared>")
+target_compile_options(monopoly PUBLIC "$<$<BOOL:LIBRARY_BUILD>:-fPIC>")
 
 ## add a target to generate API documentation with Doxygen
 find_package(Doxygen)
