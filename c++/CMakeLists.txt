@@ -11,8 +11,21 @@ set(EXECUTABLE_OUTPUT_PATH bin)
 
 add_subdirectory(src build)
 
+## command line build/compile options
+# build as library, e.g. for Julia
+option(LIBRARY_BUILD "Build and link as library" OFF)
 
-# add a target to generate API documentation with Doxygen
+if(LIBRARY_BUILD)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -shared -fPIC")
+endif()
+
+option(OPTIMIZATIONS "Compile with -O3" ON)
+
+if(OPTIMIZATIONS)
+	set(CMAKE_CXX_FLAGS "-O3 ${CMAKE_CXX_FLAGS}")
+endif()
+
+## add a target to generate API documentation with Doxygen
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
