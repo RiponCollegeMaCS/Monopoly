@@ -1,5 +1,4 @@
-cmake_minimum_required(VERSION 2.8.12)
-project(Monopoly)
+cmake_minimum_required(VERSION 3.0)
 
 add_subdirectory(src build)
 
@@ -8,7 +7,7 @@ set(EXECUTABLE_OUTPUT_PATH bin)
 target_include_directories(monopoly PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 
 target_compile_options(monopoly PUBLIC "-std=c++11")
-target_compile_options(monopoly PUBLIC "$<$<NOT:$<PLATFORM_ID:APPLE>>:-pthread>")
+target_compile_options(monopoly PUBLIC "$<$<PLATFORM_ID:LINUX>:-pthread>")
 
 option(OPTIMIZATIONS "Compile with -O3" ON)
 
