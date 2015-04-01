@@ -247,7 +247,7 @@ void Player::developProperties(Game* game)
 				{
 					if (Player::evenBuildingTest(boardSpace))
 					{
-						if (boardSpace->getBuildings() < buildingThreshold)
+						if (boardSpace->getBuildings() < 5)
 						{
 							int availableCash;
 
