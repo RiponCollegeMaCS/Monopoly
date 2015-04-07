@@ -12,10 +12,13 @@
 #include <thread>
 #include <functional>
 #include <future>
+
 #include "stats/success.h"
 #include "game/player.h"
 #include "game/game.h"
 #include "util/csv.h"
+
+using namespace Monopoly;
 
 std::unordered_set<std::string*> noGroupPrefs;
 
@@ -104,19 +107,18 @@ int playSet(const int* basePlayer, int numberOfGames)
 float successIndicator(const int* basePlayer, int numberOfGames = 1000, int procs = 2, Player* staticOpponent = NULL)
 {
     int results[numberOfGames];
-    int success = 0;
-
-    std::vector<std::future<int> > futures;
-
-    for (int i = 0; i < procs; i++)
-    {
-        futures.push_back(std::async(&playSet, basePlayer, numberOfGames / procs));
-    }
-
-    for (auto &i : futures)
-    {
-        success += i.get();
-    }
+    int success = playSet(basePlayer, numberOfGames);
+//    std::vector<std::future<int> > futures;
+//
+//    for (int i = 0; i < procs; i++)
+//    {
+//        futures.push_back(std::async(&playSet, basePlayer, numberOfGames / procs));
+//    }
+//
+//    for (auto &i : futures)
+//    {
+//        success += i.get();
+//    }
 //    int success = playSet(basePlayer, numberOfGames, staticOpponent, results);
 
 //        std::vector<std::thread> threads;

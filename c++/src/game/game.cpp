@@ -30,6 +30,8 @@
 #include<cmath>
 #include<functional>
 
+using namespace Monopoly;
+
 Game::Game(std::vector<Player*> activePlayers, int cutoff)
 {
 	Game::activePlayers = activePlayers;

@@ -20,6 +20,7 @@
 
 #include<vector>
 
+using namespace Monopoly;
 /**
  * Basic BoardLocation constructor for non-properties
  *

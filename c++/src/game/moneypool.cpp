@@ -18,6 +18,8 @@
 
 #include "game/moneypool.h"
 
+using namespace Monopoly;
+
 MoneyPool::MoneyPool()
 {
     MoneyPool::money = 0;

@@ -8,21 +8,24 @@
 #ifndef MONEYPOOL_H_
 #define MONEYPOOL_H_
 
-class MoneyPool
-{
-	int money = 0;
+namespace Monopoly {
+	class MoneyPool {
+		int money = 0;
 
-public:
-    MoneyPool();
-    MoneyPool(int start);
-    
-	int getMoney();
-	void setMoney(int newMoney);
-	void addMoney(int add);
+	public:
+		MoneyPool();
 
-	char getType();
-};
+		MoneyPool(int start);
 
+		int getMoney();
+
+		void setMoney(int newMoney);
+
+		void addMoney(int add);
+
+		char getType();
+	};
+}
 
 
 #endif /* MONEYPOOL_H_ */

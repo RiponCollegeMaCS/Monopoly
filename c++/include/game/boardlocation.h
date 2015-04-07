@@ -25,46 +25,64 @@
 /**
  * A class meant to represent a location in a Monopoly gameboard.
  */
-class BoardLocation
-{
-	int id;
-	std::string name;
-	int price = 0;
-	std::vector<int> rents;
-	int houseCost = 0;
-	std::string group = "none";
-	int buildings = 0;
-	int visits = 0;
-	bool mortgaged = false;
-    float auctionModifier;
+namespace Monopoly {
+	class BoardLocation {
+		int id;
+		std::string name;
+		int price = 0;
+		std::vector<int> rents;
+		int houseCost = 0;
+		std::string group = "none";
+		int buildings = 0;
+		int visits = 0;
+		bool mortgaged = false;
+		float auctionModifier;
 
-public:
-	BoardLocation(int id, std::string name);
-	BoardLocation(int id, std::string name, int price, std::string group);
-	BoardLocation(int id, std::string name, int price, std::string group, std::vector<int> rents, int houseCost);
+	public:
+		BoardLocation(int id, std::string name);
 
-	// Getters and Setters
-	int getID();
-	std::string* getName();
-	int getPrice();
-	int getRents(int position);
-	int getHouseCost();
-	std::string* getGroup();
-	int getBuildings();
-	int getVisits();
-	bool isMortgaged();
-        void setMortgaged(bool val);
-        int getUnmortgagePrice();
+		BoardLocation(int id, std::string name, int price, std::string group);
 
-	// Instance methods
-    void mortgage();
-    void unmortgage();
-	void incrementVisits();
-	void changeBuildings(int delta);
-	void setBuildings(int number);
-    float getAuctionModifier();
-    static int getGroupSize(std::string* groupName);
-};
+		BoardLocation(int id, std::string name, int price, std::string group, std::vector<int> rents, int houseCost);
 
+		// Getters and Setters
+		int getID();
+
+		std::string *getName();
+
+		int getPrice();
+
+		int getRents(int position);
+
+		int getHouseCost();
+
+		std::string *getGroup();
+
+		int getBuildings();
+
+		int getVisits();
+
+		bool isMortgaged();
+
+		void setMortgaged(bool val);
+
+		int getUnmortgagePrice();
+
+		// Instance methods
+		void mortgage();
+
+		void unmortgage();
+
+		void incrementVisits();
+
+		void changeBuildings(int delta);
+
+		void setBuildings(int number);
+
+		float getAuctionModifier();
+
+		static int getGroupSize(std::string *groupName);
+	};
+}
 
 #endif /* BOARDLOCATION_H_ */

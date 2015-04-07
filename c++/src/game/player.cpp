@@ -24,6 +24,8 @@
 #include <vector>
 #include <unordered_set>
 
+using namespace Monopoly;
+
 /**
 * Most-used Player constructor. Allows for many options to be specified but provides sane defaults.
 *

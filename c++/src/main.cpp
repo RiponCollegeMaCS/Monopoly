@@ -20,11 +20,11 @@
 #include <vector>
 #include <algorithm>
 #include <unordered_set>
-#include <cstdlib>
 #include <ctime>
-#include "game/game.h"
-#include "game/player.h"
+#include <game.h>
 #include "stats/success.h"
+
+using namespace Monopoly;
 
 std::string CRAPPY_MONOPOLY = "Brown";
 std::unordered_set<std::string*> noPrefs;
