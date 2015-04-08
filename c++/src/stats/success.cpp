@@ -104,7 +104,7 @@ int playSet(const int* basePlayer, int numberOfGames)
     return (num1won);
 }
 
-float successIndicator(const int* basePlayer, int numberOfGames = 1000, int procs = 2, Player* staticOpponent = NULL)
+float successIndicator(const int* basePlayer, int numberOfGames, int procs, Player* staticOpponent)
 {
     int results[numberOfGames];
     int success = playSet(basePlayer, numberOfGames);

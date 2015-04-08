@@ -16,12 +16,14 @@
  * =====================================================================================
  */
 
-#include <iostream>
-#include <vector>
 #include <algorithm>
-#include <unordered_set>
 #include <ctime>
-#include <game.h>
+#include <iostream>
+#include <stdlib.h>
+#include <unordered_set>
+#include <vector>
+
+#include "game/game.h"
 #include "stats/success.h"
 
 using namespace Monopoly;
@@ -97,14 +99,31 @@ void monopolyTest()
 
 
 
-int main()
+int main(int argc, char** argv)
 {
-	std::clock_t begin = std::clock();
-	pyMain();
-	monopolyTest();
-	shortBruteForce(NUMBER_OF_GAMES);
-	std::clock_t end = clock();
-	double elapsedSecs = double(end - begin) / CLOCKS_PER_SEC;
-	std::cout << "Time elapsed: " << elapsedSecs << std::endl;
+	if (argc > 1)
+	{
+		if (argc == 8) // we have player options here
+		{
+			// Note that the first element in argv is
+			// the program name (I think?)
+			int params[7];
+			for (int i = 0; i < 7; i++)
+			{
+				params[i] = std::atoi(argv[i+1]);
+			}
+			std::cout << successIndicator(params) << std::endl;
+		}
+	}
+	else
+	{
+//		std::clock_t begin = std::clock();
+//		pyMain();
+//		monopolyTest();
+		shortBruteForce(NUMBER_OF_GAMES/8);
+//		std::clock_t end = clock();
+//		double elapsedSecs = double(end - begin) / CLOCKS_PER_SEC;
+//		std::cout << "Time elapsed: " << elapsedSecs << std::endl;
+	}
 	return (0);
 }
