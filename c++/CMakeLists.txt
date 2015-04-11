@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.7)
+cmake_minimum_required(VERSION 3.0)
 
 add_subdirectory(src build)
 
@@ -12,6 +12,12 @@ target_compile_options(monopoly PUBLIC "-std=c++11")
 option(OPTIMIZATIONS "Compile with -O3" ON)
 
 target_compile_options(monopoly PUBLIC "$<$<BOOL:OPTIMIZATIONS>:-O3>")
+## command line build/compile options
+# build as library, e.g. for Julia
+option(LIBRARY_BUILD "Build and link as library" OFF)
+
+target_compile_options(monopoly PUBLIC "$<$<BOOL:LIBRARY_BUILD>:-shared>")
+target_compile_options(monopoly PUBLIC "$<$<BOOL:LIBRARY_BUILD>:-fPIC>")
 
 ## add a target to generate API documentation with Doxygen
 find_package(Doxygen)
