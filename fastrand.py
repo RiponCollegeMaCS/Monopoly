@@ -15,12 +15,17 @@
 ###############################################################################
 
 import ctypes
-import os
+import sys
 
 libc = None
 
-if os.name == 'posix':
+if sys.platform == 'linux':
     libc = ctypes.cdll.LoadLibrary("libc.so.6")
+elif sys.platform == 'darwin':
+	libc = ctypes.cdll.LoadLibrary("libSystem.dylib")
+elif sys.platform == 'win32':
+	# well crap
+	libc = ctypes.cdll.LoadLibrary("msvcrt.dll") # hopefully this'll work
 
 
 def _roll():
