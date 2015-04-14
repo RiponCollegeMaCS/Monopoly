@@ -5,8 +5,9 @@
 # # # # # # # # # # # # # # # #
 
 # Import various commands.
-from random import *  # We use the randint, shuffle and choice functions.
+# from random import *  # We use the randint, shuffle and choice functions.
 from decimal import *  # The Decimal module for better rounding.
+from fastrand import *
 
 # Adjust the rounding scheme.
 getcontext().rounding = ROUND_HALF_UP
@@ -973,8 +974,8 @@ class Game:
         # Rent for Utilities.
         elif current_property.group == "Utility":
             # Roll the dice.
-            die1 = randint(1, 6)
-            die2 = randint(1, 6)
+            die1 = roll()
+            die2 = roll()
             self.dice_roll = die1 + die2
 
             # Check for snakes eyes.
@@ -1145,8 +1146,8 @@ class Game:
                 player.pay_out_of_jail(game_info=self)  # Pay out using a card or $50.
             else:
                 # Roll the dice.
-                die1 = randint(1, 6)
-                die2 = randint(1, 6)
+                die1 = roll()
+                die2 = roll()
                 self.dice_roll = die1 + die2
 
                 # Check for snake eyes.
@@ -1171,8 +1172,8 @@ class Game:
             self.move_again = False
 
             # Roll the dice.
-            die1 = randint(1, 6)
-            die2 = randint(1, 6)
+            die1 = roll()
+            die2 = roll()
             self.dice_roll = die1 + die2
 
             # Check for snakes eyes.
