@@ -23,12 +23,15 @@ if os.name == 'posix':
     libc = ctypes.cdll.LoadLibrary("libc.so.6")
 
 
-def roll():
+def _roll():
     # Initialize and seed
     libc.srand(libc.time(None))
     while True:
         yield libc.rand() % 6 + 1
 
+
+def roll():
+    return next(_roll())
 
 def choice(lst):
     # Initialize and seed
