@@ -91,27 +91,39 @@ class Player:
                         if self.even_building_test(board_space) and not board_space.mortgaged:  # Building "evenly".
                             if board_space.buildings < 5:  # self.building_threshold:  # Check player's building limit.
 
-                                # Calculate current cash available.
-                                if self.development_threshold == 1:
-                                    # The player will use all but $1 to buy.
-                                    available_cash = self.money - 1
-                                elif self.development_threshold == 2:
-                                    available_cash = self.find_available_mortgage_value() + self.money - 1
-                                else:
-                                    available_cash = self.money - self.buying_threshold
+                                # Check if there is a building available.
+                                building_supply = 0
+                                if board_space.buildings < 4:  # Ready for a house.
+                                    building_supply = game_info.houses  # The number of houses available
+                                    building = "house"
+                                elif board_space.buildings == 4:  # Ready for a hotel.
+                                    building_supply = game_info.hotels  # The number of hotels available
+                                    building = "hotel"
 
-                                # The player can afford it.
-                                if available_cash - board_space.house_cost >= 0:
-                                    building_supply = 0
-                                    if board_space.buildings < 4:  # Ready for a house.
-                                        building_supply = game_info.houses  # The number of houses available
-                                        building = "house"
-                                    elif board_space.buildings == 4:  # Ready for a hotel.
-                                        building_supply = game_info.hotels  # The number of hotels available
-                                        building = "hotel"
+                                '''group_building_cost = 0
+                                if building == "house":
+                                    for prop in self.inventory:
+                                        if prop.group != board_space.group:
+                                            if 1 <= prop.buildings <= 4:
+                                                if group_building_cost == 0 or prop.house_cost < group_building_cost:
+                                                    group_building_cost = prop.house_cost
 
-                                    # Check if there is a building available.
-                                    if building_supply > 0:
+                                    if group_building_cost:
+                                        building_supply += 1'''
+
+                                if building_supply > 0:
+
+                                    # Calculate current cash available.
+                                    if self.development_threshold == 1:
+                                        # The player will use all but $1 to buy.
+                                        available_cash = self.money - 1
+                                    elif self.development_threshold == 2:
+                                        available_cash = self.find_available_mortgage_value() + self.money - 1
+                                    else:
+                                        available_cash = self.money - self.buying_threshold
+
+                                    # The player can afford it.
+                                    if available_cash - board_space.house_cost >= 0:
 
                                         # Build!
                                         if building == "house":
@@ -140,7 +152,7 @@ class Player:
                                         keep_building = True  # Allow the player to build again.
                                         game_info.first_building = True  # Buildings have been built.
 
-        if game_info.hotel_upgrade:
+        if 0==1:#game_info.hotel_upgrade:
             # # Buy hotels if we have exhausted houses # #
             if game_info.houses == 0:
                 for group in self.monopolies:
@@ -168,32 +180,51 @@ class Player:
                             else:
                                 available_cash = self.money - self.buying_threshold
 
-                            # Check if we can afford it.
-                            if available_cash - (house_disparity * house_cost) >= 0:
+                            house_costs = []
+                            for prop in self.inventory:
+                                if prop.group != group:
+                                    if prop.buildings != 5:
+                                        for house in range(prop.buildings):
+                                            house_costs.append(prop.house_cost)
 
-                                # Build!
-                                for property in self.inventory:
-                                    if property.group == group:
-                                        property.buildings = 5
-                                        game_info.hotels -= 1
-                                        game_info.houses += houses_found
 
-                                # Pay for it.
-                                self.money -= house_cost * house_disparity
+                            keep_going = True
+                            if len(house_costs) < house_disparity and game_info.building_sellback:
+                                keep_going = False
 
-                                if self.development_threshold != 2 and self.money < 0:
-                                    print("error 9", self.money)
 
-                                # Mortgage properties to pay for buildings.
-                                if self.development_threshold == 2:
-                                    property_index = 0
-                                    while self.money <= 0:
-                                        c_property = self.inventory[property_index]
-                                        if c_property.group not in self.monopolies and not c_property.mortgaged:
-                                            c_property.mortgaged = True
-                                            pass  # ##print("player",self.number,"mortgaged",board_space.name)
-                                            self.money += c_property.price / 2
-                                        property_index += 1
+                            if keep_going:
+                                house_costs.sort()
+                                total_house_costs = 0
+                                for i in range(house_disparity):
+                                    total_house_costs += house_costs[i] / 2
+
+                                # Check if we can afford it.
+                                if available_cash - (house_disparity * house_cost) - total_house_costs >= 0:
+
+                                    # Build!
+                                    for property in self.inventory:
+                                        if property.group == group:
+                                            property.buildings = 5
+                                            game_info.hotels -= 1
+                                            game_info.houses += houses_found
+
+                                    # Pay for it.
+                                    self.money -= (house_cost * house_disparity) +total_house_costs
+
+                                    if self.development_threshold != 2 and self.money < 0:
+                                        print("error 9", self.money)
+
+                                    # Mortgage properties to pay for buildings.
+                                    if self.development_threshold == 2:
+                                        property_index = 0
+                                        while self.money <= 0:
+                                            c_property = self.inventory[property_index]
+                                            if c_property.group not in self.monopolies and not c_property.mortgaged:
+                                                c_property.mortgaged = True
+                                                pass  # ##print("player",self.number,"mortgaged",board_space.name)
+                                                self.money += c_property.price / 2
+                                            property_index += 1
 
         # # Un-mortgage singleton properties. # #
         for board_space in self.inventory:
@@ -498,7 +529,7 @@ class MoneyPool:
         self.money = money
 
 
-# Define the Board_Location class.
+# Define the BoardLocation class.
 class BoardLocation:
     def __init__(self, id, name, price=0, group="none", rents=(0, 0, 0, 0, 0, 0), house_cost=0):
         self.id = id
@@ -514,7 +545,8 @@ class BoardLocation:
 
 # Define the Game class.
 class Game:
-    def __init__(self, list_of_players, hotel_upgrade=False, auctions_enabled=True, trading_enabled=False, free_parking_pool=False,
+    def __init__(self, list_of_players, hotel_upgrade=False, auctions_enabled=True, trading_enabled=False,
+                 free_parking_pool=False, building_sellback = False,
                  double_on_go=False, no_rent_in_jail=False, trip_to_start=False, snake_eyes_bonus=False, cutoff=1000):
         self.active_players = list_of_players  # Create  a list of players.
         self.inactive_players = []  # An empty list to store losing players.
@@ -527,6 +559,7 @@ class Game:
         self.auctions_enabled = auctions_enabled  # A toggle to disable auctions.
         self.trading_enabled = trading_enabled
         self.hotel_upgrade = hotel_upgrade
+        self.building_sellback = building_sellback
         self.first_building = False  # Records whether a building has been bought for smart_jail_strategy
         self.cutoff = cutoff  # Determines when a game should be terminated.
         self.loss_reason = []  # To store how a player lost the game.

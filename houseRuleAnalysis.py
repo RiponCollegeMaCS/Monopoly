@@ -9,12 +9,12 @@ def main():
                    "Lucky Roller",
                    "All"]
     all_length_lists = []
-    hotel_upgrade = True
-    trading_enabled = True
+    hotel_upgrade = False
+    trading_enabled = False
 
     for rule in house_rules:
         length_list = []
-        with open('results/house_rules/with_trades_and_hotels/' + rule + '.csv', 'w', newline='') as csvfile002:
+        with open('results/house_rules/' + rule + '.csv', 'w', newline='') as csvfile002:
             output_file002 = csv.writer(csvfile002, quotechar=',')
 
             for i in range(games_in_a_set):
@@ -58,7 +58,7 @@ def main():
         all_length_lists.append(length_list)
         print("Done with", rule)
 
-    with open('results/house_rules/with_trades_and_hotels/all_data.csv', 'w', newline='') as csvfile001:
+    with open('results/house_rules/all_data.csv', 'w', newline='') as csvfile001:
         output_file001 = csv.writer(csvfile001, quotechar=',')
 
         output_file001.writerow(house_rules)

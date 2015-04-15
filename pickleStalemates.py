@@ -14,7 +14,7 @@ def main():
         # Play game.
         player1 = Player(1)
         player2 = Player(2)
-        game0 = Game([player1, player2], cutoff=10000, trading_enabled=True, hotel_upgrade=True)
+        game0 = Game([player1, player2], cutoff=10000, trading_enabled=True, hotel_upgrade=True, building_sellback=True)
         results = game0.play()
 
         #game_lengths.append(results['length'])
@@ -23,13 +23,13 @@ def main():
         if results['length'] > 1000:
             print('long game:', results['length'])
 
-        print(results['length'])
+        #print(results['length'])
 
 
         # Pickle if there is a tie.
         if results['winner'] == 0:
             # Pickle it...like a cucumber!
-            pickle.dump(game0, open('results/stalemates/hotel_upgrade/game' + str(main_counter) + '.pickle', 'wb'))
+            pickle.dump(game0, open('results/stalemates/building_sellback/game' + str(main_counter) + '.pickle', 'wb'))
             print("!!!!!!found", main_counter)
             main_counter += 1
 

@@ -4,6 +4,15 @@ from timer import *
 import csv
 
 
+def stability(i):
+    with open('results/stalemateStability003.csv', 'r') as f:
+        data_iter = csv.reader(f, delimiter=",", quotechar='"')
+        data = [float(data[1]) for data in data_iter]
+
+    return data[i]
+
+
+
 def main():
     with open('results/stalemateStability003.csv', 'r') as dest_f:
         data_iter = csv.reader(dest_f, delimiter=",", quotechar='"')
@@ -26,6 +35,8 @@ def main():
 
             print(inventory, stabilityNumber)
         i += 1
+
+
 
 
 if __name__ == '__main__':

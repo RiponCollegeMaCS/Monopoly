@@ -107,7 +107,6 @@ def main():
     print(brown,no_monopolies,other_monopolies)
 
 
-
 if __name__ == '__main__':
     timer()
     main()

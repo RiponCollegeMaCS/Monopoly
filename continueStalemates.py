@@ -1,6 +1,5 @@
 # Tests the stability of stalemates.
 import pickle
-from timer import *
 from monopoly import *
 from copy import deepcopy
 from multiprocessing import *
@@ -8,7 +7,7 @@ import csv
 
 
 def play_set(sample_size, game, results_q):
-    game_lengths = []
+    game_winners = []
 
     for i in range(sample_size):
         game_to_play = deepcopy(game)
@@ -22,16 +21,16 @@ def play_set(sample_size, game, results_q):
 
         # Play the game.
         results = game_to_play.play()
-        game_lengths.append(results['length'] - 10000)
+        game_winners.append(results['winner'])
 
-    results_q.put(game_lengths.count(10000))
+    results_q.put(game_winners)
 
 
 def main():
-    with open('results/stalemateStability004.csv', 'w', newline='') as csvfile:
+    with open('results/stalemateStability_players.csv', 'w', newline='') as csvfile:
         output_file = csv.writer(csvfile, quotechar=',')
         total_sample_size = 1000
-        for game_id in range(100,200):
+        for game_id in [18]:
             # Load in game data.
             game = pickle.load(open('results/stalemates/long/game' + str(game_id) + '.pickle', "rb"))
 
@@ -51,14 +50,11 @@ def main():
 
             # Gather the results from each process.
             while not results_q.empty():
-                results_list.append(results_q.get())
+                results_list.extend(results_q.get())
 
-            results = [game_id,sum(results_list) / total_sample_size]
+            results = [game_id, results_list.count(0),results_list.count(1),results_list.count(2)]
             print(results)
             output_file.writerow(results)
-
-
-
 
         '''results.append(12-new_game.hotels)
         new_game.cutoff = 20000
@@ -69,7 +65,6 @@ def main():
 
     for i in range(13):
         print(i,results.count(i))'''
-
 
 
 if __name__ == '__main__':
