@@ -2,7 +2,6 @@
 import pickle
 from timer import *
 from monopoly import *
-from row_reduction import *
 
 
 def print_modes(my_list, num=0):
@@ -89,7 +88,7 @@ def find_all_subinventories():
 def main():
     all_inventories = []
     sub_inventories = []
-    total = 100
+    total = 50000
     for i in range(total):
         game = pickle.load(open('results/stalemates/long/game' + str(i) + '.pickle', "rb"))
 

@@ -30,7 +30,7 @@ def main():
     with open('results/stalemateStability_players.csv', 'w', newline='') as csvfile:
         output_file = csv.writer(csvfile, quotechar=',')
         total_sample_size = 1000
-        for game_id in [18]:
+        for game_id in [21,49,18]:
             # Load in game data.
             game = pickle.load(open('results/stalemates/long/game' + str(game_id) + '.pickle', "rb"))
 

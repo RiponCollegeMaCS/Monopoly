@@ -1,4 +1,3 @@
-# Counts duplicate stalemates.
 import pickle
 from timer import *
 import csv

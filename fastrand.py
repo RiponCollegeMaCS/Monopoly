@@ -33,13 +33,13 @@ def roll():
 
 def choice(lst):
     # Initialize and seed
-    libc.srand(libc.time(None))
+    libc.srand(libc.time(None) + libc.rand())
     return lst[libc.rand() % len(lst)]
 
 
 def shuffle(lst):
     # Initialize and seed
-    libc.srand(libc.time(None))
+    libc.srand(libc.time(None) + libc.rand())
     for i in range(len(lst)):
         j = libc.rand() % (len(lst) - i) + i
         lst[i], lst[j] = lst[j], lst[i]

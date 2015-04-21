@@ -2,7 +2,7 @@
 import pickle
 from timer import *
 from monopoly import *
-from row_reduction import *
+#from row_reduction import *
 
 
 def main():

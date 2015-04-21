@@ -4,7 +4,7 @@ from monopoly import *
 
 
 def main():
-    games_in_a_set = 10000
+    games_in_a_set = 100
     house_rules = ["Control", "Frozen Assets", "Dash for the Cash", "See the Sights", "Free Parking Fast Cash",
                    "Lucky Roller",
                    "All"]
@@ -14,7 +14,7 @@ def main():
 
     for rule in house_rules:
         length_list = []
-        with open('results/house_rules/' + rule + '.csv', 'w', newline='') as csvfile002:
+        with open('results/house_rules/000000' + rule + '.csv', 'w', newline='') as csvfile002:
             output_file002 = csv.writer(csvfile002, quotechar=',')
 
             for i in range(games_in_a_set):

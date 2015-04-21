@@ -5,12 +5,16 @@
 # # # # # # # # # # # # # # # #
 
 # Import various commands.
-# from random import *  # We use the randint, shuffle and choice functions.
+from fastrand import *  # We use the randint, shuffle and choice functions.
 from decimal import *  # The Decimal module for better rounding.
-from fastrand import *
 
 # Adjust the rounding scheme.
 getcontext().rounding = ROUND_HALF_UP
+
+# For a diceroll.
+#def roll():
+#    return randint(1, 6)
+
 
 # Define the Player class.
 class Player:
@@ -66,6 +70,21 @@ class Player:
 
         # For house rules.
         self.bid_includes_mortgages = False
+
+    def add_railroads_and_utilities(self):
+        railroad_counter = 0
+        utility_counter = 0
+        for property in self.inventory:
+            if property.group == "Railroad":
+                railroad_counter+=1
+            elif property.group == "Utility":
+                utility_counter+=1
+
+        if railroad_counter == 4:
+            self.monopolies.append("Railroad")
+
+        if utility_counter == 2:
+            self.monopolies.append("Utility")
 
     # Un-mortgage properties and buy buildings as desired.
     def develop_properties(self, game_info):
@@ -167,6 +186,7 @@ class Player:
                             house_disparity += 5 - board_space.buildings
                             houses_found += board_space.buildings
 
+                    # There are houses to build.
                     if house_disparity > 0:
                         # Check if there are enough hotels available.
                         if game_info.hotels >= properties_in_group:
@@ -187,11 +207,9 @@ class Player:
                                         for house in range(prop.buildings):
                                             house_costs.append(prop.house_cost)
 
-
                             keep_going = True
                             if len(house_costs) < house_disparity and game_info.building_sellback:
                                 keep_going = False
-
 
                             if keep_going:
                                 house_costs.sort()
@@ -210,7 +228,7 @@ class Player:
                                             game_info.houses += houses_found
 
                                     # Pay for it.
-                                    self.money -= (house_cost * house_disparity) +total_house_costs
+                                    self.money -= (house_cost * house_disparity) + total_house_costs
 
                                     if self.development_threshold != 2 and self.money < 0:
                                         print("error 9", self.money)
@@ -546,7 +564,7 @@ class BoardLocation:
 # Define the Game class.
 class Game:
     def __init__(self, list_of_players, hotel_upgrade=False, auctions_enabled=True, trading_enabled=False,
-                 free_parking_pool=False, building_sellback = False,
+                 free_parking_pool=False, building_sellback=False,
                  double_on_go=False, no_rent_in_jail=False, trip_to_start=False, snake_eyes_bonus=False, cutoff=1000):
         self.active_players = list_of_players  # Create  a list of players.
         self.inactive_players = []  # An empty list to store losing players.
