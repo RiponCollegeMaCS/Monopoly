@@ -12,7 +12,8 @@ from decimal import *  # The Decimal module for better rounding.
 getcontext().rounding = ROUND_HALF_UP
 
 # For a diceroll.
-#def roll():
+# from random import *
+# def roll():
 #    return randint(1, 6)
 
 
