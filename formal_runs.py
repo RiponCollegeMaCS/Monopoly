@@ -22,7 +22,7 @@ def main():
         output_file = csv.writer(csvfile, quotechar=',')
 
         for i in range(games_in_a_set):
-            player1 = Player(1, buying_threshold=500,
+            player1 = Player(1, buying_threshold=100,
                              jail_time=3,
                              smart_jail_strategy=False,
                              complete_monopoly=0,
@@ -31,7 +31,7 @@ def main():
                              building_threshold=5,
 
             )
-            player2 = Player(2, buying_threshold=500,
+            player2 = Player(2, buying_threshold=100,
                              jail_time=3,
                              smart_jail_strategy=False,
                              complete_monopoly=0,
