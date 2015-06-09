@@ -129,7 +129,7 @@ def lookup_success(ordering, ordering_archive, success_archive):
 
 
 def write_row(row):
-    with open('results/hillClimb2.csv', 'a', newline='') as csvfile:
+    with open('results/hillClimb_1for1.csv', 'w', newline='') as csvfile:
         output_file = csv.writer(csvfile, quotechar=',')
         output_file.writerow(row)
 

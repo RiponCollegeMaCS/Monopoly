@@ -378,7 +378,8 @@ class Player:
                     pairs_of_groups = []
                     for i in range(len(ordered_groups)):
                         if ordered_groups[i] != reversed_groups[i]:
-                            pairs_of_groups.append([ordered_groups[i], reversed_groups[i]])
+                            if group_countsA[group_number[reversed_groups[i]]] == group_countsB[group_number[ordered_groups[i]]]:
+                                pairs_of_groups.append([ordered_groups[i], reversed_groups[i]])
 
                     finished_groups = []
                     # print(pairs_of_groups)
@@ -387,28 +388,33 @@ class Player:
                         group1 = group_pair[0]
                         group2 = group_pair[1]
 
+
                         # Check if a group in the pair has already been completed.
                         if group1 not in finished_groups and group2 not in finished_groups:
                             # See if playerA wants group1 and playerB wants group2.
                             if playerA.group_ranking[group1] < playerA.group_ranking[group2]:
                                 if playerB.group_ranking[group2] < playerB.group_ranking[group1]:
 
+                                    counter = 0
                                     # playerB takes all properties from playerA in group2
-                                    for property in playerA.inventory:
+                                    for property in list(playerA.inventory):
                                         if property.group == group2:
                                             playerB.inventory.append(property)
                                             playerA.inventory.remove(property)
+                                            counter+=1
                                     playerB.monopolies.append(group2)
 
                                     # playerA takes all properties from playerB in group1
-                                    for property in playerB.inventory:
+                                    for property in list(playerB.inventory):
                                         if property.group == group1:
                                             playerA.inventory.append(property)
                                             playerB.inventory.remove(property)
+                                            counter +=1
                                     playerA.monopolies.append(group1)
-
                                     finished_groups.extend(group_pair)
                                     # print('traded:', group_pair)
+                                    if counter % 2 == 1:
+                                        print("!!!!!!!!!!!!!!!1")
 
     # Called between turns.
     def between_turns(self, game_info):

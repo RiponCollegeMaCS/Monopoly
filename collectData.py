@@ -30,7 +30,7 @@ def main():
 
         # Store length.
         length_matrix.append(results['length'])
-    
+
     print(sum(length_matrix)/len(length_matrix))
     # Open file.
     with open('results/blah.csv', 'w', newline='') as csvfile:
