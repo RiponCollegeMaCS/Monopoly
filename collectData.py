@@ -2,6 +2,13 @@ import csv
 from timer import *
 from monopoly import *
 
+def random_ordering():
+    all_groups = ["Brown", "Light Blue", "Pink", "Orange",
+                  "Red", "Yellow", "Green", "Dark Blue",
+                  "Utility", "Railroad"]
+    shuffle(all_groups)
+    return tuple(all_groups)
+
 
 def main():
     games_in_a_set = 1000
@@ -10,10 +17,8 @@ def main():
 
     for i in range(games_in_a_set):
         # Play game.
-        player1 = Player(1, buying_threshold=500,
-                         group_ordering=("Brown", "Light Blue", "Pink", "Orange", "Red", "Yellow", "Green", "Dark Blue", "Utilities", "Railroad"))
-        player2 = Player(2, buying_threshold=500,
-                         group_ordering=("Red", "Light Blue", "Utilities", "Orange", "Railroad", "Yellow", "Green","Brown", "Dark Blue", "Pink"))
+        player1 = Player(1, group_ordering=random_ordering())
+        player2 = Player(2,group_ordering=random_ordering())
         game0 = Game([player1, player2], cutoff=cutoff,
                      trading_enabled=True,
                      new_trading=True,

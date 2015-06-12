@@ -1,10 +1,9 @@
 # Tests the stability of stalemates.
 import pickle
 from monopoly import *
-from copy import deepcopy
 from multiprocessing import *
 import csv
-
+from copy import deepcopy
 
 def play_set(sample_size, game, results_q):
     game_winners = []

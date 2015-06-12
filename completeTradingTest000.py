@@ -41,5 +41,6 @@ def main():
 
 if __name__ == '__main__':
     timer()
-    main()
+    for i in range(10):
+        main()
     timer()
