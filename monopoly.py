@@ -386,7 +386,7 @@ class Player:
                     pairs_of_groups = []
                     for i in range(len(ordered_groups)):
                         if ordered_groups[i] != reversed_groups[i]:
-                            if 0 == 0:  # group_countsA[group_number[reversed_groups[i]]] == group_countsB[group_number[ordered_groups[i]]]:
+                            if group_countsA[group_number[reversed_groups[i]]] == group_countsB[group_number[ordered_groups[i]]]:
                                 pairs_of_groups.append([ordered_groups[i], reversed_groups[i]])
 
                     finished_groups = []

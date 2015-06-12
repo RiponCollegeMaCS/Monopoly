@@ -8,7 +8,7 @@ def old_success_indicator(games_in_a_set=1000):
         # Play game.
         player1 = monopoly.Player(1, buying_threshold=500)
         player2 = monopoly.Player(2, buying_threshold=500)
-        game0 = monopoly.Game([player1, player2], cutoff=1000)
+        game0 = monopoly.Game([player1, player2], cutoff=1000, new_trading=True)
         results = game0.play()
 
         # Store length.
