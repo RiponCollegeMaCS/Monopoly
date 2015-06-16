@@ -384,28 +384,28 @@ class Player:
         # Unmortgage properties.
         self.unmortgage_properties(game_info)
 
-        # Old trading scheme
-        if game_info.trading_enabled and not game_info.new_trading:
-            self.board_order_trading(game_info)
+#        # Old trading scheme
+#        if game_info.trading_enabled and not game_info.new_trading:
+#            self.board_order_trading(game_info)
 
         # New trading scheme
         if game_info.new_trading:
             self.ranking_trading(game_info)
 
-        # Even newer trading scheme
-        if game_info.complex_trading:
-            self.trading(game_info)
+#        # Even newer trading scheme
+#        if game_info.complex_trading:
+#            self.trading(game_info)
 
-        # Even newer trading scheme (2)
-        if game_info.complex_trading2:
-            self.trading2(game_info)
-
-        # Trading with individual properties
-        if game_info.property_trading:
-            self.property_trading(game_info)
-
-        if game_info.discrete_property_trading:
-            self.discrete_property_trading(game_info)
+#        # Even newer trading scheme (2)
+#        if game_info.complex_trading2:
+#            self.trading2(game_info)
+#
+#        # Trading with individual properties
+#        if game_info.property_trading:
+#            self.property_trading(game_info)
+#
+#        if game_info.discrete_property_trading:
+#            self.discrete_property_trading(game_info)
 
 
     # Given two lists of property counts, we find the potenial new groups.
@@ -641,8 +641,9 @@ class Player:
                         self.money += c_property.price / 2
                     property_index += 1
 
-                game_info.unowned_properties.remove(property)  # Remove property from unowned properties list.
-                self.inventory.append(property)
+                game_info.update_inventories(player_from="Bank", player_to=self, prop_list=[property])
+#                game_info.unowned_properties.remove(property)  # Remove property from unowned properties list.
+#                self.inventory.append(property)
                 self.add_monopoly(property.group)  # Add the group to the player's list of monopolies.
                 return True
 
@@ -1024,6 +1025,19 @@ class Game:
                                 other_party.chance_card = True
                             if current_party.community_chest_card:
                                 other_party.community_chest_card = True
+                                
+    def update_inventories(self, player_from, player_to, prop_list):
+        if player_from == "Bank":
+            #Add all properties to player_to's inventory and
+            #remove all properties from the list of unowned properties
+            for prop in prop_list: 
+                player_to.inventory.append(prop)
+                self.unowned_properties.remove(prop)                           
+        else:
+            for prop in prop_list:
+                player_from.inventory.remove(prop)
+                player_to.inventory.append(prop)
+            
 
 
     # Determines if the player owns all of the properties in the the given property's group.
@@ -1076,8 +1090,9 @@ class Game:
                                 summary="Paying property at auction.")
             pass  # ##print("player",player.number,"bought",board_space.name,"(",board_space.group,") for",board_space.price)
 
-        self.unowned_properties.remove(board_space)  # Remove the property from the list of unowned properties.
-        player.inventory.append(board_space)  # Give the property to the player.
+        self.update_inventories(player_from="Bank", player_to=player, prop_list=[board_space])        
+#        self.unowned_properties.remove(board_space)  # Remove the property from the list of unowned properties.
+#        player.inventory.append(board_space)  # Give the property to the player.
 
         # If the player has a completed a monopoly, add it to the player's list of monopolies.
         if self.monopoly_status(player, board_space):
