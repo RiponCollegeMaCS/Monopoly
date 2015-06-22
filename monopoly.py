@@ -9,9 +9,6 @@ from decimal import Decimal, getcontext, ROUND_HALF_UP  # The Decimal module for
 
 getcontext().rounding = ROUND_HALF_UP  # Adjust the rounding scheme.
 
-# A global function for a dieroll.
-def roll():
-    return randint(1, 6)
 
 
 # Define the Player class.
@@ -87,8 +84,8 @@ class Player:
         # For house rules.
         self.bid_includes_mortgages = False
 
-    def add_monopoly(self,group):
-        if group not in ["Railroad","Utility"]:
+    def add_monopoly(self, group):
+        if group not in ["Railroad", "Utility"]:
             self.monopolies.append(group)
         return
 
@@ -386,7 +383,8 @@ class Player:
                     pairs_of_groups = []
                     for i in range(len(ordered_groups)):
                         if ordered_groups[i] != reversed_groups[i]:
-                            if group_countsA[group_number[reversed_groups[i]]] == group_countsB[group_number[ordered_groups[i]]]:
+                            if group_countsA[group_number[reversed_groups[i]]] == group_countsB[
+                                group_number[ordered_groups[i]]]:
                                 pairs_of_groups.append([ordered_groups[i], reversed_groups[i]])
 
                     finished_groups = []
@@ -1048,6 +1046,7 @@ class Game:
         self.hotels = 12  # Hotel supply.
         self.winner = 1000  # Ending game data.
         self.dice_roll = 0  # The current dice roll can be accessible everywhere.
+
         self.auctions_enabled = auctions_enabled  # A toggle to disable auctions.
         self.trading_enabled = trading_enabled
         self.hotel_upgrade = hotel_upgrade
@@ -1084,6 +1083,7 @@ class Game:
         self.no_rent_in_jail = no_rent_in_jail
         self.trip_to_start = trip_to_start
         self.snake_eyes_bonus = snake_eyes_bonus
+
 
     # Create list of numbers to represent Chance and Community Chest cards.
     def create_cards(self):
@@ -1164,6 +1164,8 @@ class Game:
                             if self.monopoly_status(player, property):
                                 player.add_monopoly(property.group)
 
+    def get_roll(self):
+        return randint(1, 6)
 
     # Defines the actions of the Community Chest cards.
     def community_chest(self, player):
@@ -1513,8 +1515,8 @@ class Game:
         # Rent for Utilities.
         elif current_property.group == "Utility":
             # Roll the dice.
-            die1 = roll()
-            die2 = roll()
+            die1 = self.get_roll()
+            die2 = self.get_roll()
             self.dice_roll = die1 + die2
 
             # Check for snakes eyes.
@@ -1675,7 +1677,7 @@ class Game:
         self.doubles_counter = 0  # Reset doubles counter.
 
         # Track the player's money.
-        player.money_changes.append(player.money)
+        # player.money_changes.append(player.money)
 
         # Is the player in jail?
         if player.in_jail:  # Player is in jail.
@@ -1685,8 +1687,8 @@ class Game:
                 player.pay_out_of_jail(game_info=self)  # Pay out using a card or $50.
             else:
                 # Roll the dice.
-                die1 = roll()
-                die2 = roll()
+                die1 = self.get_roll()
+                die2 = self.get_roll()
                 self.dice_roll = die1 + die2
 
                 # Check for snake eyes.
@@ -1711,8 +1713,8 @@ class Game:
             self.move_again = False
 
             # Roll the dice.
-            die1 = roll()
-            die2 = roll()
+            die1 = self.get_roll()
+            die2 = self.get_roll()
             self.dice_roll = die1 + die2
 
             # Check for snakes eyes.
