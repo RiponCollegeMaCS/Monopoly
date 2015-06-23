@@ -11,7 +11,7 @@ def random_ordering():
 
 
 def main():
-    games_in_a_set = 1000
+    games_in_a_set = 100
     cutoff = 1000
     length_matrix = []
 
@@ -21,7 +21,6 @@ def main():
         player2 = Player(2,group_ordering=random_ordering())
         game0 = Game([player1, player2], cutoff=cutoff,
                      trading_enabled=True,
-                     new_trading=True,
                      hotel_upgrade=False,
                      building_sellback=False,
 
@@ -49,7 +48,7 @@ def main():
                     counter += 1
 
             output_file.writerow([counter / games_in_a_set])
-            print(counter / games_in_a_set)
+            #print(counter / games_in_a_set)
 
 
 if __name__ == '__main__':

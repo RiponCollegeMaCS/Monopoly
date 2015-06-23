@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Jun 16 16:47:29 2015
-
-@author: mckenzie
-"""
-
 # # # # # # # # # # # # # # # #
 # Monopoly Simulator          #
 # Created by Mitchell Eithun  #
@@ -12,14 +5,9 @@ Created on Tue Jun 16 16:47:29 2015
 # # # # # # # # # # # # # # # #
 
 from random import randint, shuffle, choice  # For random game elements.
-from decimal import Decimal, getcontext, ROUND_HALF_UP  # The Decimal module for better rounding.
+from decimal import getcontext, ROUND_HALF_UP  # The Decimal module for better rounding.
 
 getcontext().rounding = ROUND_HALF_UP  # Adjust the rounding scheme.
-
-# A global function for a dieroll.
-#def roll():
-#    return randint(1, 6)
-
 
 # Define the Player class.
 class Player:
@@ -30,35 +18,20 @@ class Player:
                  smart_jail_strategy=False,
                  complete_monopoly=0,
                  development_threshold=0,
-                 building_threshold=5,
-                 group_preferences=(),
-                 initial_inventory=False,
-                 initial_money=False,
                  evolving_threshold=0,
                  group_ordering=("Brown", "Light Blue", "Pink", "Orange",
                                  "Red", "Yellow", "Green", "Dark Blue", "Utility", "Railroad"),
                  group_values=None,
                  property_values=[0 for i in range(40)]
-                 
-                 ):
-           
-        self.number = number
-        self.reset_values()  # Reset the player's attributes if the player is used again.
+    ):
 
-        # Define initial conditions.
-        self.initial_inventory = initial_inventory
-        self.initial_money = initial_money
-
-        if initial_money:
-            self.money = initial_money
+        self.number = number  # A player's id number.
 
         # Strategy parameters.
-        self.group_preferences = group_preferences
         self.development_threshold = development_threshold
         self.init_jail_time = jail_time
         self.jail_time = jail_time
         self.smart_jail_strategy = smart_jail_strategy
-        self.building_threshold = building_threshold
         self.complete_monopoly = complete_monopoly
         self.buying_threshold = buying_threshold
         self.evolving_threshold = evolving_threshold
@@ -73,19 +46,14 @@ class Player:
             self.group_ranking[self.group_ordering[index]] = index
 
         self.group_values = group_values
-        
+
         self.group_inv = {"Brown": [], "Light Blue": [], "Pink": [], "Orange": [],
-                              "Red": [], "Yellow": [], "Green": [], "Dark Blue": [],
-                              "Utility": [], "Railroad": []} #Inventory dictionary organized by group
+                          "Red": [], "Yellow": [], "Green": [], "Dark Blue": [],
+                          "Utility": [], "Railroad": []}  # Inventory dictionary organized by group
         self.inventory = set()  # A set of the player's properties.
-              
-    # Reset a player's parameters so the same player can play in a series of games.
-    def reset_values(self):
-        # General attributes. 
-        self.group_inv = {"Brown": [], "Light Blue": [], "Pink": [], "Orange": [],
-                              "Red": [], "Yellow": [], "Green": [], "Dark Blue": [],
-                              "Utility": [], "Railroad": []} #Inventory dictionary organized by group    
-        self.inventory = []  # A list of the player's properties.
+        self.monopolies = set()
+        self.mortgaged_properties = set()
+
         self.position = 0  # The player starts on "Go".
         self.money = 1500  # The player starts with $1,500.
         self.chance_card = False  # The player has no "Get Out of Jail Free" cards.
@@ -93,8 +61,6 @@ class Player:
         self.in_jail = False  # The player is not in jail.
         self.jail_counter = 0  # The "turns in jail" counter.
         self.card_rent = False
-        self.inventory = self.group_inv.values()  # A list of the player's properties.
-        self.monopolies = set()  # A list of the player's monopolies.
         self.passed_go = False  # Used for a house rule.
         self.money_changes = []
 
@@ -105,20 +71,16 @@ class Player:
         # For house rules.
         self.bid_includes_mortgages = False
 
-    def add_monopoly(self,group):
-        if group not in ["Railroad","Utility"]:
+    # Add a group to the list of monopolies, checking that it is a valid color group.
+    def add_monopoly(self, group):
+        if group != "Railroad" and group != "Utility":
             self.monopolies.add(group)
         return
 
-    # Used in analysis to add railroad and utility monopolies to player's lists of monopolies
+    # Used in analysis to add railroad and utility monopolies to player's lists of monopolies.
     def add_railroads_and_utilities(self):
-        railroad_counter = 0
-        utility_counter = 0
-        for property in self.inventory:
-            if property.group == "Railroad":
-                railroad_counter += 1
-            elif property.group == "Utility":
-                utility_counter += 1
+        railroad_counter = self.group_inv['Railroad']
+        utility_counter = self.group_inv["Utility"]
 
         if railroad_counter == 4:
             self.monopolies.add("Railroad")
@@ -128,95 +90,75 @@ class Player:
 
     # Unmortgage properties in monopolies if possible, in accordance with buying threshold.
     def unmortgage_monopolied_properties(self, game_info):
-        for group in self.monopolies:
-            #print(board_space)
-            for board_space in self.group_inv[group]:
-                if board_space.mortgaged:
-                    unmortgage_price = board_space.unmortgage_price
-                    if self.money - unmortgage_price >= self.get_buying_threshold(game_info):
-                        self.money -= unmortgage_price  # Pay un-mortgage price.
-                        board_space.mortgaged = False  # Un-mortgage property.
-                        pass  # ##print("player",self.number,"unmortgaged",board_space.name)
-                    else:
-                        # We can't unmortgage anything else.
-                        return
+        # Look at properties in complete monopolies.
+        for board_space in set(self.mortgaged_properties):
+            if board_space.group in self.monopolies:
+                # See if we can afford to unmortgage it.
+                if self.money - board_space.unmortgage_price >= self.get_buying_threshold(game_info):
+                    self.money -= board_space.unmortgage_price  # Pay un-mortgage price.
+                    board_space.unmortgage()  # Un-mortgage property.
+
 
     # Attempt to develop properties in monopolies.
     def buy_buildings(self, game_info):
-        # # Buy buildings. # #
-        if self.monopolies:
-            keep_building = True  # Initial condition.
+        # Main loop.
+        for group in self.monopolies:  # Cycle through player's monopolies.
+            keep_building = True
             while keep_building:
-                keep_building = False  # Don't keep building unless something is bought.
-                for group in self.monopolies:  # Cycle through set of player monopolies.
-                    for board_space in self.group_inv[group]:
-                        if self.even_building_test(board_space) and not board_space.mortgaged:  # Building "evenly".
-                            if board_space.buildings < 5:  # self.building_threshold:  # Check player's building limit.
+                # Don't keep building unless something is bought.
+                keep_building = False
+                for board_space in self.group_inv[group]:
+                    if board_space.buildings < 5 and not board_space.mortgaged:  # Check we can actually build.
 
-                                # Check if there is a building available.
-                                building_supply = 0
-                                if board_space.buildings < 4:  # Ready for a house.
-                                    building_supply = game_info.houses  # The number of houses available
-                                    building = "house"
-                                elif board_space.buildings == 4:  # Ready for a hotel.
-                                    building_supply = game_info.hotels  # The number of hotels available
-                                    building = "hotel"
+                        # Calculate current cash available.
+                        if self.development_threshold == 1:
+                            # The player will use all but $1 to buy.
+                            available_cash = self.money - 1
+                        elif self.development_threshold == 2:
+                            available_cash = self.find_available_mortgage_value() + self.money - 1
+                        else:
+                            available_cash = self.money - self.get_buying_threshold(game_info)
 
-                                '''group_building_cost = 0
-                                if building == "house":
-                                    for prop in self.inventory:
-                                        if prop.group != board_space.group:
-                                            if 1 <= prop.buildings <= 4:
-                                                if group_building_cost == 0 or prop.house_cost < group_building_cost:
-                                                    group_building_cost = prop.house_cost
+                        # The player can afford it.
+                        if available_cash - board_space.house_cost >= 0:
 
-                                    if group_building_cost:
-                                        building_supply += 1'''
+                            # Check if there is a building available.
+                            building_supply = 0
+                            if board_space.buildings < 4:  # Ready for a house.
+                                building_supply = game_info.houses  # The number of houses available
+                                building = "house"
+                            elif board_space.buildings == 4:  # Ready for a hotel.
+                                building_supply = game_info.hotels  # The number of hotels available
+                                building = "hotel"
 
-                                if building_supply > 0:
+                            if building_supply > 0:
+                                if self.even_building_test(board_space):  # Building "evenly".
 
-                                    # Calculate current cash available.
-                                    if self.development_threshold == 1:
-                                        # The player will use all but $1 to buy.
-                                        available_cash = self.money - 1
-                                    elif self.development_threshold == 2:
-                                        available_cash = self.find_available_mortgage_value() + self.money - 1
-                                    else:
-                                        available_cash = self.money - self.get_buying_threshold(game_info)
+                                    # Build!
+                                    if building == "house":
+                                        game_info.houses -= 1  # Take 1 house.
+                                    elif building == "hotel":
+                                        game_info.hotels -= 1  # Take 1 hotel.
+                                        game_info.houses += 4  # Put back 4 houses.
 
-                                    # The player can afford it.
-                                    if available_cash - board_space.house_cost >= 0:
+                                    board_space.buildings += 1  # Add building to property.
+                                    self.money -= board_space.house_cost  # Pay building cost.
 
-                                        # Build!
-                                        if building == "house":
-                                            game_info.houses -= 1  # Take 1 house.
-                                        elif building == "hotel":
-                                            game_info.hotels -= 1  # Take 1 hotel.
-                                            game_info.houses += 4  # Put back 4 houses.
+                                    # Mortgage properties to pay for building.
+                                    if self.development_threshold == 2:
+                                        for c_property in self.inventory:
+                                            if c_property.group not in self.monopolies and not c_property.mortgaged:
+                                                c_property.mortgage()
+                                                self.money += c_property.mortgage_value
+                                            if self.money > 0:
+                                                break
 
-                                        board_space.buildings += 1  # Add building to property.
-                                        self.money -= board_space.house_cost  # Pay building cost.
-
-                                        if self.development_threshold != 2 and self.money < 0:
-                                            pass  # ##print("error 9", self.money)
-
-                                        # Mortgage properties to pay for building.
-                                        if self.development_threshold == 2:
-                                            property_index = 0
-                                            while self.money <= 0:
-                                                c_property = self.inventory[property_index]
-                                                if c_property.group not in self.monopolies and not c_property.mortgaged:
-                                                    c_property.mortgaged = True
-                                                    pass  # ##print("player",self.number,"mortgaged",board_space.name)
-                                                    self.money += c_property.price / 2
-                                                property_index += 1
-
-                                        keep_building = True  # Allow the player to build again.
-                                        game_info.first_building = True  # Buildings have been built.
+                                    keep_building = True  # Allow the player to build again.
+                                    game_info.first_building = True  # Buildings have been built.
 
         if game_info.hotel_upgrade or game_info.building_sellback:
             # # Buy hotels if we have exhausted houses # #
-            if game_info.houses == 0:
+            if game_info.houses == 0 and game_info.hotels > 0:
                 for group in self.monopolies:
                     house_disparity = 0
                     properties_in_group = 0
@@ -263,7 +205,7 @@ class Player:
                                 if available_cash - (house_disparity * house_cost) - total_house_costs >= 0:
 
                                     # Build!
-                                    for prop in self.group_inv[prop.group]:
+                                    for prop in self.group_inv[group]:
                                         prop.buildings = 5
                                         game_info.hotels -= 1
                                         game_info.houses += houses_found
@@ -271,31 +213,22 @@ class Player:
                                     # Pay for it.
                                     self.money -= (house_cost * house_disparity) + total_house_costs
 
-                                    if self.development_threshold != 2 and self.money < 0:
-                                        print("error 9", self.money)
-
                                     # Mortgage properties to pay for buildings.
                                     if self.development_threshold == 2:
-                                        property_index = 0
-                                        while self.money <= 0:
-                                            c_property = self.inventory[property_index]
+                                        for c_property in self.inventory:
                                             if c_property.group not in self.monopolies and not c_property.mortgaged:
-                                                c_property.mortgaged = True
-                                                pass  # ##print("player",self.number,"mortgaged",board_space.name)
-                                                self.money += c_property.price / 2
-                                            property_index += 1
+                                                c_property.mortgage()
+                                                self.money += c_property.mortgage_value
+                                            if self.money > 0:
+                                                break
 
     # # Un-mortgage singleton properties. # #
     def unmortgage_properties(self, game_info):
-        for board_space in self.inventory:
-            if board_space.mortgaged:
-                unmortgage_price = board_space.unmortgage_price
-                if self.money - unmortgage_price >= self.get_buying_threshold(game_info):
-                    self.money -= unmortgage_price  # Pay un-mortgage price.
-                    board_space.mortgaged = False  # Un-mortgage property.
-                    pass  # ##print("player",self.number,"unmortgaged",board_space.name)
-                else:
-                    return  # Exit if the player doesn't have enough money to continue.
+        for board_space in set(self.mortgaged_properties):
+            if self.money - board_space.unmortgage_price >= self.get_buying_threshold(game_info):
+                self.money -= board_space.unmortgage_price  # Pay un-mortgage price.
+                board_space.unmortgage()  # Un-mortgage property.
+
 
     # Called between turns.
     def between_turns(self, game_info):
@@ -308,50 +241,10 @@ class Player:
         # Unmortgage properties.
         self.unmortgage_properties(game_info)
 
-#        # Old trading scheme
-#        if game_info.trading_enabled and not game_info.new_trading:
-#            self.board_order_trading(game_info)
-
         # Ranking trading scheme
         if game_info.ranking_trading:
             game_info.trade_by_rankings()
 
-#        # Even newer trading scheme
-#        if game_info.complex_trading:
-#            self.trading(game_info)
-
-#        # Even newer trading scheme (2)
-#        if game_info.complex_trading2:
-#            self.trading2(game_info)
-#
-#        # Trading with individual properties
-#        if game_info.property_trading:
-#            self.property_trading(game_info)
-#
-#        if game_info.discrete_property_trading:
-#            self.discrete_property_trading(game_info)
-
-
-    # Given two lists of property counts, we find the potenial new groups.
-    def joint_groups(self, counts1, counts2):
-        group_name = ["Brown", "Light Blue", "Pink", "Orange",
-                      "Red", "Yellow", "Green", "Dark Blue",
-                      "Utility", "Railroad"]
-
-        properties_in_group = [2, 3, 3, 3, 3, 3, 3, 2, 2, 4]
-
-        # To store all possible new groups.
-        complete_groups = []
-
-        # Loop through counts.
-        for index in range(len(counts1)):
-            # See if there are enough properties between the players.
-            if properties_in_group[index] == counts1[index] + counts2[index]:
-                # See that the groups is not owned by just one player.
-                if properties_in_group[index] != counts1[index] and properties_in_group[index] != counts2[index]:
-                    complete_groups.append(group_name[index])
-
-        return complete_groups
 
     # Determines how a player gets out of jail: use a GOOJF or pay $50.
     def pay_out_of_jail(self, game_info):
@@ -372,36 +265,34 @@ class Player:
         if building == "house":
             property.buildings -= 1
             game_info.houses += 1
-            self.money += property.house_cost / 2
+            self.money += property.mortgage_value
 
         # Downgrade from a hotel to 4 houses.
         elif building == "hotel":
             property.buildings -= 1
             game_info.hotels += 1
             game_info.houses -= 4
-            self.money += property.house_cost / 2
+            self.money += property.mortgage_value
 
         # Sell all buildings on the property.
         elif building == "all":  # The property has a hotel.
             if property.buildings == 5:
                 property.buildings = 0
                 game_info.hotels += 1
-                self.money += (property.house_cost / 2) * 5
+                self.money += (property.mortgage_value) * 5
             else:  # The property has houses.
                 game_info.houses += property.buildings
-                self.money += (property.house_cost / 2) * property.buildings
+                self.money += (property.mortgage_value) * property.buildings
                 property.buildings = 0
 
     # Decides how player's make funds if they are in the hole.
     def make_funds(self, game_info):
         # # Mortgage properties if they are not in a monopoly. # #
-
         for board_space in self.inventory:  # Cycle through the player's properties.
             if (board_space.group not in self.monopolies) and (not board_space.mortgaged):
-                mortgage_value = board_space.price / 2  # Find the mortgage value.
+                mortgage_value = board_space.mortgage_value  # Find the mortgage value.
                 self.money += mortgage_value  # Gain the mortgage value.
-                board_space.mortgaged = True  # Mortgage property.
-                pass  # ##print("player",self.number,"mortgaged",board_space.name)
+                board_space.mortgage()  # Mortgage property.
                 if self.money > 0:  # Check if the player is out of the hole.
                     return  # Exit function.
 
@@ -423,7 +314,8 @@ class Player:
                             if game_info.houses >= 4:  # Check if there are 4 houses to replace the hotel.
                                 self.sell_building(board_space, "hotel", game_info)  # Hotel - > 4 Houses
                             else:  # Not enough houses to break hotel.
-                                for board_space2 in self.group_inv[board_space.group]:  # Sell back all buildings in GROUP.
+                                for board_space2 in self.group_inv[
+                                    board_space.group]:  # Sell back all buildings in GROUP.
                                     self.sell_building(board_space2, "all", game_info)
                         else:  # It's a house.
                             self.sell_building(board_space, "house", game_info)
@@ -431,13 +323,11 @@ class Player:
                             return  # Exit
 
         # # Mortgage properties in monopolies. # #
-
-        for group in self.monopolies:  # Cycle through all board spaces.
+        for board_space in self.inventory:  # Cycle through all board spaces.
             if not board_space.mortgaged:
-                mortgage_value = board_space.price / 2  # Find the mortgage value.
+                mortgage_value = board_space.mortgage_value  # Find the mortgage value.
                 self.money += mortgage_value  # Gain the mortgage value.
-                board_space.mortgaged = True  # Mortgage property.
-                pass  # ##print("player",self.number,"mortgaged",board_space.name)
+                board_space.mortgage()  # Mortgage property.
                 if self.money > 0:  # Check if the player is out of the hole.
                     return  # Exit function.
 
@@ -468,7 +358,7 @@ class Player:
         for property in self.inventory:
             if property.buildings == 0 and not property.mortgaged and property.group not in self.monopolies:
                 # Add mortgage value.
-                available_mortgage_value += property.price / 2
+                available_mortgage_value += property.mortgage_value
         return available_mortgage_value
 
     # Decides how players make auction bids.
@@ -477,18 +367,14 @@ class Player:
         self.bid_includes_mortgages = False
         self.mortgage_auctioned_property = False
 
-        # If the player has a preference for the group.
-        if property.group in self.group_preferences:
-            self.auction_bid = self.money - 1
-
         # If the player will complete their group and wants to.
         if self.complete_monopoly == 1 and \
-                game_info.monopoly_status(player=self, current_property=property, additional_properties=[property]):
+                game_info.monopoly_status(player=self, current_property=property, add_me=1):
             self.auction_bid = self.money - 1
 
         # If the player wants to mortgage properties.
         elif self.complete_monopoly == 2 and \
-                game_info.monopoly_status(player=self, current_property=property, additional_properties=[property]):
+                game_info.monopoly_status(player=self, current_property=property, add_me=1):
             self.bid_includes_mortgages = True
             # Find all the money the player can use by mortgaging other properties.
             available_mortgage_value = self.find_available_mortgage_value()
@@ -497,57 +383,48 @@ class Player:
             self.auction_bid = self.money - self.get_buying_threshold(game_info)
 
         # The bid should be at least the mortgage value of the property.
-        if self.auction_bid < property.price / 2:
-            self.auction_bid = property.price / 2
+        if self.auction_bid < property.mortgage_value:
+            self.auction_bid = property.mortgage_value
             self.mortgage_auctioned_property = True
 
     # Allows a player to gather the funds needed to complete an auction.
     def make_auction_funds(self, game_info, winning_bid, property):
         # If the bid with intentions to mortgage it.
         if self.mortgage_auctioned_property:
-            property.mortgaged = True
-            self.money += property.price / 2
+            property.mortgage()
+            self.money += property.mortgage_value
 
         # Special buying procedure if the player wants to mortgage properties.
         if self.bid_includes_mortgages:
             self.money -= winning_bid  # Pay for property temporarily.
 
             # Make up the funds.
-            property_index = 0
-            while self.money <= 0:
-                c_property = self.inventory[property_index]
+            for c_property in self.inventory:
                 if c_property.buildings == 0 and not c_property.mortgaged and c_property.group not in self.monopolies:
-                    c_property.mortgaged = True
-                    pass  # ##print("player",self.number,"mortgaged",c_property.name)
-                    self.money += c_property.price / 2
-                property_index += 1
+                    c_property.mortgage()
+                    self.money += c_property.mortgage_value
+                if self.money > 0:
+                    break
 
             self.money += winning_bid  # Pay money back.
 
     # Decides what the player does when he lands on an unowned property.
     def unowned_property_action(self, game_info, property):
+        property_price = property.price
         # The player has enough money to buy the property.
-        if self.money - property.price >= self.get_buying_threshold(game_info):
+        if self.money - property_price >= self.get_buying_threshold(game_info):
             game_info.buy_property(self, property)
-            #game_info.ranking_trading(self, property)
-            return True
-
-        # The player has a preference for the group and will pay any money they have.
-        if property.group in self.group_preferences and self.money - property.price > 0:
-            game_info.buy_property(self, property)
-            #game_info.ranking_trading(self, property)
             return True
 
         # The player will gain a monopoly, they want to complete the group, they have the money.
-        if self.complete_monopoly == 1 and self.money - property.price > 0 and \
-                game_info.monopoly_status(self, property, additional_properties=[property]):
+        if self.complete_monopoly == 1 and self.money - property_price > 0 and \
+                game_info.monopoly_status(self, property, add_me=1):
             game_info.buy_property(self, property)
-            #game_info.ranking_trading(self, property)
             return True
 
         # The player will mortgage other properties to buy it if it completes a group.
         if self.complete_monopoly == 2 and \
-                game_info.monopoly_status(self, property, additional_properties=[property]):
+                game_info.monopoly_status(self, property, add_me=1):
             # Find all the money the player can use by mortgaging other properties.
             available_mortgage_value = self.find_available_mortgage_value()
 
@@ -556,19 +433,14 @@ class Player:
                 self.money += -property.price  # Pay for property.
 
                 # Make up the funds.
-                property_index = 0
-                while self.money <= 0:
-                    c_property = self.inventory[property_index]
+                for c_property in self.inventory:
                     if c_property.buildings == 0 and not c_property.mortgaged and c_property.group not in self.monopolies:
-                        c_property.mortgaged = True
-                        pass  # ##print("player",self.number,"unmortgaged",c_property.name)
-                        self.money += c_property.price / 2
-                    property_index += 1
+                        c_property.mortgage()
+                        self.money += c_property.mortgage_value
+                    if self.money > 0:
+                        break
 
                 game_info.update_inventories(player_from="Bank", player_to=self, prop=property)
-#                game_info.unowned_properties.remove(property)  # Remove property from unowned properties list.
-#                self.inventory.add(property)
-                #self.add_monopoly(property.group)  # Add the group to the player's list of monopolies.
                 return True
 
         return False
@@ -592,12 +464,11 @@ class Player:
 
     # Return buying threshold at current point in game
     def get_buying_threshold(self, game_info):
-        if self.evolving_threshold > 0:
+        '''if self.evolving_threshold > 0:
             addition = self.highest_possible_rent(game_info)
-            # print(addition)
             return self.buying_threshold + (self.evolving_threshold * addition)
-        else:
-            return self.buying_threshold
+        else:'''
+        return self.buying_threshold
 
 
 # Define the MoneyPool class.
@@ -608,7 +479,8 @@ class MoneyPool:
 
 # Define the BoardLocation class.
 class BoardLocation:
-    def __init__(self, id, name, price=0, group="none", rents=(0, 0, 0, 0, 0, 0), house_cost=0, unmortgage_price=0):
+    def __init__(self, id, name, price=0, group="none", rents=(0, 0, 0, 0, 0, 0), house_cost=0, unmortgage_price=0,
+                 mortgage_value=0):
         self.id = id
         self.name = name  # The name of the board location.
         self.price = price  # How much it costs to buy the property.
@@ -618,74 +490,33 @@ class BoardLocation:
         self.buildings = 0  # The property starts with no development.
         self.visits = 0  # Hit counter.
         self.mortgaged = False
-        self.owned = False
+        self.owner = None
         self.unmortgage_price = unmortgage_price
+        self.mortgage_value = mortgage_value
+
+    def unmortgage(self):
+        self.mortgaged = False
+        self.owner.mortgaged_properties.remove(self)
+
+    def mortgage(self):
+        self.mortgaged = True
+        if self.owner:
+            self.owner.mortgaged_properties.add(self)
 
 
 # Define the Game class.
 class Game:
-    def __init__(self, list_of_players, auctions_enabled=True, trading_enabled=False,
-                 hotel_upgrade=False, building_sellback=False, ranking_trading=False, complex_trading=False,
-                 complex_trading2=False, property_trading=False, discrete_property_trading=False,
+    def __init__(self, list_of_players=None, auctions_enabled=True, trading_enabled=False,
+                 hotel_upgrade=False, building_sellback=False, ranking_trading=False,
                  free_parking_pool=False, double_on_go=False, no_rent_in_jail=False, trip_to_start=False,
                  snake_eyes_bonus=False, cutoff=1000):
-        self.active_players = list_of_players  # Create  a list of players.
-        self.inactive_players = []  # An empty list to store losing players.
-        self.turn_counter = 0  # Reset turn counter.
-        self.doubles_counter = 0  # Reset doubles counter.
-        self.houses = 32  # House supply.
-        self.hotels = 12  # Hotel supply.
-        self.winner = 1000  # Ending game data.
-        self.dice_roll = 0  # The current dice roll can be accessible everywhere.
+
+        # Rule changes.
         self.auctions_enabled = auctions_enabled  # A toggle to disable auctions.
         self.trading_enabled = trading_enabled
         self.hotel_upgrade = hotel_upgrade
         self.building_sellback = building_sellback
         self.ranking_trading = ranking_trading
-        self.complex_trading = complex_trading
-        self.complex_trading2 = complex_trading2
-        self.property_trading = property_trading
-        self.discrete_property_trading = discrete_property_trading
-        self.first_building = False  # Records whether a building has been bought for smart_jail_strategy
-        self.cutoff = cutoff  # Determines when a game should be terminated.
-        self.loss_reason = []  # To store how a player lost the game.
-        self.starting_player = 0  # Store which player started.
-        self.create_board()  # Set-up the board.
-        self.create_cards()  # Shuffle both card decks.
-        self.trade_count = 0
-
-        best_property_values = [0 for i in range(40)]
-        self.players_with_best_property_values = [None for i in range(40)]
-        
-        self.group_counts = {"Brown": 2, "Light Blue": 3, "Pink": 3, "Orange": 3,
-                              "Red": 3, "Yellow": 3, "Green": 3, "Dark Blue": 2,
-                              "Utility": 2, "Railroad": 4} 
-        
-        
-        #Based on player rankings, list all possible pairs of groups such that
-        #trades are possible.  Pairs are of the form [group1, group2], where 
-        #player1 prefers group2 to group1 and player2 prefers group1 to group2.
-        self.trade_pairs = []
-        self.player1 = self.active_players[0]
-        self.player2 = self.active_players[1]        
-        for group1 in self.group_counts:
-            for group2 in self.group_counts:
-                if (self.player1.group_ranking[group1] > self.player1.group_ranking[group2]
-                and self.player2.group_ranking[group2] > self.player2.group_ranking[group1]):
-                    self.trade_pairs.append({'1to2': group1, '2to1': group2})
-                    
-        self.sc_groups = set() #Set of split, complete groups.
-
-        for player in self.active_players:
-            for i in range(40):
-                if player.property_values[i] > best_property_values[i]:
-                    best_property_values[i] = player.property_values[i]
-                    self.players_with_best_property_values[i] = player
-
-
-        # Money pools.
-        self.bank = MoneyPool(12500)  # Create the bank.
-        self.free_parking = MoneyPool(0)  # Create the Free Parking pool.
 
         # Attributes for house rules.
         self.free_parking_pool = free_parking_pool
@@ -693,11 +524,57 @@ class Game:
         self.no_rent_in_jail = no_rent_in_jail
         self.trip_to_start = trip_to_start
         self.snake_eyes_bonus = snake_eyes_bonus
-        
-    def roll(self):
-        self.dice_index += 1
-        return self.dice_rolls[self.dice_index - 1]
-    
+
+        # Misc.
+        self.cutoff = cutoff
+        self.group_counts = {"Brown": 2, "Light Blue": 3, "Pink": 3, "Orange": 3,
+                             "Red": 3, "Yellow": 3, "Green": 3, "Dark Blue": 2,
+                             "Utility": 2, "Railroad": 4}
+
+        # Add new players and reset values.
+        if list_of_players:
+            self.new_players(list_of_players)
+
+    def new_players(self, list_of_players):
+        # Player lists.
+        self.inactive_players = []  # An empty list to store losing players.
+        self.active_players = list_of_players  # Create  a list of players.
+        self.num_active_players = len(list_of_players)
+
+        # Create game elements.
+        self.create_cards()  # Shuffle both card decks.
+        self.create_board()
+
+        # Misc.
+        self.turn_counter = 0  # Reset turn counter.
+        self.doubles_counter = 0  # Reset doubles counter.
+        self.houses = 32  # House supply.
+        self.hotels = 12  # Hotel supply.
+        self.winner = -1  # Ending game data.
+        self.dice_roll = 0  # The current dice roll can be accessible everywhere.
+        self.first_building = False  # Records whether a building has been bought for smart_jail_strategy
+        self.loss_reason = []  # To store how a player lost the game.
+        self.starting_player = 0  # Store which player started.
+        self.trade_count = 0
+
+        # Money pools.
+        self.bank = MoneyPool(12500)  # Create the bank.
+        self.free_parking = MoneyPool(0)  # Create the Free Parking pool.
+
+        # Based on player rankings, list all possible pairs of groups such that trades are possible.
+        # Pairs are of the form [group1, group2], where player1 prefers group2 to group1 and player2 prefers group1 to group2.
+        self.trade_pairs = []
+        self.player1 = self.active_players[0]
+        self.player2 = self.active_players[1]
+        for group1 in self.group_counts:
+            for group2 in self.group_counts:
+                if (self.player1.group_ranking[group1] > self.player1.group_ranking[group2]
+                    and self.player2.group_ranking[group2] > self.player2.group_ranking[group1]):
+                    self.trade_pairs.append({'1to2': group1, '2to1': group2})
+
+        self.sc_groups = []  # Set of split, complete groups.
+
+
     # Create list of numbers to represent Chance and Community Chest cards.
     def create_cards(self):
         # Create cards.
@@ -714,81 +591,49 @@ class Game:
 
     # Creates a BoardLocation object for each space on the board.
     def create_board(self):
-        # "Name", Price, "Group", (Rents), House Cost, Unmortgage Price
+        # "Name", Price, "Group", (Rents), House Cost, Unmortgage Price, Mortgage Value
         self.board = [
             BoardLocation(0, "Go"),
-            BoardLocation(1, "Mediterranean Ave.", 60, "Brown", (2, 10, 30, 90, 160, 250), 50, 33),
+            BoardLocation(1, "Mediterranean Ave.", 60, "Brown", (2, 10, 30, 90, 160, 250), 50, 33, 0),
             BoardLocation(2, "Community Chest"),
-            BoardLocation(3, "Baltic Ave.", 60, "Brown", (4, 20, 60, 180, 320, 450), 50, 33),
+            BoardLocation(3, "Baltic Ave.", 60, "Brown", (4, 20, 60, 180, 320, 450), 50, 33, 30),
             BoardLocation(4, "Income Tax"),
-            BoardLocation(5, "Reading Railroad", 200, "Railroad", (), 0, 110),
-            BoardLocation(6, "Oriental Ave.", 100, "Light Blue", (6, 30, 90, 270, 400, 550), 50, 55),
+            BoardLocation(5, "Reading Railroad", 200, "Railroad", (), 0, 110, 100),
+            BoardLocation(6, "Oriental Ave.", 100, "Light Blue", (6, 30, 90, 270, 400, 550), 50, 55, 50),
             BoardLocation(7, "Chance"),
-            BoardLocation(8, "Vermont Ave.", 100, "Light Blue", (6, 30, 90, 270, 400, 550), 50, 55),
-            BoardLocation(9, "Connecticut Ave.", 120, "Light Blue", (8, 40, 100, 300, 450, 600), 50, 66),
+            BoardLocation(8, "Vermont Ave.", 100, "Light Blue", (6, 30, 90, 270, 400, 550), 50, 55, 50),
+            BoardLocation(9, "Connecticut Ave.", 120, "Light Blue", (8, 40, 100, 300, 450, 600), 50, 66, 60),
             BoardLocation(10, "Just Visiting / In Jail"),
-            BoardLocation(11, "St. Charles Place", 140, "Pink", (10, 50, 150, 450, 625, 750), 100, 77),
-            BoardLocation(12, "Electric Company", 150, "Utility", (), 0, 83),
-            BoardLocation(13, "States Ave.", 140, "Pink", (10, 50, 150, 450, 625, 750), 100, 77),
-            BoardLocation(14, "Virginia Ave.", 160, "Pink", (12, 60, 180, 500, 700, 900), 100, 88),
-            BoardLocation(15, "Pennsylvania Railroad", 200, "Railroad", (), 0, 110),
-            BoardLocation(16, "St. James Place", 180, "Orange", (14, 70, 200, 550, 750, 950), 100, 99),
+            BoardLocation(11, "St. Charles Place", 140, "Pink", (10, 50, 150, 450, 625, 750), 100, 77, 70),
+            BoardLocation(12, "Electric Company", 150, "Utility", (), 0, 83, 75),
+            BoardLocation(13, "States Ave.", 140, "Pink", (10, 50, 150, 450, 625, 750), 100, 77, 70),
+            BoardLocation(14, "Virginia Ave.", 160, "Pink", (12, 60, 180, 500, 700, 900), 100, 88, 80),
+            BoardLocation(15, "Pennsylvania Railroad", 200, "Railroad", (), 0, 110, 100),
+            BoardLocation(16, "St. James Place", 180, "Orange", (14, 70, 200, 550, 750, 950), 100, 99, 90),
             BoardLocation(17, "Community Chest"),
-            BoardLocation(18, "Tennessee Ave.", 180, "Orange", (14, 70, 200, 550, 750, 950), 100, 99),
-            BoardLocation(19, "New York Ave.", 200, "Orange", (16, 80, 220, 600, 800, 1000), 100, 110),
+            BoardLocation(18, "Tennessee Ave.", 180, "Orange", (14, 70, 200, 550, 750, 950), 100, 99, 90),
+            BoardLocation(19, "New York Ave.", 200, "Orange", (16, 80, 220, 600, 800, 1000), 100, 110, 100),
             BoardLocation(20, "Free Parking"),
-            BoardLocation(21, "Kentucky Ave.", 220, "Red", (18, 90, 250, 700, 875, 1050), 150, 121),
+            BoardLocation(21, "Kentucky Ave.", 220, "Red", (18, 90, 250, 700, 875, 1050), 150, 121, 110),
             BoardLocation(22, "Chance"),
-            BoardLocation(23, "Indiana Ave.", 220, "Red", (18, 90, 250, 700, 875, 1050), 150, 121),
-            BoardLocation(24, "Illinois Ave.", 240, "Red", (20, 100, 300, 750, 925, 1100), 150, 132),
-            BoardLocation(25, "B. & O. Railroad", 200, "Railroad", (), 0, 110),
-            BoardLocation(26, "Atlantic Ave.", 260, "Yellow", (22, 110, 330, 800, 975, 1150), 150, 143),
-            BoardLocation(27, "Ventnor Ave.", 260, "Yellow", (22, 110, 330, 800, 975, 1150), 150, 143),
-            BoardLocation(28, "Water Works", 150, "Utility", (), 0, 83),
-            BoardLocation(29, "Marvin Gardens", 280, "Yellow", (24, 120, 360, 850, 1025, 1200), 150, 154),
+            BoardLocation(23, "Indiana Ave.", 220, "Red", (18, 90, 250, 700, 875, 1050), 150, 121, 110),
+            BoardLocation(24, "Illinois Ave.", 240, "Red", (20, 100, 300, 750, 925, 1100), 150, 132, 120),
+            BoardLocation(25, "B. & O. Railroad", 200, "Railroad", (), 0, 110, 100),
+            BoardLocation(26, "Atlantic Ave.", 260, "Yellow", (22, 110, 330, 800, 975, 1150), 150, 143, 130),
+            BoardLocation(27, "Ventnor Ave.", 260, "Yellow", (22, 110, 330, 800, 975, 1150), 150, 143, 130),
+            BoardLocation(28, "Water Works", 150, "Utility", (), 0, 83, 75),
+            BoardLocation(29, "Marvin Gardens", 280, "Yellow", (24, 120, 360, 850, 1025, 1200), 150, 154, 140),
             BoardLocation(30, "Go to Jail"),
-            BoardLocation(31, "Pacific Ave.", 300, "Green", (26, 130, 390, 900, 1100, 1275), 200, 165),
-            BoardLocation(32, "North Carolina Ave.", 300, "Green", (26, 130, 390, 900, 1100, 1275), 200, 165),
+            BoardLocation(31, "Pacific Ave.", 300, "Green", (26, 130, 390, 900, 1100, 1275), 200, 165, 150),
+            BoardLocation(32, "North Carolina Ave.", 300, "Green", (26, 130, 390, 900, 1100, 1275), 200, 165, 150),
             BoardLocation(33, "Community Chest"),
-            BoardLocation(34, "Pennsylvania Ave.", 320, "Green", (28, 150, 450, 1000, 1200, 1400), 200, 176),
-            BoardLocation(35, "Short Line Railroad", 200, "Railroad", (), 0, 110),
+            BoardLocation(34, "Pennsylvania Ave.", 320, "Green", (28, 150, 450, 1000, 1200, 1400), 200, 176, 160),
+            BoardLocation(35, "Short Line Railroad", 200, "Railroad", (), 0, 110, 100),
             BoardLocation(36, "Chance"),
-            BoardLocation(37, "Park Place", 350, "Dark Blue", (35, 175, 500, 1100, 1300, 1500), 200, 193),
+            BoardLocation(37, "Park Place", 350, "Dark Blue", (35, 175, 500, 1100, 1300, 1500), 200, 193, 175),
             BoardLocation(38, "Luxury Tax"),
-            BoardLocation(39, "Boardwalk", 400, "Dark Blue", (50, 200, 600, 1400, 1700, 2000), 200, 220),
+            BoardLocation(39, "Boardwalk", 400, "Dark Blue", (50, 200, 600, 1400, 1700, 2000), 200, 220, 200),
         ]
-        
-#        for prop in self.board:
-#            print(prop.name, int(round(Decimal(str(1.1 * (prop.price / 2))), 0)))
-        
-        #Create a BoardLocation Dictionary with groups as keys
-        self.board_by_group = {"Brown": [], "Light Blue": [], "Pink": [], "Orange": [],
-                              "Red": [], "Yellow": [], "Green": [], "Dark Blue": [],
-                              "Utility": [], "Railroad": []}
-        for prop in self.board:
-            if prop.group in self.board_by_group:
-                self.board_by_group[prop.group].append(prop)
-                
-
-        # Copy the board to create a linked list of unowned properties.
-        self.unowned_properties = []
-        self.unowned_properties.extend(self.board)
-
-        # Remove initial properties.
-        for player in self.active_players:
-            if player.initial_inventory:
-                for id in player.initial_inventory:
-                    self.update_inventories(player_from="Bank", player_to=player, prop=self.board[id])
-#                    player.inventory.add(self.board[id])
-#                    self.unowned_properties.remove(self.board[id])
-
-                # Test for monopolies.
-                for property in player.inventory:
-                    if property.group not in ["Utility", "Railroad"]:
-                        property.buildings = 0
-                        if property.group not in player.monopolies:
-                            if self.monopoly_status(player, property):
-                                player.add_monopoly(property.group)
 
 
     # Defines the actions of the Community Chest cards.
@@ -958,6 +803,7 @@ class Game:
                     self.move_again = False  # Stop the player's current turn.
                     self.inactive_players.append(current_party)  # And the player to the inactive players list.
                     self.active_players.remove(current_party)  # Remove the player from the active player's list.
+                    self.num_active_players -= 1
 
                     # Identify why the player lost.
                     if summary[0] == "Paying rent.":
@@ -983,152 +829,152 @@ class Game:
                             other_party.money += current_party.money
                             list_length = len(current_party.inventory)
                             for i in range(list_length):
-                                self.update_inventories(player_from=current_party, player_to=other_party, prop=next(iter(current_party.inventory)))
-#                            other_party.inventory.update(current_party.inventory)
+                                self.update_inventories(player_from=current_party, player_to=other_party,
+                                                        prop=next(iter(current_party.inventory)))
                             # Transfer GOOJF cards
                             if current_party.chance_card:
                                 other_party.chance_card = True
                             if current_party.community_chest_card:
                                 other_party.community_chest_card = True
-                                
-                                
-    #Trading based on group rankings.  Only even trades are allowed; trades only happen 
-    #if both players gain a complete monopoly or if both players don't, 
-    #and both players think they are getting the better deal.  
-    #Note: Only works for 2 players.                                  
+
+
+    # Trading based on group rankings.  Only even trades are allowed; trades only happen
+    # if both players gain a complete monopoly or if both players don't,
+    # and both players think they are getting the better deal.
+    # Note: Only works for 2 players.
     def trade_by_rankings(self):
-         for pair in self.trade_pairs:
+        for pair in self.trade_pairs:
             g1to2 = pair['1to2']
             g2to1 = pair['2to1']
-            #Count how many of the groups g1to2 and g2to1 are split and complete.
+            # Count how many of the groups g1to2 and g2to1 are split and complete.
             sc_count = sum([g1to2 in self.sc_groups, g2to1 in self.sc_groups])
-            #If both groups are split and complete, trade to give both a monopoly.
+            # If both groups are split and complete, trade to give both a monopoly.
             if sc_count == 2:
-                #Only do even trades.
+                # Only do even trades.
                 if (self.group_counts[g1to2] == self.group_counts[g2to1]):
-                    self.do_trade_complete(pair)  
-            #If neither group is split and complete, trade as many as possible.
+                    self.do_trade_complete(pair)
+                    # If neither group is split and complete, trade as many as possible.
             elif sc_count == 0:
-                #Check that neither group is complete.
-                if (len(self.player1.group_inv[g1to2]) < self.group_counts[g1to2] and  
-                len(self.player2.group_inv[g2to1]) < self.group_counts[g2to1]):
-                    #Check that both players have at least one property to trade
-                    #from their respective groups.
-                    if (len(self.player1.group_inv[g1to2]) > 0 and  
-                    len(self.player2.group_inv[g2to1]) > 0):
-                        self.do_trade_incomplete(pair)   
-            #Don't do trades that would give one player a monopoly and not
-            #the other or trades that would break a monopoly.
+                # Check that neither group is complete.
+                if (len(self.player1.group_inv[g1to2]) < self.group_counts[g1to2] and
+                            len(self.player2.group_inv[g2to1]) < self.group_counts[g2to1]):
+                    # Check that both players have at least one property to trade
+                    # from their respective groups.
+                    if (len(self.player1.group_inv[g1to2]) > 0 and
+                                len(self.player2.group_inv[g2to1]) > 0):
+                        self.do_trade_incomplete(pair)
+                        # Don't do trades that would give one player a monopoly and not
+            # the other or trades that would break a monopoly.
             else:
-                pass                                  
-                                
-    #This version seems to work, but it is slow.  
-#    def trade_by_rankings_alt(self):
-#         for pair in self.trade_pairs:
-#            len11 = len(self.player1.group_inv[pair['1to2']])
-#            len12 = len(self.player2.group_inv[pair['1to2']])
-#            len21 = len(self.player1.group_inv[pair['2to1']])
-#            len22 = len(self.player2.group_inv[pair['2to1']])
-##            print(pair, len11, len22)
-#            complete_count = sum([len11 + len12 == self.group_counts[pair['1to2']], 
-#                                  len21 + len22 == self.group_counts[pair['2to1']]])
-#            if complete_count == 2:
-#                if not (len11 == 0 or 
-#                len22 == 0):
-#                    if (len11 == len22):
-#                        self.do_trade_complete(pair)  
-#            elif complete_count == 0:
-#                if (self.group_counts[pair['1to2']] > len11 > 0 and  
-#                self.group_counts[pair['2to1']] > len22 > 0):
-#                    self.do_trade_incomplete(pair)   
-#            else:
-#                pass                                  
+                pass
 
-    #Carries out a trade that completes monopolies for both players.
+                # This version seems to work, but it is slow.
+                # def trade_by_rankings_alt(self):
+                # for pair in self.trade_pairs:
+                # len11 = len(self.player1.group_inv[pair['1to2']])
+                # len12 = len(self.player2.group_inv[pair['1to2']])
+                # len21 = len(self.player1.group_inv[pair['2to1']])
+                # len22 = len(self.player2.group_inv[pair['2to1']])
+                ##            print(pair, len11, len22)
+                # complete_count = sum([len11 + len12 == self.group_counts[pair['1to2']],
+                # len21 + len22 == self.group_counts[pair['2to1']]])
+                # if complete_count == 2:
+                # if not (len11 == 0 or
+                # len22 == 0):
+                # if (len11 == len22):
+                #                        self.do_trade_complete(pair)
+                #            elif complete_count == 0:
+                #                if (self.group_counts[pair['1to2']] > len11 > 0 and
+                #                self.group_counts[pair['2to1']] > len22 > 0):
+                #                    self.do_trade_incomplete(pair)
+                #            else:
+                #                pass
+
+    # Carries out a trade that completes monopolies for both players.
     def do_trade_complete(self, pair):
-#            print('Complete Pair = ', [pair['1to2'], pair['2to1']])
-            #Transfer properties one at a time in each direction.  
-            #Pop properties off of the front to avoid deleting from a list while 
-            #iterating over it.
-            list1_length = len(self.player1.group_inv[pair['1to2']])
-            list2_length = len(self.player2.group_inv[pair['2to1']])
-            for i in range(list1_length):
-                self.update_inventories(self.player1, self.player2, self.player1.group_inv[pair['1to2']][0]) 
-            for i in range(list2_length):
-                self.update_inventories(self.player2, self.player1, self.player2.group_inv[pair['2to1']][0]) 
-            self.trade_pairs.remove(pair) #This trade will not happen again.
-            self.sc_groups.remove(pair['1to2']) #These groups are no longer split.
-            self.sc_groups.remove(pair['2to1']) #These groups are no longer split.
-            self.trade_count += 1 #Increment counter
+        print('Complete Pair = ', [pair['1to2'], pair['2to1']])
+        # Transfer properties one at a time in each direction.
+        # Pop properties off of the front to avoid deleting from a list while
+        # iterating over it.
+        list1_length = len(self.player1.group_inv[pair['1to2']])
+        list2_length = len(self.player2.group_inv[pair['2to1']])
+        for i in range(list1_length):
+            self.update_inventories(self.player1, self.player2, self.player1.group_inv[pair['1to2']][0])
+        for i in range(list2_length):
+            self.update_inventories(self.player2, self.player1, self.player2.group_inv[pair['2to1']][0])
+        self.trade_pairs.remove(pair)  # This trade will not happen again.
+        self.sc_groups.remove(pair['1to2'])  # These groups are no longer split.
+        self.sc_groups.remove(pair['2to1'])  # These groups are no longer split.
+        self.trade_count += 1  # Increment counter
 
-    #Carries out a trade that does not complete a monopoly for either player.
+    # Carries out a trade that does not complete a monopoly for either player.
     def do_trade_incomplete(self, pair):
-#        print('Incomplete Pair = ', [pair['1to2'], pair['2to1']])
-        #Exchange properties one at a time, popping each off of the front of the list.  
+        print('Incomplete Pair = ', [pair['1to2'], pair['2to1']])
+        # Exchange properties one at a time, popping each off of the front of the list.
         list1_length = len(self.player1.group_inv[pair['1to2']])
         list2_length = len(self.player2.group_inv[pair['2to1']])
         for i in range(min([list1_length, list2_length])):
-            self.update_inventories(self.player1, self.player2, self.player1.group_inv[pair['1to2']][0]) 
-            self.update_inventories(self.player2, self.player1, self.player2.group_inv[pair['2to1']][0]) 
-        self.trade_count += 1 #Increment counter
-                
-    #For testing purposes.          
+            self.update_inventories(self.player1, self.player2, self.player1.group_inv[pair['1to2']][0])
+            self.update_inventories(self.player2, self.player1, self.player2.group_inv[pair['2to1']][0])
+        self.trade_count += 1  # Increment counter
+
+    # For testing purposes.
     def print_group_orderings(self):
         for player in self.active_players:
             print('Player', player.number, player.group_ordering)
 
-    #For testing purposes.          
+    # For testing purposes.
     def print_inventories(self):
         for player in self.active_players:
             print('Player: ', player.number)
             for group in self.group_counts:
                 print(group, [prop.name for prop in player.group_inv[group]])
 
-                                               
-    #When a property is transferred from one player to another (including the Bank),
-    #update player inventories (both list and dictionary forms) and monopoly lists.
-    #Also update the list of unowned properties.
+
+    # When a property is transferred from one player to another (including the Bank),
+    # update player inventories (both list and dictionary forms) and monopoly lists.
+    # Also update the list of unowned properties.
     def update_inventories(self, player_from, player_to, prop):
         if player_from == "Bank":
-            #Update inventory, group_inv, and wish_list for player_to.
+            # Update inventory, group_inv, and wish_list for player_to.
             player_to.group_inv[prop.group].append(prop)
-            player_to.inventory.add(prop)      
-            #Update set of monopolies
+            player_to.inventory.add(prop)
+            # Update set of monopolies
             if len(player_to.group_inv[prop.group]) == self.group_counts[prop.group]:
                 player_to.add_monopoly(prop.group)
-           #Check whether this is a split, complete group
+                # Check whether this is a split, complete group
             elif (len(self.player1.group_inv[prop.group]) + len(self.player2.group_inv[prop.group])
-            == self.group_counts[prop.group]):
-                self.sc_groups.add(prop.group)
-            #Update unowned properties list.
-            self.unowned_properties.remove(prop)
-            prop.owned = True
-            
-                
+                      == self.group_counts[prop.group]):
+                self.sc_groups.append(prop.group)
+
+            if prop.mortgaged:
+                player_to.mortgaged_properties.add(prop)
+
+
         else:
-            #Update inventory for player_from.
-            #Update monopoly list first.
-            if len(player_to.group_inv[prop.group]) == self.group_counts[prop.group]:                    
+            # Update inventory for player_from.
+            # Update monopoly list first.
+            if len(player_to.group_inv[prop.group]) == self.group_counts[prop.group]:
                 player_to.monopolies.remove(prop.group)
-            #Now remove from inventories.
+            # Now remove from inventories.
             player_from.group_inv[prop.group].remove(prop)
             player_from.inventory.remove(prop)
-                                   
-            #Update inventory, group_inv, for player_to.
+
+            # Update inventory, group_inv, for player_to.
             player_to.group_inv[prop.group].append(prop)
             player_to.inventory.add(prop)
             if len(player_to.group_inv[prop.group]) == self.group_counts[prop.group]:
-                player_to.add_monopoly(prop.group)  
-#                print('Inventory_from: ', [p.name for p in player_from.inventory]) 
-#                print('Inventory_to: ', [p.name for p in player_to.inventory])                       
-#            print('After:')
-#            for prop in prop_list:
-#                print(prop.name, [owned_prop.name for owned_prop in player_from.group_inv[prop.group]])
-        #Finally, 
+                player_to.add_monopoly(prop.group)
+
+            if prop.mortgaged:
+                player_to.mortgaged_properties.add(prop)
+                player_from.mortgaged_properties.remove(prop)
+
+        prop.owner = player_to
 
 
     # Determines if the player owns all of the properties in the the given property's group.
-    def monopoly_status(self, player, current_property, additional_properties=()):
+    def monopoly_status(self, player, current_property, add_me=0):
         # Find the name of the property's group.
         group = current_property.group
 
@@ -1136,13 +982,14 @@ class Game:
         if group in ["", "Railroad", "Utility"]:
             return False  # The property is not in a color group.
         else:
-            return len(player.group_inv[group])-self.group_counts[group] == 0
-        
+            if len(player.group_inv[group]) + add_me - self.group_counts[group] == 0:
+                return True
+
 
     # Sends a player to jail.
     def go_to_jail(self, player):
         player.position = 10  # Move player.
-        self.board[10].visits += 1  # Increase hit counter.
+        self.board[10].visits += 1  # Increase hit counter for jail.
         self.move_again = False  # Prevent the player from moving again.
         player.in_jail = True  # Set the player's Jail status to true.
         player.set_jail_strategy(self)  # Allow the player to make strategy decisions.
@@ -1152,35 +999,16 @@ class Game:
         # Allows a property to be bought at a custom price (used in auctions).
         if custom_price:
             self.exchange_money(amount=custom_price, giver=player, receiver=self.bank, summary="Buying property.")
-            pass  # ##print("player",player.number,"bought",board_space.name,"(",board_space.group,") for",custom_price)
         else:
             # Pay the money for the property.
             self.exchange_money(amount=board_space.price, giver=player, receiver=self.bank,
                                 summary="Paying property at auction.")
-            pass  # ##print("player",player.number,"bought",board_space.name,"(",board_space.group,") for",board_space.price)
 
-        self.update_inventories(player_from="Bank", player_to=player, prop=board_space)        
-#        self.unowned_properties.remove(board_space)  # Remove the property from the list of unowned properties.
-#        player.inventory.add(board_space)  # Give the property to the player.
+        self.update_inventories(player_from="Bank", player_to=player, prop=board_space)
 
-#        # If the player has a completed a monopoly, add it to the player's list of monopolies.
-#        if self.monopoly_status(player, board_space):
-#            player.add_monopoly(board_space.group)
-#            pass  # ##print("player",player.number,"MONOPOLIES",player.monopolies)
-
-        board_space.owned = True
-
-
-    # Determine the owner of a property.
+    # Determines the owner of a property.
     def property_owner(self, property):
-
-        # Find which player owns the property.
-        for current_player in self.active_players:
-            if property in current_player.inventory:
-                return current_player
-
-        # Return false is the property is unowned.
-        return False
+        return property.owner
 
     # Determines the rent owed on a property.
     def calculate_rent(self, property, owner):
@@ -1242,7 +1070,7 @@ class Game:
 
         # Rent for Railroads.
         if current_property.group == "Railroad":
-            rent = 25 * pow(2, len(owner.group_inv[current_property.group]) - 1)  # The rent.
+            rent = 25 * pow(2, len(owner.group_inv['Railroad']) - 1)  # The rent.
             if player.card_rent:  # Rent is double for the railroad cards.
                 rent *= 2
 
@@ -1257,10 +1085,7 @@ class Game:
             if self.snake_eyes_bonus and die1 == 1 == die2:
                 self.exchange_money(amount=500, giver=self.bank, receiver=player, summary="Snake eyes bonus.")
 
-            utility_counter = 0
-            for property in owner.inventory:
-                if property.group == "Utility":
-                    utility_counter += 1
+            utility_counter = owner.group_inv['Utility']
             if utility_counter == 2 or player.card_rent:
                 rent = self.dice_roll * 10  # If the player owns both utilities, pay 10 times the dice.
             else:
@@ -1268,9 +1093,7 @@ class Game:
 
         # Rent for color-group properties.
         else:
-            if current_property.buildings == 5:  # Check to see if there is a hotel.
-                rent = current_property.rents[5]  # Pay the 5th rent for a hotel.
-            elif 0 < current_property.buildings < 5:  # The property has houses.
+            if 0 < current_property.buildings <= 5:  # The property has houses or a hotel.
                 rent = current_property.rents[current_property.buildings]
             else:
                 if current_property.group in owner.monopolies:  # If the player has a monopoly...
@@ -1279,8 +1102,7 @@ class Game:
                     rent = current_property.rents[0]
 
         # Pay the rent.
-        summary = ["Paying rent.", current_property]
-
+        summary = ["Paying rent on", current_property]
         self.exchange_money(amount=rent, giver=player, receiver=owner, summary=summary)
 
 
@@ -1324,12 +1146,10 @@ class Game:
             winning_bid = player1.auction_bid + 1
             winning_player = player2
         else:
-            pass  # ##print('error 8')
             return
 
         winning_player.make_auction_funds(winning_bid=winning_bid, property=board_space, game_info=self)
         self.buy_property(winning_player, board_space, custom_price=winning_bid)
-        #self.ranking_trading(winning_player, property)
 
 
     # Find the liquid wealth of all of the player's properties.
@@ -1345,17 +1165,13 @@ class Game:
         all_assets = player.money + liquid_property + liquid_buildings
         return all_assets
 
-#    # Calculate the cost to un-mortgage a given property.
-#    def unmortgage_price(self, property):
-#        return int(round(Decimal(str(1.1 * (property.price / 2))), 0))
-
     # Decides what a player does on a property,
     def property_action(self, player, board_space):
         if board_space in player.group_inv[board_space.group]:
             return  # The player owns the property. Nothing happens.
         elif board_space.mortgaged:
             return  # The property is mortgaged. Nothing happens.
-        elif board_space in self.unowned_properties:  # The property is unowned.
+        elif board_space.owner == None:  # The property is unowned.
             if self.trip_to_start and (not player.passed_go):
                 return  # The player has to wait to pass Go to buy/auction a property.
             else:  # The player can buy it.
@@ -1369,7 +1185,7 @@ class Game:
     # Decide what the player should do on a given board space.
     def board_action(self, player, board_space):
         if board_space.name == "Just Visiting / In Jail":
-            pass  # Nothing happens on Go or Just Visiting.
+            pass  # Nothing happens on Just Visiting.
 
         elif board_space.name == "Go":
             # Give the player an extra $200 if the house rule is enabled.
@@ -1412,7 +1228,7 @@ class Game:
         self.doubles_counter = 0  # Reset doubles counter.
 
         # Track the player's money.
-        player.money_changes.append(player.money)
+        # player.money_changes.append(player.money)
 
         # Is the player in jail?
         if player.in_jail:  # Player is in jail.
@@ -1487,8 +1303,7 @@ class Game:
         self.starting_player = self.active_players[0].number
 
         # Game loop. Continue if there is more than 1 player and we haven't reached the cutoff.
-        while len(self.active_players) > 1 and self.turn_counter < self.cutoff:
-            # pass###print([self.active_players[0].money,self.active_players[1].money])
+        while self.num_active_players > 1 and self.turn_counter < self.cutoff:
 
             # Create list of players starting with the player who is going.
             self.development_order = []
@@ -1503,7 +1318,7 @@ class Game:
             self.take_turn(self.active_players[current_player_index])
 
             # Update current_player_index.
-            current_player_index = (current_player_index + 1) % len(self.active_players)
+            current_player_index = (current_player_index + 1) % self.num_active_players
 
         # # # The game has ended # # #
 
@@ -1515,7 +1330,7 @@ class Game:
             all_monopolies.extend(player.monopolies)
 
         # Identify the winner.
-        if len(self.active_players) == 1:
+        if self.num_active_players == 1:
             self.winner = self.active_players[0].number
         else:  # It was tie.
             self.winner = 0
@@ -1528,6 +1343,6 @@ class Game:
                    'monopolies': all_monopolies,
                    'started': self.starting_player,
                    'players': self.active_players,
-                   'trade count' : self.trade_count
+                   'trade count': self.trade_count
         }
         return results
