@@ -17,7 +17,7 @@ class Player:
                  'group_ordering', 'group_ranking', 'group_values', 'group_inv', 'inventory', 'monopolies',
                  'mortgaged_properties', 'position', 'money', 'jail_counter', 'chance_card',
                  'community_chest_card', 'in_jail', 'card_rent', 'passed_go',
-                 'mortgage_auctioned_property', 'auction_bid', 'bid_includes_mortgages']
+                 'mortgage_auctioned_property', 'auction_bid', 'bid_includes_mortgages', 'trade_pairs']
 
     def __init__(self,
                  number,
@@ -57,6 +57,9 @@ class Player:
         self.group_inv = {"Brown": [], "Light Blue": [], "Pink": [], "Orange": [],
                           "Red": [], "Yellow": [], "Green": [], "Dark Blue": [],
                           "Utility": [], "Railroad": []}  # Inventory dictionary organized by group
+        self.trade_pairs = {"Brown": [], "Light Blue": [], "Pink": [], "Orange": [],
+                            "Red": [], "Yellow": [], "Green": [], "Dark Blue": [],
+                            "Utility": [], "Railroad": []}
 
         # Sets of properties.
         self.inventory = set()  # A set of the player's properties.
@@ -254,7 +257,7 @@ class Player:
 
         # Ranking trading scheme
         # if game_info.ranking_trading:
-        #    game_info.ranking_trading()
+        # game_info.ranking_trading()
 
 
     # Determines how a player gets out of jail: use a GOOJF or pay $50.
@@ -521,8 +524,8 @@ class Game:
                  'group_counts', 'inactive_players', 'active_players', 'num_active_players', 'turn_counter',
                  'doubles_counter', 'houses', 'hotels', 'winner', 'dice_roll', 'first_building', 'loss_reason',
                  'starting_player', 'trade_count', 'bank', 'free_parking', 'trade_pairs', 'player1', 'player2',
-                 'sc_groups', 'chance_cards', 'community_chest_cards', 'chance_index', 'community_chest_index', 'board',
-                 'development_order', 'move_again', 'board_groups']
+                 'chance_cards', 'community_chest_cards', 'chance_index', 'community_chest_index', 'board',
+                 'development_order', 'move_again', 'board_groups', 'p1_trade_pairs', 'p2_trade_pairs']
 
     def __init__(self, list_of_players=None, auctions_enabled=True, trading_enabled=False,
                  hotel_upgrade=False, building_sellback=False, ranking_trading=False,
@@ -585,18 +588,16 @@ class Game:
         self.free_parking = MoneyPool(0)  # Create the Free Parking pool.
 
         # Based on player rankings, list all possible pairs of groups such that trades are possible.
-        # Pairs are of the form [group1, group2], where player1 prefers group2 to group1 and player2 prefers group1 to group2.
-        self.trade_pairs = []
-        self.player1 = self.active_players[0]
-        self.player2 = self.active_players[1]
-        for group1 in self.group_counts:
-            for group2 in self.group_counts:
-                if (self.player1.group_ranking[group1] > self.player1.group_ranking[group2]
-                    and self.player2.group_ranking[group2] > self.player2.group_ranking[group1]):
-                    self.trade_pairs.append({'1to2': group1, '2to1': group2})
-
-        self.sc_groups = []  # Set of split, complete groups.
-
+        # Only works for two players.
+        for player1 in self.active_players:
+            for player2 in self.active_players:
+                if player1 != player2:
+                    for group1 in self.group_counts:
+                        for group2 in self.group_counts:
+                            if (player1.group_ranking[group1] > player1.group_ranking[group2]) and \
+                                    (player2.group_ranking[group2] > player2.group_ranking[group1]):
+                                player1.trade_pairs[group1].append(group2)
+                                player2.trade_pairs[group2].append(group1)
 
     # Create list of numbers to represent Chance and Community Chest cards.
     def create_cards(self):
@@ -875,134 +876,50 @@ class Game:
     # and both players think they are getting the better deal.
     # Note: Only works for 2 players.
 
-    def trading(self):
-        # Find 2 players to consider.
-        player1 = self.player1
-        player2 = self.player2
+    def trading(self, group, player):
+        player1 = player
+        g1to2 = group
 
-        # Traverse all possible trade pairs.
-        for pair in self.trade_pairs:
+        for player2 in self.active_players:
+            if player2 != player1:
 
-            # The groups being considered.
-            g1to2 = pair['1to2']
-            g2to1 = pair['2to1']
+                # Traverse all possible trade pairs.
+                for g2to1 in player.trade_pairs[group]:
 
-            # Find the number of properties that players have to offer.
-            len1to2 = len(player1.group_inv[g1to2])
-            len2to1 = len(player2.group_inv[g2to1])
+                    # Find the number of properties that players have to offer.
+                    len1to2 = len(player1.group_inv[g1to2])
+                    len2to1 = len(player2.group_inv[g2to1])
 
-            if len1to2 > 0 and len2to1 > 0:
-                # Make copies of the properties that the players have.
-                inventory1 = list(player1.group_inv[g1to2])
-                inventory2 = list(player2.group_inv[g2to1])
+                    # Check if the other player even has any properties.
+                    if len2to1 > 0:
 
-                counter = 0
-                # Loop while there are still properties players can contribute.
-                while (counter < len1to2) and (counter < len2to1):
-                    # The first two properties being considered.
-                    p1to2 = inventory1[counter]
-                    p2to1 = inventory2[counter]
+                        # Make copies of the properties that the players have.
+                        inventory1 = list(player1.group_inv[g1to2])
+                        inventory2 = list(player2.group_inv[g2to1])
 
-                    # See if this forms a monopoly for either player.
-                    p1_mono_status = self.quick_monopoly_status(player=player1, current_property=p2to1, add_me=1)
-                    p2_mono_status = self.quick_monopoly_status(player=player2, current_property=p1to2, add_me=1)
+                        counter = 0
+                        # Loop while there are still properties players can contribute.
+                        while (counter < len1to2) and (counter < len2to1):
+                            # The first two properties being considered.
+                            p1to2 = inventory1[counter]
+                            p2to1 = inventory2[counter]
 
-                    # Trade if 2 or 0 monopolies are formed.
-                    if (p1_mono_status and p2_mono_status) or (not p1_mono_status and not p2_mono_status):
-                        self.update_inventories(player_from=player1, player_to=player2, prop=p1to2)
-                        self.update_inventories(player_from=player2, player_to=player1, prop=p2to1)
-                        self.trade_count +=1
+                            # See if this forms a monopoly for either player.
+                            p1_mono_status = self.quick_monopoly_status(player=player1,
+                                                                        current_property=p2to1,
+                                                                        add_me=1)
+                            p2_mono_status = self.quick_monopoly_status(player=player2,
+                                                                        current_property=p1to2,
+                                                                        add_me=1)
 
+                            # Trade if 2 or 0 monopolies are formed.
+                            if (p1_mono_status and p2_mono_status) or (not p1_mono_status and not p2_mono_status):
+                                #print(p1to2.name,",",p2to1.name)
+                                self.update_inventories(player_from=player1, player_to=player2, prop=p1to2)
+                                self.update_inventories(player_from=player2, player_to=player1, prop=p2to1)
+                                self.trade_count += 1
 
-                    counter += 1
-
-    def trade_by_rankings(self):
-        for pair in self.trade_pairs:
-            g1to2 = pair['1to2']
-            g2to1 = pair['2to1']
-            # Count how many of the groups g1to2 and g2to1 are split and complete.
-            sc_count = sum([g1to2 in self.sc_groups, g2to1 in self.sc_groups])
-            # If both groups are split and complete, trade to give both a monopoly.
-            if sc_count == 2:
-                # Only do even trades.
-                if len(self.player1.group_inv[g1to2]) == len(self.player2.group_inv[g2to1]):
-                    self.do_trade_complete(pair)
-                    # If neither group is split and complete, trade as many as possible.
-            elif sc_count == 0:
-                # Check that neither group is complete.
-                if (len(self.player1.group_inv[g1to2]) < self.group_counts[g1to2] and
-                            len(self.player2.group_inv[g2to1]) < self.group_counts[g2to1]):
-                    # Check that both players have at least one property to trade
-                    # from their respective groups.
-                    if (len(self.player1.group_inv[g1to2]) > 0 and
-                                len(self.player2.group_inv[g2to1]) > 0):
-                        self.do_trade_incomplete(pair)
-                        # Don't do trades that would give one player a monopoly and not
-            # the other or trades that would break a monopoly.
-            else:
-                pass
-
-                # This version seems to work, but it is slow.
-                # def trade_by_rankings_alt(self):
-                # for pair in self.trade_pairs:
-                # len11 = len(self.player1.group_inv[pair['1to2']])
-                # len12 = len(self.player2.group_inv[pair['1to2']])
-                # len21 = len(self.player1.group_inv[pair['2to1']])
-                # len22 = len(self.player2.group_inv[pair['2to1']])
-                ##            print(pair, len11, len22)
-                # complete_count = sum([len11 + len12 == self.group_counts[pair['1to2']],
-                # len21 + len22 == self.group_counts[pair['2to1']]])
-                # if complete_count == 2:
-                # if not (len11 == 0 or
-                # len22 == 0):
-                # if (len11 == len22):
-                # self.do_trade_complete(pair)
-                # elif complete_count == 0:
-                # if (self.group_counts[pair['1to2']] > len11 > 0 and
-                # self.group_counts[pair['2to1']] > len22 > 0):
-                # self.do_trade_incomplete(pair)
-                # else:
-                # pass
-
-    # Carries out a trade that completes monopolies for both players.
-    def do_trade_complete(self, pair):
-        # print('Complete Pair = ', [pair['1to2'], pair['2to1']])
-        # Transfer properties one at a time in each direction.
-        # Pop properties off of the front to avoid deleting from a list while
-        # iterating over it.
-        list1_length = len(self.player1.group_inv[pair['1to2']])
-        list2_length = len(self.player2.group_inv[pair['2to1']])
-        for i in range(list1_length):
-            self.update_inventories(self.player1, self.player2, self.player1.group_inv[pair['1to2']][0])
-        for i in range(list2_length):
-            self.update_inventories(self.player2, self.player1, self.player2.group_inv[pair['2to1']][0])
-        self.trade_pairs.remove(pair)  # This trade will not happen again.
-        self.sc_groups.remove(pair['1to2'])  # These groups are no longer split.
-        self.sc_groups.remove(pair['2to1'])  # These groups are no longer split.
-        self.trade_count += 1  # Increment counter
-
-    # Carries out a trade that does not complete a monopoly for either player.
-    def do_trade_incomplete(self, pair):
-        # print('Incomplete Pair = ', [pair['1to2'], pair['2to1']])
-        # Exchange properties one at a time, popping each off of the front of the list.
-        list1_length = len(self.player1.group_inv[pair['1to2']])
-        list2_length = len(self.player2.group_inv[pair['2to1']])
-        for i in range(min([list1_length, list2_length])):
-            self.update_inventories(self.player1, self.player2, self.player1.group_inv[pair['1to2']][0])
-            self.update_inventories(self.player2, self.player1, self.player2.group_inv[pair['2to1']][0])
-        self.trade_count += 1  # Increment counter
-
-    # For testing purposes.
-    def print_group_orderings(self):
-        for player in self.active_players:
-            print('Player', player.number, player.group_ordering)
-
-    # For testing purposes.
-    def print_inventories(self):
-        for player in self.active_players:
-            print('Player: ', player.number)
-            for group in self.group_counts:
-                print(group, [prop.name for prop in player.group_inv[group]])
+                            counter += 1
 
 
     # When a property is transferred from one player to another (including the Bank),
@@ -1018,11 +935,6 @@ class Game:
             # Update set of monopolies
             if len(player_to.group_inv[prop.group]) == self.group_counts[prop.group]:
                 player_to.add_monopoly(prop.group)
-
-            # Check whether this is a split, complete group
-            elif (len(self.player1.group_inv[prop.group]) + len(self.player2.group_inv[prop.group])
-                      == self.group_counts[prop.group]):
-                self.sc_groups.append(prop.group)
 
             # Check if it was mortgaged in an auction.
             if prop.mortgaged:
@@ -1091,7 +1003,7 @@ class Game:
                                 summary="Paying property at auction.")
 
         self.update_inventories(player_from="Bank", player_to=player, prop=board_space)
-        self.trading()
+        self.trading(group=board_space.group, player=player)
 
     # Determines the owner of a property.
     def property_owner(self, property):

@@ -1,4 +1,4 @@
-import PLmonopoly as monopoly
+import PLmonopoly_nw as monopoly
 from timer import *
 import cProfile
 from random import shuffle
@@ -25,11 +25,12 @@ def old_success_indicator(games_in_a_set=100):
         # Store length.
         counter += results['length']
 
+
     return counter / games_in_a_set
 
 
 if __name__ == '__main__':
     timer()
-    #print(old_success_indicator())
-    cProfile.run('old_success_indicator()',sort=1)
+    print(old_success_indicator())
+    #cProfile.run('old_success_indicator()',sort=1)
     timer()

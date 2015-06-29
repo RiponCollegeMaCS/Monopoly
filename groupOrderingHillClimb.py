@@ -1,4 +1,4 @@
-from monopoly import *
+from PLmonopoly_nw  import *
 from timer import *
 from multiprocessing import *
 import csv
@@ -62,7 +62,7 @@ def old_success_indicator(ordering, games_in_a_set=10000):
         # Play game.
         player1 = Player(1, buying_threshold=500, group_ordering=ordering)
         player2 = Player(2, buying_threshold=500, group_ordering=random_ordering())
-        game0 = Game([player1, player2], cutoff=1000, new_trading=True)
+        game0 = Game([player1, player2], cutoff=1000, ranking_trading=True)
         results = game0.play()
 
         # Store length.
@@ -77,14 +77,14 @@ def play_set(ordering, number_of_games, results_q):
         # Play game.
         player1 = Player(1, buying_threshold=500, group_ordering=ordering)
         player2 = Player(2, buying_threshold=500, group_ordering=random_ordering())
-        game0 = Game([player1, player2], cutoff=1000, discrete_property_trading=True)#new_trading=True)
+        game0 = Game([player1, player2], cutoff=1000, ranking_trading=True)
         results = game0.play()
         results_list.append(results['winner'])  # Store the game's result.
 
     results_q.put(results_list.count(1))
 
 
-def success_indicator(ordering, number_of_games=1000, procs=4):
+def success_indicator(ordering, number_of_games=10000, procs=4):
     results_q = Queue()  # Queue for results.
     proc_list = [Process(target=play_set, args=(ordering, int(number_of_games / procs), results_q))
                  for i in range(procs)]  # List of processes.
