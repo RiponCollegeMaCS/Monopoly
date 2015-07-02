@@ -9,6 +9,7 @@ p = 0.95  # Probability for taking an individual that is not the best in tournam
 C = 10  # Number of candidates for a new generation of k
 mu = 0.05  # The probability of a mutation.
 generations = 10  # The number of generations to work through.
+detail = 100
 
 # Create a random set of property values
 def random_property_values():
@@ -37,7 +38,7 @@ def find_candidate(strategies):
 
 
 # Play candidates against each other to compute fitness.
-def relative_fitness(strategies, games=100):
+def relative_fitness(strategies, games=detail):
     for strategy in strategies:
         counter = 0
         strat = strategy['values']

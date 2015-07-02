@@ -1,4 +1,4 @@
-from PLmonopoly_nw  import *
+from monopoly  import *
 from timer import *
 from multiprocessing import *
 import csv
@@ -62,7 +62,7 @@ def old_success_indicator(ordering, games_in_a_set=10000):
         # Play game.
         player1 = Player(1, buying_threshold=500, group_ordering=ordering)
         player2 = Player(2, buying_threshold=500, group_ordering=random_ordering())
-        game0 = Game([player1, player2], cutoff=1000, ranking_trading=True)
+        game0 = Game([player1, player2], cutoff=1000, trading_enabled=True)
         results = game0.play()
 
         # Store length.

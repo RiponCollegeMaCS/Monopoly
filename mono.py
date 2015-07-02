@@ -7,9 +7,9 @@
 from random import randint, shuffle, choice  # For random game elements.
 from decimal import getcontext, ROUND_HALF_UP  # The Decimal module for better rounding.
 
+
 getcontext().rounding = ROUND_HALF_UP  # Adjust the rounding scheme.
 
-# Define the Player class.
 # Define the Player class.
 class Player:
     __slots__ = ['number', 'development_threshold', 'init_jail_time', 'jail_time',
@@ -54,9 +54,6 @@ class Player:
 
         self.group_values = group_values
 
-        self.group_inv = {"Brown": [], "Light Blue": [], "Pink": [], "Orange": [],
-                          "Red": [], "Yellow": [], "Green": [], "Dark Blue": [],
-                          "Utility": [], "Railroad": []}  # Inventory dictionary organized by group
         self.trade_pairs = {"Brown": [], "Light Blue": [], "Pink": [], "Orange": [],
                             "Red": [], "Yellow": [], "Green": [], "Dark Blue": [],
                             "Utility": [], "Railroad": []}
@@ -65,6 +62,9 @@ class Player:
         self.inventory = set()  # A set of the player's properties.
         self.monopolies = set()
         self.mortgaged_properties = set()
+        self.group_inv = {"Brown": [], "Light Blue": [], "Pink": [], "Orange": [],
+                          "Red": [], "Yellow": [], "Green": [], "Dark Blue": [],
+                          "Utility": [], "Railroad": []}
 
         # Misc.
         self.position = 0  # The player starts on "Go".
@@ -254,11 +254,6 @@ class Player:
 
         # Unmortgage properties.
         self.unmortgage_properties(game_info)
-
-        # Ranking trading scheme
-        # if game_info.ranking_trading:
-        # game_info.ranking_trading()
-
 
     # Determines how a player gets out of jail: use a GOOJF or pay $50.
     def pay_out_of_jail(self, game_info):
@@ -456,6 +451,7 @@ class Player:
                 game_info.update_inventories(player_from="Bank", player_to=self, prop=property)
                 return True
 
+        # Indicate that we did not buy the property.
         return False
 
     # Allow the player to make a decision about getting out of jail.
@@ -465,6 +461,7 @@ class Player:
         else:
             return False
 
+    # Find the highest possible rent the player would have to play.
     def highest_possible_rent(self, game_info):
         highest_possible_rent = 0
         for player in game_info.active_players:
@@ -525,7 +522,8 @@ class Game:
                  'doubles_counter', 'houses', 'hotels', 'winner', 'dice_roll', 'first_building', 'loss_reason',
                  'starting_player', 'trade_count', 'bank', 'free_parking', 'trade_pairs', 'player1', 'player2',
                  'chance_cards', 'community_chest_cards', 'chance_index', 'community_chest_index', 'board',
-                 'development_order', 'move_again', 'board_groups', 'p1_trade_pairs', 'p2_trade_pairs']
+                 'development_order', 'move_again', 'board_groups', 'p1_trade_pairs', 'p2_trade_pairs',
+                 'bought_properties']
 
     def __init__(self, list_of_players=None, auctions_enabled=True, trading_enabled=False,
                  hotel_upgrade=False, building_sellback=False, ranking_trading=False,
@@ -556,6 +554,8 @@ class Game:
         # Add new players and reset values.
         if list_of_players:
             self.new_players(list_of_players)
+
+        self.bought_properties = 0
 
     def new_players(self, list_of_players):
         # Player lists.
@@ -914,7 +914,7 @@ class Game:
 
                             # Trade if 2 or 0 monopolies are formed.
                             if (p1_mono_status and p2_mono_status) or (not p1_mono_status and not p2_mono_status):
-                                #print(p1to2.name,",",p2to1.name)
+                                # print(p1to2.name,",",p2to1.name)
                                 self.update_inventories(player_from=player1, player_to=player2, prop=p1to2)
                                 self.update_inventories(player_from=player2, player_to=player1, prop=p2to1)
                                 self.trade_count += 1
@@ -1004,6 +1004,7 @@ class Game:
 
         self.update_inventories(player_from="Bank", player_to=player, prop=board_space)
         self.trading(group=board_space.group, player=player)
+        self.bought_properties += 1
 
     # Determines the owner of a property.
     def property_owner(self, property):
@@ -1037,7 +1038,8 @@ class Game:
 
         return rent
 
-    def calculate_rent_proportion(self, property, owner):
+    def calculate_rent_proportion(self, property):
+        owner = property.owner
         # Rent for Railroads.
         if property.group == "Railroad":
             max_rent = 200
@@ -1300,7 +1302,7 @@ class Game:
         self.starting_player = self.active_players[0].number
 
         # Game loop. Continue if there is more than 1 player and we haven't reached the cutoff.
-        while self.num_active_players > 1 and self.turn_counter < self.cutoff:
+        while self.num_active_players > 1 and self.turn_counter < self.cutoff and self.bought_properties != 28:
 
             # Create list of players starting with the player who is going.
             self.development_order = []
@@ -1316,6 +1318,8 @@ class Game:
 
             # Update current_player_index.
             current_player_index = (current_player_index + 1) % self.num_active_players
+
+
 
         # # # The game has ended # # #
 

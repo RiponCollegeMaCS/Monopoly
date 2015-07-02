@@ -1,4 +1,4 @@
-import PLmonopoly_nw as monopoly
+import monopoly as monopoly
 from timer import *
 import cProfile
 from random import shuffle
@@ -12,7 +12,7 @@ def random_ordering():
 
 def old_success_indicator(games_in_a_set=100):
     counter = 0
-    game0 = monopoly.Game(cutoff=1000, ranking_trading=True)
+    game0 = monopoly.Game(cutoff=1000, trading_enabled=True)
 
     for i in range(games_in_a_set):
         # Play game.

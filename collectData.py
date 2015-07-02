@@ -11,7 +11,7 @@ def random_ordering():
 
 
 def main():
-    games_in_a_set = 100
+    games_in_a_set = 1000
     cutoff = 1000
     length_matrix = []
 
@@ -36,6 +36,7 @@ def main():
         length_matrix.append(results['length'])
 
     print(sum(length_matrix)/len(length_matrix))
+    print(length_matrix.count(cutoff))
     # Open file.
     with open('results/blah.csv', 'w', newline='') as csvfile:
         output_file = csv.writer(csvfile, quotechar=',')
