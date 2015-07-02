@@ -203,9 +203,9 @@ def blank_space(size, space, game):
 
 
 # Create a graphical representation of the board.
-def exportBoard(game):
+def exportBoard(game,size = 80):
     # The number of pixels alon the short side of a property
-    size = 40
+
 
     # Calculate image dimension
     board_size = 13 * size
@@ -317,10 +317,17 @@ def exportBoard(game):
 
     offset = 0
     myfont = font(size=size / 2)
+    draw.text((3 * size, 4.5 * size), text="Trades", fill=colors['Border'], font=myfont)
+
+    myfont = ImageFont.truetype("C:/Windows/Fonts/Kabel Regular.ttf", int(size / 3))
     for trade_pair in game.trades:
-        text = trade_pair[0].name  + " <-> " + trade_pair[1].name
-        draw.text((3 * size, (5 + offset) * size), text=text,fill='Black', font=myfont)
-        offset +=(1/2)
+        #text = trade_pair[0].name + " <-> " + trade_pair[1].name
+        #draw.text((3 * size, (5 + offset) * size), text=text, fill='Black', font=myfont)
+
+        draw.text((3 * size, (5 + offset) * size), text=trade_pair[0].name, fill=player_color(1), font=myfont)
+        draw.text((7 * size, (5 + offset) * size), text=trade_pair[1].name, fill=player_color(2), font=myfont)
+
+        offset += (1 / 2)
 
     '''
     if game.active_players[0].number == 1:
@@ -358,7 +365,7 @@ def exportBoard(game):
 
 
     # Save image to file
-    board.save("images/board" + str(game.turn_counter) + ".png")
+    board.save("images/board" + str(game.turn_counter).zfill(4) + ".png")
     print("Exported board at", game.turn_counter, "turns")
 
 

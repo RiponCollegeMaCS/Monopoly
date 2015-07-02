@@ -1364,6 +1364,11 @@ class Game:
             current_player_index = (current_player_index + 1) % self.num_active_players
 
         # # # The game has ended # # #
+        if self.image_exporting:
+            self.active_players.extend(self.inactive_players)
+            exportBoard(self)
+            for player in self.inactive_players:
+                self.active_players.remove(player)
 
         # Find all monopolies.
         all_monopolies = []
