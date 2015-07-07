@@ -1,7 +1,7 @@
 # # # # # # # # # # # # # # # #
 # Monopoly Simulator          #
 # Created by Mitchell Eithun  #
-# July 2014 - June 2015       #
+# July 2014 - July 2015       #
 # # # # # # # # # # # # # # # #
 
 from random import randint, shuffle, choice  # For random game elements.
@@ -905,10 +905,10 @@ class Game:
                         self.update_inventories(player_from=player2, player_to=player1, prop=p2to1)
 
                         if player1.number == 1:
-                            #print(g1to2, "<-->", g2to1)
+                            # print(g1to2, "<-->", g2to1)
                             self.trades.append([p1to2, p2to1])
                         else:
-                            #print(g2to1, "<-->", g1to2)
+                            # print(g2to1, "<-->", g1to2)
                             self.trades.append([p2to1, p1to2])
 
                         return

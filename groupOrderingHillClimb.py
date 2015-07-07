@@ -1,4 +1,4 @@
-from monopoly  import *
+from monopoly import *
 from timer import *
 from multiprocessing import *
 import csv
@@ -77,7 +77,7 @@ def play_set(ordering, number_of_games, results_q):
         # Play game.
         player1 = Player(1, buying_threshold=500, group_ordering=ordering)
         player2 = Player(2, buying_threshold=500, group_ordering=random_ordering())
-        game0 = Game([player1, player2], cutoff=1000, ranking_trading=True)
+        game0 = Game([player1, player2], cutoff=1000, trading_enabled=True)
         results = game0.play()
         results_list.append(results['winner'])  # Store the game's result.
 
@@ -142,7 +142,7 @@ def hill_climb():
         print('Start!')
         write_row(["Start!"])
         counter = 0
-        old_ordering =  random_ordering()
+        old_ordering = random_ordering()
         old_success = success_indicator(old_ordering)  # lookup_success(old_ordering, ordering_archive, success_archive)
         print(old_ordering, old_success)
         write_row([old_ordering, old_success])
@@ -167,11 +167,24 @@ def hill_climb():
         print('No better neighbors.')
 
 
+def brute_force():
+    groups = ["Brown", "Pink", "Red", "Yellow", "Green", "Dark Blue", "Utility"]
+    import itertools
+
+    all_orderings = itertools.permutations(groups)
+    for addon in all_orderings:
+        ordering = ["Railroad", "Orange", "Light Blue"]
+        ordering.extend(addon)
+
+        print(ordering, success_indicator(ordering))
+
+
 def main():
-    hill_climb()
+    # hill_climb()
+    brute_force()
 
 
 if __name__ == '__main__':
-    timer()
+    # timer()
     main()
-    timer()
+    #timer()

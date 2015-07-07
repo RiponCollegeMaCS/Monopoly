@@ -203,7 +203,7 @@ def blank_space(size, space, game):
 
 
 # Create a graphical representation of the board.
-def exportBoard(game,size = 80):
+def exportBoard(game,size = 40):
     # The number of pixels alon the short side of a property
 
 
