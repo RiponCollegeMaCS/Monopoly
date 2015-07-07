@@ -277,24 +277,24 @@ class Player:
         if building == "house":
             property.buildings -= 1
             game_info.houses += 1
-            self.money += property.mortgage_value
+            self.money += property.house_cost / 2
 
         # Downgrade from a hotel to 4 houses.
         elif building == "hotel":
             property.buildings -= 1
             game_info.hotels += 1
             game_info.houses -= 4
-            self.money += property.mortgage_value
+            self.money += property.house_cost / 2
 
         # Sell all buildings on the property.
         elif building == "all":  # The property has a hotel.
             if property.buildings == 5:
                 property.buildings = 0
                 game_info.hotels += 1
-                self.money += (property.mortgage_value) * 5
+                self.money += (property.house_cost / 2) * 5
             else:  # The property has houses.
                 game_info.houses += property.buildings
-                self.money += (property.mortgage_value) * property.buildings
+                self.money += (property.house_cost / 2) * property.buildings
                 property.buildings = 0
 
     # Decides how player's make funds if they are in the hole.
