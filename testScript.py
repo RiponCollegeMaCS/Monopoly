@@ -55,7 +55,7 @@ def main2(games_in_a_set=100):
     for i in range(games_in_a_set):
         # Play game.
         player1 = monopoly.Player(1, buying_threshold=0, group_ordering=random_ordering())
-        #player2 = monopoly.Player(2, buying_threshold=randint(1, 500), group_ordering=random_ordering(),static_threshold=True)
+        # player2 = monopoly.Player(2, buying_threshold=randint(1, 500), group_ordering=random_ordering(),static_threshold=True)
         player2 = monopoly.Player(2, buying_threshold=0, group_ordering=random_ordering())
 
         game0.new_players([player1, player2])

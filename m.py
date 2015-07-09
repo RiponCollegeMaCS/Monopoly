@@ -100,7 +100,7 @@ class Player:
         self.expected_change = None
         self.expected_change_time = -1
         self.rents = [0] * 40
-        self.my_matrix = numpy.loadtxt(open("data/t5.csv", "rb"), delimiter=",")
+
 
     # Compute the player's expected money change.
     def expected_future(self, game_info):
@@ -133,7 +133,7 @@ class Player:
             expected_change = 0
 
             # Load the probability matrix.
-            matrix = self.my_matrix
+            matrix = game_info.my_matrix
 
 
             # Dot product expected changes and probabilities.
@@ -609,7 +609,7 @@ class Game:
                  'starting_player', 'trade_count', 'bank', 'free_parking', 'trade_pairs', 'player1', 'player2',
                  'chance_cards', 'community_chest_cards', 'chance_index', 'community_chest_index', 'board',
                  'development_order', 'move_again', 'board_groups', 'p1_trade_pairs', 'p2_trade_pairs',
-                 'image_exporting', 'trades']
+                 'image_exporting', 'trades', 'my_matrix']
 
     def __init__(self, list_of_players=None, auctions_enabled=True, trading_enabled=False,
                  hotel_upgrade=False, building_sellback=False, image_exporting=False,
@@ -637,6 +637,8 @@ class Game:
                              "Red": 3, "Yellow": 3, "Green": 3, "Dark Blue": 2,
                              "Utility": 2, "Railroad": 4}
         self.create_board()
+
+        self.my_matrix = numpy.loadtxt(open("data/t5.csv", "rb"), delimiter=",")
 
         # Add new players and reset values.
         if list_of_players:
