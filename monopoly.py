@@ -19,7 +19,8 @@ class Player:
                  'group_ordering', 'group_ranking', 'group_values', 'group_inv', 'inventory', 'monopolies',
                  'mortgaged_properties', 'position', 'money', 'jail_counter', 'chance_card',
                  'community_chest_card', 'in_jail', 'card_rent', 'passed_go',
-                 'mortgage_auctioned_property', 'auction_bid', 'bid_includes_mortgages', 'trade_pairs']
+                 'mortgage_auctioned_property', 'auction_bid', 'bid_includes_mortgages', 'trade_pairs', 'initial_group',
+                 'initial_properties']
 
     def __init__(self,
                  number,
@@ -31,7 +32,9 @@ class Player:
                  group_ordering=("Brown", "Light Blue", "Pink", "Orange",
                                  "Red", "Yellow", "Green", "Dark Blue", "Utility", "Railroad"),
                  group_values=None,
-                 property_values=[0] * 40
+                 property_values=[0] * 40,
+                 initial_group=None,
+                 initial_properties=None
     ):
 
         self.number = number  # A player's id number.
@@ -59,6 +62,7 @@ class Player:
         self.group_inv = {"Brown": [], "Light Blue": [], "Pink": [], "Orange": [],
                           "Red": [], "Yellow": [], "Green": [], "Dark Blue": [],
                           "Utility": [], "Railroad": []}  # Inventory dictionary organized by group
+
         self.trade_pairs = {"Brown": [], "Light Blue": [], "Pink": [], "Orange": [],
                             "Red": [], "Yellow": [], "Green": [], "Dark Blue": [],
                             "Utility": [], "Railroad": []}
@@ -72,6 +76,10 @@ class Player:
         self.position = 0  # The player starts on "Go".
         self.money = 1500  # The player starts with $1,500.
         self.jail_counter = 0  # The "turns in jail" counter.
+
+        # Initial stuff.
+        self.initial_group = initial_group
+        self.initial_properties = initial_properties
 
         # Flags
         self.chance_card = False  # The player has no "Get Out of Jail Free" cards.
@@ -565,12 +573,27 @@ class Game:
 
         # Create game elements.
         self.create_cards()  # Shuffle both card decks.
+        self.reset_board()
 
-        # Reset board
-        for space in self.board:
-            space.mortgaged = False
-            space.buildings = 0
-            space.owner = None
+        for player in self.active_players:
+            group = player.initial_group
+            if group:
+                for property in self.board:
+                    if property.group == group:
+                        player.inventory.add(property)
+                        player.group_inv[group].append(property)
+                        property.owner = player
+                        player.add_monopoly(group)
+                        player.money -= property.price
+
+            if player.initial_properties:
+                for property in player.initial_properties:
+                    group = property.group
+                    player.inventory.add(property)
+                    player.group_inv[group].append(property)
+                    property.owner = player
+                    player.money -= property.price
+
 
         # Misc.
         self.turn_counter = 0  # Reset turn counter.
@@ -601,6 +624,11 @@ class Game:
         print(player1.trade_pairs)
         print(player2.trade_pairs)'''
 
+    def reset_board(self):
+        for space in self.board:
+            space.mortgaged = False
+            space.buildings = 0
+            space.owner = None
 
     # Create list of numbers to represent Chance and Community Chest cards.
     def create_cards(self):

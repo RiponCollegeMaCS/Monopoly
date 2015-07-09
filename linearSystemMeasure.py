@@ -91,7 +91,7 @@ def main():
                 avg_vector[j] += all_solns[i][j]
 
         for element in avg_vector:
-            print(element)
+            print(element / solns_to_find)
 
 
 main()

@@ -7,6 +7,7 @@
 from random import randint, shuffle, choice  # For random game elements.
 from decimal import getcontext, ROUND_HALF_UP  # The Decimal module for better rounding.
 from imageExport import exportBoard  # Used to create images of the board
+import numpy  # For manipulating matrices
 
 
 getcontext().rounding = ROUND_HALF_UP  # Adjust the rounding scheme.
@@ -19,7 +20,8 @@ class Player:
                  'group_ordering', 'group_ranking', 'group_values', 'group_inv', 'inventory', 'monopolies',
                  'mortgaged_properties', 'position', 'money', 'jail_counter', 'chance_card',
                  'community_chest_card', 'in_jail', 'card_rent', 'passed_go',
-                 'mortgage_auctioned_property', 'auction_bid', 'bid_includes_mortgages', 'trade_pairs', 'rent_power']
+                 'mortgage_auctioned_property', 'auction_bid', 'bid_includes_mortgages', 'trade_pairs', 'rent_power',
+                 'static_threshold', 'expected_change', 'expected_change_time', 'rents', 'my_matrix']
 
     def __init__(self,
                  number,
@@ -31,7 +33,8 @@ class Player:
                  group_ordering=("Brown", "Light Blue", "Pink", "Orange",
                                  "Red", "Yellow", "Green", "Dark Blue", "Utility", "Railroad"),
                  group_values=None,
-                 property_values=[0] * 40
+                 property_values=[0] * 40,
+                 static_threshold=False
     ):
 
         self.number = number  # A player's id number.
@@ -44,6 +47,8 @@ class Player:
         self.complete_monopoly = complete_monopoly
         self.buying_threshold = buying_threshold
         self.property_values = property_values
+
+        self.static_threshold = static_threshold
 
         self.rent_power = 0
 
@@ -90,6 +95,58 @@ class Player:
 
         # For house rules.
         self.bid_includes_mortgages = False
+
+        # Expected value
+        self.expected_change = None
+        self.expected_change_time = -1
+        self.rents = [0] * 40
+        self.my_matrix = numpy.loadtxt(open("data/t5.csv", "rb"), delimiter=",")
+
+    # Compute the player's expected money change.
+    def expected_future(self, game_info):
+        if self.expected_change_time != game_info.turn_counter:
+            other_player = game_info.other_player(self)
+            t = 5  # The number of turns the player wishes to see.
+
+            # A place to store the money change the play would experience on that space.
+            money_changes = list(other_player.rents) + [0]
+            money_changes[40] = (-50)  # For the last entry, "In Jail"
+
+            # Community Chest
+            cc_change = 455 + (10 * (game_info.num_active_players - 1)) - game_info.community_chest_repairs(self)
+            cc_change /= 14  # Weighted by the 14 cards that change money.
+            money_changes[2] = cc_change
+            money_changes[17] = cc_change
+            money_changes[33] = cc_change
+
+            # Chance
+            c_change = 235 - (50 * (game_info.num_active_players - 1)) - game_info.chance_repairs(self)
+            c_change /= 6  # Weighted by the 6 card that change money
+            money_changes[7] = c_change
+            money_changes[22] = c_change
+            money_changes[36] = c_change
+
+            # Fixed spaces.
+            money_changes[4] = -75  # Luxury Tax
+            money_changes[38] = -200  # Income Tax
+
+            expected_change = 0
+
+            # Load the probability matrix.
+            matrix = self.my_matrix
+
+
+            # Dot product expected changes and probabilities.
+            expected_change += numpy.vdot(money_changes, matrix[self.position])
+
+            # Add rents that this player will receive.
+            other_money_changes = list(self.rents) + [0]
+            expected_change += numpy.vdot(other_money_changes, matrix[other_player.position])
+
+            self.expected_change = expected_change
+            self.expected_change_time = game_info.turn_counter
+
+        return self.expected_change
 
     # Add a group to the list of monopolies, checking that it is a valid color group.
     def add_monopoly(self, group):
@@ -153,7 +210,7 @@ class Player:
 
                             if building_supply > 0:
                                 if self.even_building_test(board_space):  # Building "evenly".
-                                    self.rent_power -= board_space.rents[board_space.buildings]
+                                    # self.rent_power -= board_space.rents[board_space.buildings]
                                     # Build!
                                     if building == "house":
                                         game_info.houses -= 1  # Take 1 house.
@@ -164,7 +221,8 @@ class Player:
                                     board_space.buildings += 1  # Add building to property.
                                     self.money -= board_space.house_cost  # Pay building cost.
 
-                                    self.rent_power += board_space.rents[board_space.buildings]
+                                    #self.rent_power += board_space.rents[board_space.buildings]
+                                    self.rents[board_space.id] = board_space.rents[board_space.buildings]
 
                                     # Mortgage properties to pay for building.
                                     if self.development_threshold == 2:
@@ -281,26 +339,28 @@ class Player:
     def sell_building(self, property, building, game_info):
         # Sell one house on the property.
         if building == "house":
-            self.rent_power -= property.rents[property.buildings]
+            # self.rent_power -= property.rents[property.buildings]
             property.buildings -= 1
             game_info.houses += 1
-            self.rent_power += property.rents[property.buildings]
+            #self.rent_power += property.rents[property.buildings]
+            self.rents[property.id] = property.rents[property.buildings]
 
             self.money += property.house_cost / 2
 
         # Downgrade from a hotel to 4 houses.
         elif building == "hotel":
-            self.rent_power -= property.rents[property.buildings]
+            # self.rent_power -= property.rents[property.buildings]
             property.buildings -= 1
             game_info.hotels += 1
             game_info.houses -= 4
-            self.rent_power += property.rents[property.buildings]
+            #self.rent_power += property.rents[property.buildings]
+            self.rents[property.id] = property.rents[property.buildings]
 
             self.money += property.house_cost / 2
 
         # Sell all buildings on the property.
         elif building == "all":  # The property has a hotel.
-            self.rent_power -= property.rents[property.buildings]
+            # self.rent_power -= property.rents[property.buildings]
             if property.buildings == 5:
                 property.buildings = 0
                 game_info.hotels += 1
@@ -310,7 +370,8 @@ class Player:
                 self.money += (property.house_cost / 2) * property.buildings
                 property.buildings = 0
 
-            self.rent_power += property.rents[property.buildings]
+            self.rents[property.id] = property.rents[0]
+            #self.rent_power += property.rents[property.buildings]
 
     # Decides how player's make funds if they are in the hole.
     def make_funds(self, game_info):
@@ -490,8 +551,12 @@ class Player:
 
     # Return buying threshold at current point in game
     def get_buying_threshold(self, game_info):
-        total_rent = game_info.other_player(self).rent_power
-        return self.buying_threshold * total_rent
+        # total_rent = game_info.other_player(self).rent_power
+        # return self.buying_threshold * total_rent
+        if self.static_threshold:
+            return self.buying_threshold
+        else:
+            return max(1, -self.expected_future(game_info) + self.buying_threshold)
 
 
 # Define the MoneyPool class.
@@ -524,13 +589,15 @@ class BoardLocation:
     def unmortgage(self, game_info):
         self.mortgaged = False
         self.owner.mortgaged_properties.remove(self)
-        self.owner.rent_power += game_info.calculate_rent(self)
+        # self.owner.rent_power += game_info.calculate_rent(self)
+        self.owner.rents[self.id] = game_info.calculate_rent(self)
 
     def mortgage(self, game_info):
         self.mortgaged = True
         if self.owner:
             self.owner.mortgaged_properties.add(self)
-            self.owner.rent_power -= game_info.calculate_rent(self)
+            # self.owner.rent_power -= game_info.calculate_rent(self)
+            self.owner.rents[self.id] = 0
 
 
 # Define the Game class.
@@ -675,6 +742,20 @@ class Game:
             if space.is_property:
                 self.board_groups[space.group].append(space)
 
+    def community_chest_repairs(self, player):
+        if player.monopolies:
+            house_counter = 0
+            hotel_counter = 0
+            for board_space in player.inventory:  # Cycle through all board spaces.
+                if board_space.buildings == 5:
+                    hotel_counter += 1  # Add hotels.
+                else:
+                    house_counter += board_space.buildings  # Add houses.
+            house_repairs = 40 * house_counter  # $40 PER HOUSE
+            hotel_repairs = 115 * hotel_counter  # $115 PER HOTEL
+            return house_repairs + hotel_repairs
+
+        return 0
 
     # Defines the actions of the Community Chest cards.
     def community_chest(self, player):
@@ -702,17 +783,9 @@ class Game:
         elif card == 10:  # ADVANCE TO GO (COLLECT $200)
             self.move_to(player, 0)  # Player moves to Go.
         elif card == 11:  # YOU ARE ASSESSED FOR STREET REPAIRS
-            if player.monopolies:
-                house_counter = 0
-                hotel_counter = 0
-                for board_space in player.inventory:  # Cycle through all board spaces.
-                    if board_space.buildings == 5:
-                        hotel_counter += 1  # Add hotels.
-                    else:
-                        house_counter += board_space.buildings  # Add houses.
-                house_repairs = 40 * house_counter  # $40 PER HOUSE
-                hotel_repairs = 115 * hotel_counter  # $115 PER HOTEL
-                self.exchange_money(amount=house_repairs + hotel_repairs, giver=player, receiver=self.free_parking,
+            repairs = self.community_chest_repairs(player)
+            if repairs > 0:
+                self.exchange_money(amount=repairs, giver=player, receiver=self.free_parking,
                                     summary="Community Chest.")
         elif card == 12:  # LIFE INSURANCE MATURES / COLLECT $100
             self.exchange_money(amount=100, giver=self.bank, receiver=player, summary="Community Chest.")
@@ -732,6 +805,21 @@ class Game:
         else:
             self.community_chest_index = (self.community_chest_index + 1) % len(
                 self.community_chest_cards)  # Increase index.
+
+    def chance_repairs(self, player):
+        if player.monopolies:
+            house_counter = 0
+            hotel_counter = 0
+            for board_space in player.inventory:  # Cycle through all board spaces.
+                if board_space.buildings == 5:
+                    hotel_counter += 1  # Add hotels.
+                else:
+                    house_counter += board_space.buildings  # Add houses.
+            house_repairs = 45 * house_counter  # $45 PER HOUSE
+            hotel_repairs = 100 * hotel_counter  # $100 PER HOTEL
+            return house_repairs + hotel_repairs
+
+        return 0
 
     # Defines the actions of the Chance cards.
     def chance(self, player):
@@ -762,17 +850,9 @@ class Game:
             self.move_to(player, 24)
             self.board_action(player, self.board[player.position])
         elif card == 8:  # MAKE GENERAL REPAIRS ON ALL YOUR PROPERTY
-            if player.monopolies:
-                house_counter = 0
-                hotel_counter = 0
-                for board_space in player.inventory:  # Cycle through all board spaces.
-                    if board_space.buildings == 5:
-                        hotel_counter += 1  # Add hotels.
-                    else:
-                        house_counter += board_space.buildings  # Add houses.
-                house_repairs = 45 * house_counter  # $45 PER HOUSE
-                hotel_repairs = 100 * hotel_counter  # $100 PER HOTEL
-                self.exchange_money(amount=house_repairs + hotel_repairs, giver=player, receiver=self.free_parking,
+            repairs = self.chance_repairs(player)
+            if repairs > 0:
+                self.exchange_money(amount=repairs, giver=player, receiver=self.free_parking,
                                     summary="Chance.")
         elif card == 9:  # ADVANCE TO ST. CHARLES PLACE
             self.move_to(player, 11)
@@ -986,7 +1066,8 @@ class Game:
             if prop.mortgaged:
                 player_to.mortgaged_properties.add(prop)
             else:
-                player_to.rent_power += self.calculate_rent(prop)
+                # player_to.rent_power += self.calculate_rent(prop)
+                player_to.rents[prop.id] = self.calculate_rent(prop)
 
         else:
             # Update inventory, group_inv, for player_to.
@@ -1010,9 +1091,10 @@ class Game:
                 player_from.mortgaged_properties.remove(prop)
             else:
                 rent = self.calculate_rent(prop)
-                player_from.rent_power -= rent
-                player_to.rent_power += rent
-
+                # player_from.rent_power -= rent
+                #player_to.rent_power += rent
+                player_from.rents[prop.id] = 0
+                player_to.rents[prop.id] = rent
 
 
     # Determines if the player owns all of the properties in the the given property's group.
@@ -1060,7 +1142,6 @@ class Game:
 
         if self.trading_enabled:
             self.new_trading(property=board_space, player1=player)
-            pass
 
     # Determines the owner of a property.
     def property_owner(self, property):
@@ -1371,7 +1452,10 @@ class Game:
             # Allow the player to develop and un-mortgage properties.
             for player in self.development_order:
                 player.between_turns(game_info=self)
-                # self.cont_trading(playerA=player)
+
+            # if current_player_index == 0:
+            # print(self.active_players[0].expected_future(game_info=self), ",",
+            # self.active_players[1].expected_future(game_info=self))
 
             # Current player takes turn.
             self.take_turn(self.active_players[current_player_index])
@@ -1409,5 +1493,5 @@ class Game:
                    'players': self.active_players,
                    'trade count': self.trade_count
         }
-        return results
 
+        return results
