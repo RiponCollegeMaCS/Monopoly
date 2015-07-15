@@ -12,7 +12,10 @@ colors = {
     'Dark Blue': (0, 112, 192),
     'Board': (198, 239, 206),
     'Gray': (225, 225, 225),
-    'Border': (0, 0, 0)
+    'Border': (0, 0, 0),
+    'Railroad': (0, 0, 0),
+    'Utility': (190, 190, 190),
+    'White': (255, 255, 255)
 }
 
 
@@ -203,7 +206,7 @@ def blank_space(size, space, game):
 
 
 # Create a graphical representation of the board.
-def exportBoard(game,size = 40):
+def exportBoard(game, size=40):
     # The number of pixels alon the short side of a property
 
 
@@ -211,7 +214,7 @@ def exportBoard(game,size = 40):
     board_size = 13 * size
 
     # Create image.
-    board = Image.new("RGBA", (board_size, board_size), color=colors['Board'])
+    board = Image.new("RGBA", (board_size, board_size), color=colors['White'])
 
     # Load corner images.
     go = Image.open("images/src/go.png").resize((2 * size, 2 * size), Image.ANTIALIAS)
@@ -321,11 +324,13 @@ def exportBoard(game,size = 40):
 
     myfont = ImageFont.truetype("C:/Windows/Fonts/Kabel Regular.ttf", int(size / 3))
     for trade_pair in game.trades:
-        #text = trade_pair[0].name + " <-> " + trade_pair[1].name
-        #draw.text((3 * size, (5 + offset) * size), text=text, fill='Black', font=myfont)
+        # text = trade_pair[0].name + " <-> " + trade_pair[1].name
+        # draw.text((3 * size, (5 + offset) * size), text=text, fill='Black', font=myfont)
 
-        draw.text((3 * size, (5 + offset) * size), text=trade_pair[0].name, fill=player_color(1), font=myfont)
-        draw.text((7 * size, (5 + offset) * size), text=trade_pair[1].name, fill=player_color(2), font=myfont)
+        draw.text((3 * size, (5 + offset) * size), text=trade_pair[0].name, fill=colors[trade_pair[0].group],
+                  font=myfont)
+        draw.text((7 * size, (5 + offset) * size), text=trade_pair[1].name, fill=colors[trade_pair[1].group],
+                  font=myfont)
 
         offset += (1 / 2)
 

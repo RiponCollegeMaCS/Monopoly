@@ -1,7 +1,8 @@
-from monopoly import *
+from m import *
 from timer import *
 from multiprocessing import *
 import csv
+import copy
 
 
 def random_ordering():
@@ -43,6 +44,29 @@ def all_short_random_neighbors1(ordering):
     return all_random_neighbors
 
 
+def insertion_neighbors(ordering):
+    ordering = list(ordering)
+
+    all_random_neighbors = []
+
+    for i in range(10):
+        group = ordering[i]
+        short_ordering = copy.deepcopy(ordering)
+        short_ordering.remove(group)
+
+        for j in range(10):
+            if i != j:
+                new_ordering = copy.deepcopy(short_ordering)
+
+                new_ordering.insert(j, group)
+
+                all_random_neighbors.append(tuple(new_ordering))
+
+    shuffle(all_random_neighbors)
+
+    return all_random_neighbors
+
+
 def all_short_random_neighbors2(ordering):
     all_random_neighbors = []
     for index in range(0, 9):
@@ -55,7 +79,7 @@ def all_short_random_neighbors2(ordering):
     return all_random_neighbors
 
 
-def old_success_indicator(ordering, games_in_a_set=10000):
+'''def old_success_indicator(ordering, games_in_a_set=10000):
     winner_matrix = [0, 0, 0]
 
     for i in range(games_in_a_set):
@@ -68,23 +92,24 @@ def old_success_indicator(ordering, games_in_a_set=10000):
         # Store length.
         winner_matrix[results['winner']] += 1
 
-    return winner_matrix[1] / games_in_a_set
+    return winner_matrix[1] / games_in_a_set'''
 
 
 def play_set(ordering, number_of_games, results_q):
     results_list = []
+    game0 = Game(cutoff=1000, trading_enabled=True)
     for i in range(number_of_games):
         # Play game.
-        player1 = Player(1, buying_threshold=500, group_ordering=ordering)
-        player2 = Player(2, buying_threshold=500, group_ordering=random_ordering())
-        game0 = Game([player1, player2], cutoff=1000, trading_enabled=True)
+        player1 = Player(1, buying_threshold=500, group_ordering=ordering, static_threshold=True)
+        player2 = Player(2, buying_threshold=500, group_ordering=random_ordering(), static_threshold=True)
+        game0.new_players([player1, player2])
         results = game0.play()
         results_list.append(results['winner'])  # Store the game's result.
 
     results_q.put(results_list.count(1))
 
 
-def success_indicator(ordering, number_of_games=10000, procs=4):
+def success_indicator(ordering, number_of_games=1000, procs=4):
     results_q = Queue()  # Queue for results.
     proc_list = [Process(target=play_set, args=(ordering, int(number_of_games / procs), results_q))
                  for i in range(procs)]  # List of processes.
@@ -102,11 +127,6 @@ def success_indicator(ordering, number_of_games=10000, procs=4):
     success_rate = float(sum(results_list)) / float(number_of_games)
 
     return 100 * success_rate
-
-
-def test_ordering_functions():
-    ordering = random_ordering()
-    print(len(all_short_random_neighbors1(ordering)))
 
 
 def lookup_success(ordering, ordering_archive, success_archive):
@@ -134,11 +154,16 @@ def write_row(row):
         output_file.writerow(row)
 
 
+def neighbors(ordering):
+    return  all_short_random_neighbors1(ordering)
+    #return insertion_neighbors(ordering)
+
+
 def hill_climb():
     ordering_archive = []
     success_archive = []
 
-    while 2 + 2 == 4:
+    while True:
         print('Start!')
         write_row(["Start!"])
         counter = 0
@@ -147,7 +172,7 @@ def hill_climb():
         print(old_ordering, old_success)
         write_row([old_ordering, old_success])
 
-        all_neighbors = all_short_random_neighbors1(old_ordering)
+        all_neighbors = neighbors(old_ordering)
 
         while counter < (len(all_neighbors) - 1):
             new_ordering = all_neighbors[counter]
@@ -161,7 +186,7 @@ def hill_climb():
                 print(old_ordering, old_success, counter)
                 write_row([old_ordering, old_success])
 
-                all_neighbors = all_short_random_neighbors1(old_ordering)
+                all_neighbors = neighbors(old_ordering)
                 counter = 0
 
         print('No better neighbors.')
@@ -180,11 +205,11 @@ def brute_force():
 
 
 def main():
-    # hill_climb()
-    brute_force()
+    hill_climb()
+    # brute_force()
 
 
 if __name__ == '__main__':
     # timer()
     main()
-    #timer()
+    # timer()
