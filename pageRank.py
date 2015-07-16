@@ -1,4 +1,4 @@
-import monopoly as monopoly
+import m as monopoly
 from timer import *
 from random import shuffle
 import numpy
@@ -25,7 +25,7 @@ def main(games_in_a_set=1000):
               "Red", "Yellow", "Green", "Dark Blue",
               "Utility", "Railroad"]
 
-    game0 = monopoly.Game(cutoff=1000, trading_enabled=False)
+    game0 = monopoly.Game(cutoff=1000, trading_enabled=True)
     counter = 0
     for group1 in groups:
         for group2 in groups:
@@ -35,10 +35,10 @@ def main(games_in_a_set=1000):
                 for i in range(games_in_a_set):
                     # Play game.
                     player1 = monopoly.Player(1, buying_threshold=100,
-                                              #group_ordering=random_ordering(),
+                                              group_ordering=random_ordering(),
                                               initial_group=group1)
                     player2 = monopoly.Player(2, buying_threshold=100,
-                                              #group_ordering=random_ordering(),
+                                              group_ordering=random_ordering(),
                                               initial_group=group2)
 
                     game0.new_players([player1, player2])

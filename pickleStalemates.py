@@ -131,6 +131,8 @@ def main():
                 expected_value = numpy.dot(odds, money_changes)
                 expected_value += (1 / 6.09) * 200
 
+                print(expected_value)
+
                 money_changes_sq = [pow(i, 2) for i in money_changes]
                 variance = numpy.dot(odds, money_changes_sq) + ((200 ^ 2) * (1 / 6.09)) - pow(expected_value, 2)
                 stdev = math.sqrt(variance)

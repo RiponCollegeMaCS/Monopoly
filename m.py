@@ -22,7 +22,8 @@ class Player:
                  'community_chest_card', 'in_jail', 'card_rent', 'passed_go',
                  'mortgage_auctioned_property', 'auction_bid', 'bid_includes_mortgages', 'trade_pairs', 'rent_power',
                  'static_threshold', 'expected_change', 'expected_change_time', 'rents', 'trading_threshold',
-                 'dynamic_ordering', 'go_counter', 'go_record']
+                 'dynamic_ordering', 'go_counter', 'go_record', 'initial_group',
+                 'initial_properties']
 
     def __init__(self,
                  number,
@@ -38,6 +39,8 @@ class Player:
                  property_values=[0] * 40,
                  static_threshold=True,
                  trading_threshold=0,
+                 initial_group=None,
+                 initial_properties=None
     ):
 
         self.number = number  # A player's id number.
@@ -50,6 +53,10 @@ class Player:
         self.complete_monopoly = complete_monopoly
         self.buying_threshold = buying_threshold
         self.property_values = property_values
+
+        # Initial stuff.
+        self.initial_group = initial_group
+        self.initial_properties = initial_properties
 
         self.static_threshold = static_threshold
 
@@ -631,7 +638,8 @@ class Game:
                  'development_order', 'move_again', 'board_groups', 'p1_trade_pairs', 'p2_trade_pairs',
                  'image_exporting', 'trades', 'my_matrix', 'ordering_trading', 'group_trading']
 
-    def __init__(self, list_of_players=None, auctions_enabled=True, trading_enabled=False, ordering_trading=False, group_trading=False,
+    def __init__(self, list_of_players=None, auctions_enabled=True, trading_enabled=False, ordering_trading=False,
+                 group_trading=False,
                  hotel_upgrade=False, building_sellback=False, image_exporting=False,
                  free_parking_pool=False, double_on_go=False, no_rent_in_jail=False, trip_to_start=False,
                  snake_eyes_bonus=False, cutoff=1000):
@@ -645,7 +653,6 @@ class Game:
         self.hotel_upgrade = hotel_upgrade
         self.building_sellback = building_sellback
         self.image_exporting = image_exporting
-        self.trades = []
 
         # Attributes for house rules.
         self.free_parking_pool = free_parking_pool
@@ -682,6 +689,29 @@ class Game:
             space.buildings = 0
             space.owner = None
 
+        for player in self.active_players:
+            group = player.initial_group
+            if group:
+                for property in self.board:
+                    if property.group == group:
+                        player.inventory.add(property)
+                        player.group_inv[group].append(property)
+                        property.owner = player
+                        player.add_monopoly(group)
+                        player.money -= property.price
+
+            if player.initial_properties:
+                for prop_num in player.initial_properties:
+                    property = self.board[prop_num]
+                    group = property.group
+
+                    player.inventory.add(property)
+                    player.group_inv[group].append(property)
+                    property.owner = player
+                    player.money -= property.price
+
+
+
         # Misc.
         self.turn_counter = 0  # Reset turn counter.
         self.doubles_counter = 0  # Reset doubles counter.
@@ -692,6 +722,7 @@ class Game:
         self.loss_reason = []  # To store how a player lost the game.
         self.starting_player = 0  # Store which player started.
         self.trade_count = 0
+        self.trades = []
 
         # Money pools.
         self.bank = MoneyPool(12500)  # Create the bank.
@@ -1351,7 +1382,7 @@ class Game:
         # Rent for color-group properties.
         else:
             if self.monopoly_status(player=player, current_property=property, add_me=1):
-                rent = property.rents[3]
+                rent = property.rents[5]
             else:
                 rent = property.rents[0]
 

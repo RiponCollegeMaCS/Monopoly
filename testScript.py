@@ -1,4 +1,4 @@
-import m as monopoly
+import mb as monopoly
 from timer import *
 import cProfile
 from random import shuffle, randint, uniform
@@ -85,36 +85,46 @@ def go_record(games_in_a_set=1000):
 
 
 def main3(games_in_a_set=1000):
-    game0 = monopoly.Game(cutoff=1000, trading_enabled=True, image_exporting=0)
+    for m1 in range(1,21):
+        for m2 in range(1,21):
+            game0 = monopoly.Game(cutoff=1000, trading_enabled=True, image_exporting=0, matrix1=m1, matrix2=m2)
+            trade_count = []
+            winners = [0, 0, 0]
+            for i in range(games_in_a_set):
+                # Play game.
+                player1 = monopoly.Player(1, buying_threshold=100,
+                                          # group_ordering=random_ordering(),
+                                          dynamic_ordering=True,
+                                          static_threshold=False
+                )
+                player2 = monopoly.Player(2, buying_threshold=100,
+                                          group_ordering=["Railroad", "Light Blue", "Orange", "Pink", "Red", "Yellow",
+                                                          "Green", "Dark Blue", "Utility", "Brown"],
+                                          # group_ordering=random_ordering(),
+                                          static_threshold=True)
 
-    winners = [0, 0, 0]
-    trade_count = 0
-    for i in range(games_in_a_set):
-        # Play game.
-        player1 = monopoly.Player(1, buying_threshold=100,
-                                  # group_ordering=random_ordering(),
-                                  dynamic_ordering=True,
-                                  static_threshold=True)
-        player2 = monopoly.Player(2, buying_threshold=100,
-                                  group_ordering=["Railroad", "Light Blue", "Orange", "Brown", "Pink", "Red", "Yellow",
-                                                  "Green", "Dark Blue", "Utility"],
-                                  # group_ordering=random_ordering(),
-                                  static_threshold=True)
+                game0.new_players([player1, player2])
+                results = game0.play()
 
-        game0.new_players([player1, player2])
-        results = game0.play()
+                # Store length.
+                winners[results['winner']] += 1
+                trade_count.append(results['trade count'])
 
-        # Store length.
-        winners[results['winner']] += 1
-        trade_count += results['trade count']
+            print(winners, m1, m2)
 
-    print(winners)
-    print(trade_count / games_in_a_set)
+        '''print("**")
+        print("trades:",results['trade count'])
+        for trade_pair in game0.trades:
+            print(trade_pair[0].name, "--", trade_pair[1].name)'''
+
+        '''print("avg. trades", sum(trade_count) / games_in_a_set)
+        print("max trades", max(trade_count))
+        print("min trades", min(trade_count))'''
 
 
 if __name__ == '__main__':
     timer()
-    # main3()
+    main3()
     # cProfile.run('main2()', sort=1)
-    go_record()
+    # go_record()
     timer()
