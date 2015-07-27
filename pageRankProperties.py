@@ -32,10 +32,10 @@ def main(games_in_a_set=5000):
                 winners = [0, 0, 0]
                 for i in range(games_in_a_set):
                     # Play game.
-                    player1 = monopoly.Player(1, buying_threshold=100,
+                    player1 = monopoly.Player(1, buying_threshold=500,step_threshold=True,
                                               group_ordering=random_ordering(),
                                               initial_properties=[prop1])
-                    player2 = monopoly.Player(2, buying_threshold=100,
+                    player2 = monopoly.Player(2, buying_threshold=500,step_threshold=True,
                                               group_ordering=random_ordering(),
                                               initial_properties=[prop2])
 
