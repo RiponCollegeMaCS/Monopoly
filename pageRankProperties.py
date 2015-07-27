@@ -1,7 +1,9 @@
-import m as monopoly
+import mb as monopoly
 from timer import *
 from random import shuffle
 import numpy
+from safename import safe_name
+import csv
 
 
 def random_ordering():
@@ -12,7 +14,7 @@ def random_ordering():
     return tuple(all_groups)
 
 
-def main(games_in_a_set=1000):
+def main(games_in_a_set=5000):
     matrix = numpy.zeros((40, 40))
 
     game0 = monopoly.Game(cutoff=1000, trading_enabled=True)
@@ -50,6 +52,28 @@ def main(games_in_a_set=1000):
                 matrix[prop2][prop1] += winners[2]
 
     matrix = normalize_columns(matrix)
+
+    graph_matrix = []
+    prop_names = []
+
+    for prop in game0.board:
+        if prop.is_property:
+            prop_names.append(safe_name(prop.name))
+
+    graph_matrix.append([""] + prop_names)
+
+    for i in range(len(matrix)):
+        row = [prop_names[i]]
+        for j in matrix[i]:
+            row.append(float(j))
+        graph_matrix.append(row)
+
+    # Save matrix
+    with open("PageRankStart_Matrix.csv", 'w', newline='') as csvfile:
+        output_file = csv.writer(csvfile, quotechar=',')
+
+        for row in graph_matrix:
+            output_file.writerow(row)
 
     eigenvalues, eigenvectors = numpy.linalg.eig(matrix)
     for i in range(len(eigenvalues)):

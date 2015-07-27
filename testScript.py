@@ -85,8 +85,8 @@ def go_record(games_in_a_set=1000):
 
 
 def main3(games_in_a_set=1000):
-    for m1 in range(1,21):
-        for m2 in range(1,21):
+    for m1 in range(1, 21):
+        for m2 in range(1, 21):
             game0 = monopoly.Game(cutoff=1000, trading_enabled=True, image_exporting=0, matrix1=m1, matrix2=m2)
             trade_count = []
             winners = [0, 0, 0]
@@ -122,9 +122,45 @@ def main3(games_in_a_set=1000):
         print("min trades", min(trade_count))'''
 
 
+def best_ordering():
+    return tuple(["Railroad", "Light Blue", "Orange", "Pink", "Red",
+                  "Yellow", "Green", "Dark Blue", "Utility", "Brown"])
+
+
+def optimize(games_in_a_set=10000):
+    game0 = monopoly.Game(cutoff=1000, trading_enabled=True, image_exporting=0)
+    for c in range(-1000, 1, 100):
+        trade_count = []
+        winners = [0, 0, 0]
+        for i in range(games_in_a_set):
+            # Play game.
+            player1 = monopoly.Player(1,
+                                      dynamic_ordering=True,
+                                      # group_ordering=random_ordering(),
+                                      c=c,
+                                      n=6,
+            )
+            player2 = monopoly.Player(2,
+                                      group_ordering=best_ordering(),
+                                      step_threshold=True,
+                                      buying_threshold=1000
+            )
+
+            game0.new_players([player1, player2])
+            results = game0.play()
+
+            # Store length.
+            winners[results['winner']] += 1
+            trade_count.append(results['trade count'])
+
+        print(winners, c, sum(trade_count) / games_in_a_set)
+        # print("avg. trades", sum(trade_count) / games_in_a_set)
+        # print("max trades", max(trade_count))
+        #print("min trades", min(trade_count))
+
+
 if __name__ == '__main__':
     timer()
-    main3()
+    optimize()
     # cProfile.run('main2()', sort=1)
-    # go_record()
     timer()

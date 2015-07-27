@@ -1,0 +1,11 @@
+library(igraph)
+dat=read.csv(file.choose(),header=TRUE,row.names=1,check.names=FALSE)
+m=t(as.matrix(dat))
+net=graph.adjacency(m,mode="directed",weighted=TRUE,diag=FALSE) 
+plot.igraph(net,vertex.label=V(net)$name, vertex.label.color="black",edge.color="black",edge.width=E(net)$weight*2, edge.arrow.size=0.1,edge.curved=TRUE,layout=layout.random,vertex.siz
+
+#plot.igraph(net,vertex.label=V(net)$name,layout=layout.circle, vertex.label.color="black",edge.color="black",edge.width=E(net)$weight*15, edge.arrow.size=1,edge.curved=TRUE)
+
+#plot.igraph(net,vertex.label=V(net)$name,layout=layout.fruchterman.reingold, vertex.label.color="black",edge.color="black",edge.width=E(net)$weight*10, edge.arrow.size=0.5,edge.curved=TRUE)
+#plot.igraph(net,vertex.size=2,vertex.label=NA, vertex.label.color="black",edge.color="black",edge.arrow.size=0.01,rescale=10)
+#layout=layout.circle,

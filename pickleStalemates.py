@@ -2,7 +2,7 @@
 import csv
 import pickle
 from timer import *
-from m import *
+from mb import *
 from copy import deepcopy
 from multiprocessing import *
 import math
@@ -31,7 +31,7 @@ def play_set(sample_size, game, results_q):
 
 
 def stability(game, total_sample_size=1000):
-    procs = 1
+    procs = 4
     results_q = Queue()  # Queue for results.
     proc_list = []  # List of processes.
     for i in range(procs):
@@ -74,11 +74,11 @@ def main():
     main_counter = 0
     game_counter = 0
 
-    while main_counter < 10:
+    while main_counter < 100:
         game_counter += 1
         # Play game.
-        player1 = Player(1, group_ordering=random_ordering(), buying_threshold=500)
-        player2 = Player(2, group_ordering=random_ordering(), buying_threshold=500)
+        player1 = Player(1, group_ordering=random_ordering(), buying_threshold=500)#, step_threshold=True)
+        player2 = Player(2, group_ordering=random_ordering(), buying_threshold=500)#, step_threshold=True)
         game0 = Game([player1, player2], cutoff=10000, trading_enabled=True)
         results = game0.play()
 
@@ -92,7 +92,7 @@ def main():
             print(results['monopolies'], game_counter)
             main_counter += 1
 
-            matrix = numpy.loadtxt(open("data/longtime.csv", "rb"), delimiter=",")
+            '''matrix = numpy.loadtxt(open("data/longtime.csv", "rb"), delimiter=",")
             odds = matrix[0]
 
             rent_power = []
@@ -110,14 +110,14 @@ def main():
                 money_changes[40] = (-50)  # For the last entry, "In Jail"
 
                 # Community Chest
-                cc_change = 455 + (10 * (game0.num_active_players - 1)) - game0.community_chest_repairs(player)
+                cc_change = 465 - game0.community_chest_repairs(player)
                 cc_change /= 14  # Weighted by the 14 cards that change money.
                 money_changes[2] = cc_change
                 money_changes[17] = cc_change
                 money_changes[33] = cc_change
 
                 # Chance
-                c_change = 235 - (50 * (game0.num_active_players - 1)) - game0.chance_repairs(player)
+                c_change = 185 - game0.chance_repairs(player)
                 c_change /= 6  # Weighted by the 6 card that change money
                 money_changes[7] = c_change
                 money_changes[22] = c_change
@@ -131,12 +131,9 @@ def main():
                 expected_value = numpy.dot(odds, money_changes)
                 expected_value += (1 / 6.09) * 200
 
-                print(expected_value)
-
                 money_changes_sq = [pow(i, 2) for i in money_changes]
-                variance = numpy.dot(odds, money_changes_sq) + ((200 ^ 2) * (1 / 6.09)) - pow(expected_value, 2)
+                variance = numpy.dot(odds, money_changes_sq)  - pow(expected_value, 2) #+ ((200 ^ 2) * (1 / 6.09))
                 stdev = math.sqrt(variance)
-
 
                 rent_power.append([expected_value, stdev])
 
@@ -145,7 +142,7 @@ def main():
             # Find stability.
             stab = stability(game0, total_sample_size=100)
             write_row(stab)
-            print(stab)
+            print(stab)'''
 
 
 if __name__ == '__main__':

@@ -1,4 +1,4 @@
-from m import *
+from mb import *
 from timer import *
 from multiprocessing import *
 import csv
@@ -100,8 +100,8 @@ def play_set(ordering, number_of_games, results_q):
     game0 = Game(cutoff=1000, trading_enabled=True)
     for i in range(number_of_games):
         # Play game.
-        player1 = Player(1, buying_threshold=500, group_ordering=ordering, static_threshold=True)
-        player2 = Player(2, buying_threshold=500, group_ordering=random_ordering(), static_threshold=True)
+        player1 = Player(1, buying_threshold=500, group_ordering=ordering, step_threshold=True)
+        player2 = Player(2, buying_threshold=500, group_ordering=random_ordering(), step_threshold=True)
         game0.new_players([player1, player2])
         results = game0.play()
         results_list.append(results['winner'])  # Store the game's result.
