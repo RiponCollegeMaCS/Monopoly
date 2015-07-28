@@ -55,7 +55,7 @@ def success(strategy):
         # Play game.
         p2_strategy = random_strategy()
         p2_ordering = p2_strategy[0:10]
-        p2_threshold = strategy[10]
+        p2_threshold = p2_strategy[10]
 
         player1 = Player(1, buying_threshold=p1_threshold, group_ordering=p1_ordering, step_threshold=True)
         player2 = Player(2, buying_threshold=p2_threshold, group_ordering=p2_ordering, step_threshold=True)
