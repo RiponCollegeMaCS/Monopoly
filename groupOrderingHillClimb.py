@@ -1,4 +1,4 @@
-from mb import *
+from mb_auctions_speeddie import *
 import csv
 import math
 import itertools
@@ -10,7 +10,7 @@ def random_strategy():
                   "Utility", "Railroad"]
     shuffle(all_groups)
 
-    all_groups.append(choice([i for i in range(100, 2001, 100)]))
+    all_groups.append(choice([i for i in range(500, 2001, 500)]))
     return all_groups
 
 
@@ -29,9 +29,9 @@ def neighbors(strategy):
                 all_random_neighbors.append(list_ordering + [threshold])
 
     if threshold < 2000:
-        all_random_neighbors.append(ordering + [threshold + 100])
-    if threshold > 100:
-        all_random_neighbors.append(ordering + [threshold - 100])
+        all_random_neighbors.append(ordering + [threshold + 500])
+    if threshold > 500:
+        all_random_neighbors.append(ordering + [threshold - 500])
 
     shuffle(all_random_neighbors)
 
@@ -43,7 +43,7 @@ def success(strategy):
     p1_threshold = strategy[10]
 
     wins = 0
-    game0 = Game(cutoff=1000, trading_enabled=True)
+    game0 = Game(cutoff=1000, trading_enabled=True, speed_die=True)
     counter = 0
     interval_size = 10
     base_games = 100
@@ -82,12 +82,12 @@ def write_row(row):
 def hill_climb():
     while True:
         print('Start!')
-        write_row(["Start!"])
+        # write_row(["Start!"])
         counter = 0
         old_ordering = random_strategy()
         old_success = success(old_ordering)
         print(old_ordering, old_success)
-        write_row([old_ordering, old_success])
+        #write_row([old_ordering, old_success])
 
         all_neighbors = neighbors(old_ordering)
 
@@ -101,7 +101,7 @@ def hill_climb():
                 old_ordering = new_ordering
                 old_success = new_success
                 print(old_ordering, old_success, counter)
-                write_row([old_ordering, old_success])
+                #write_row([old_ordering, old_success])
 
                 all_neighbors = neighbors(old_ordering)
                 counter = 0

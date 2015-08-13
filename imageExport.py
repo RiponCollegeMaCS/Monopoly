@@ -1,5 +1,15 @@
 from PIL import ImageFont, Image, ImageDraw, ImageEnhance
 
+def create_directory():
+    import os
+    import shutil
+    if not os.path.exists(r'images\board'):
+        os.makedirs(r'images\board')
+    else:
+        shutil.rmtree('images/board')
+        os.makedirs(r'images\board')
+
+
 # Colors on the board.
 colors = {
     'Brown': (153, 102, 51),
@@ -312,7 +322,7 @@ def exportBoard(game, size=40):
 
     myfont = font(size=size / 1.5)
     for player in game.active_players:
-        money_string = "$" + str(player.money)
+        money_string = "$" + str(round(player.money))
         tsize = draw.textsize(money_string, myfont)
 
         draw.text((9 * size + (size - tsize[0]), (2 + player.number) * size), text=money_string,
@@ -370,7 +380,7 @@ def exportBoard(game, size=40):
 
 
     # Save image to file
-    board.save("images/board" + str(game.turn_counter).zfill(4) + ".png")
+    board.save("images/board/board" + str(game.turn_counter).zfill(4) + ".png")
     print("Exported board at", game.turn_counter, "turns")
 
 

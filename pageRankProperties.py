@@ -28,17 +28,17 @@ def main(desired_radius = 0.01):
     for prop1 in props:
         for prop2 in props[props.index(prop1) + 1:]:
             winners = [0, 0, 0]
-            base_games = 100
+            base_games = 10
             game_counter = 0
             current_radius = 10
 
 
             while (game_counter < base_games) or current_radius > desired_radius:
                 # Play game.
-                player1 = monopoly.Player(1, buying_threshold=500, step_threshold=True,
+                player1 = monopoly.Player(1, buying_threshold=1500, step_threshold=True,
                                           group_ordering=random_ordering(),
                                           initial_properties=[prop1])
-                player2 = monopoly.Player(2, buying_threshold=500, step_threshold=True,
+                player2 = monopoly.Player(2, buying_threshold=1500, step_threshold=True,
                                           group_ordering=random_ordering(),
                                           initial_properties=[prop2])
 
@@ -73,10 +73,24 @@ def main(desired_radius = 0.01):
     for i in range(len(eigenvalues)):
         print("*************************")
         print(eigenvalues[i])
-        for element in eigenvectors[:, i]:
-            if element.real != 0:
-                print(element.real)
+        normalized_vector = normalize_data(eigenvectors[:, i])
+        for element in normalized_vector:
+            print(element)
 
+def normalize_data(vector):
+    nvector = []
+    for i in range(len(vector)):
+        nvector.append(pow(pow(vector[i].real, 2) + pow(vector[i].imag, 2), (1 / 2)))
+
+    dmin = min(nvector)
+    for i in range(len(nvector)):
+        nvector[i] -= dmin
+
+    dmax = max(nvector)
+    for i in range(len(nvector)):
+        nvector[i] /= dmax
+
+    return nvector
 
 def normalize_columns(matrix):
     size = len(matrix)

@@ -5,6 +5,7 @@ import numpy
 import copy
 import csv
 from safename import safe_name
+import math
 
 
 def random_ordering():
@@ -21,12 +22,13 @@ def main(games_in_a_set=100000):
 
         matrix = numpy.zeros((28, 28))
         game_counter = 0
-        game0 = monopoly.Game(cutoff=1000, trading_enabled=False)
+        game0 = monopoly.Game(cutoff=1000, trading_enabled=True)
 
-        while game_counter < games_in_a_set:
+        keep_going = True
+        while keep_going:
             # Play game.
-            player1 = monopoly.Player(1, buying_threshold=500, group_ordering=random_ordering(), step_threshold=True)
-            player2 = monopoly.Player(2, buying_threshold=500, group_ordering=random_ordering(), step_threshold=True)
+            player1 = monopoly.Player(1, buying_threshold=1500, group_ordering=random_ordering(), step_threshold=True)
+            player2 = monopoly.Player(2, buying_threshold=1500, group_ordering=random_ordering(), step_threshold=True)
 
             game0.new_players([player1, player2])
             results = game0.play()
@@ -52,6 +54,14 @@ def main(games_in_a_set=100000):
                 if game_counter == games_in_a_set:
                     for element in normalize_data(e_vector):
                         print(element)
+
+                keep_going = False
+                for i in range(28):
+                    for j in range(28):
+                        p = matrix[i][j] / game_counter
+                        radius = 1.960 * math.sqrt((p * (1 - p)) / game_counter)
+                        if radius > 0.01:
+                            keep_going = True
 
         graph_matrix = []
         prop_names = []

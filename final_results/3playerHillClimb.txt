@@ -1,0 +1,91 @@
+"C:\Users\Mitchell Eithun\Anaconda3\python.exe" "C:/Users/Mitchell Eithun/Documents/monopoly/Monopoly/groupOrderingHillClimbMultiplayer.py"
+Start!
+['Green', 'Utility', 'Yellow', 'Dark Blue', 'Pink', 'Light Blue', 'Railroad', 'Orange', 'Brown', 'Red', 500] 0.2418736692689851
+['Green', 'Utility', 'Yellow', 'Light Blue', 'Pink', 'Dark Blue', 'Railroad', 'Orange', 'Brown', 'Red', 500] 0.2527563395810364 1
+['Green', 'Utility', 'Yellow', 'Light Blue', 'Orange', 'Dark Blue', 'Railroad', 'Pink', 'Brown', 'Red', 500] 0.2727034120734908 2
+['Light Blue', 'Utility', 'Yellow', 'Green', 'Orange', 'Dark Blue', 'Railroad', 'Pink', 'Brown', 'Red', 500] 0.3356676003734827 1
+['Light Blue', 'Utility', 'Yellow', 'Brown', 'Orange', 'Dark Blue', 'Railroad', 'Pink', 'Green', 'Red', 500] 0.3611957134799774 4
+['Light Blue', 'Utility', 'Yellow', 'Brown', 'Railroad', 'Dark Blue', 'Orange', 'Pink', 'Green', 'Red', 500] 0.3910144293834718 1
+['Light Blue', 'Utility', 'Railroad', 'Brown', 'Yellow', 'Dark Blue', 'Orange', 'Pink', 'Green', 'Red', 500] 0.4191168609002459 1
+['Light Blue', 'Utility', 'Railroad', 'Yellow', 'Brown', 'Dark Blue', 'Orange', 'Pink', 'Green', 'Red', 500] 0.4320568579611753 3
+['Light Blue', 'Utility', 'Railroad', 'Yellow', 'Brown', 'Dark Blue', 'Orange', 'Pink', 'Red', 'Green', 500] 0.4408658922914467 4
+['Light Blue', 'Red', 'Railroad', 'Yellow', 'Brown', 'Dark Blue', 'Orange', 'Pink', 'Utility', 'Green', 500] 0.44454986295593507 5
+['Light Blue', 'Red', 'Railroad', 'Orange', 'Brown', 'Dark Blue', 'Yellow', 'Pink', 'Utility', 'Green', 500] 0.47437101993945086 6
+['Light Blue', 'Railroad', 'Red', 'Orange', 'Brown', 'Dark Blue', 'Yellow', 'Pink', 'Utility', 'Green', 500] 0.5029154518950437 3
+['Light Blue', 'Railroad', 'Yellow', 'Orange', 'Brown', 'Dark Blue', 'Red', 'Pink', 'Utility', 'Green', 500] 0.5069249192960533 1
+['Orange', 'Railroad', 'Yellow', 'Light Blue', 'Brown', 'Dark Blue', 'Red', 'Pink', 'Utility', 'Green', 500] 0.5274644945697577 15
+['Railroad', 'Orange', 'Yellow', 'Light Blue', 'Brown', 'Dark Blue', 'Red', 'Pink', 'Utility', 'Green', 500] 0.5361105296211011 4
+['Railroad', 'Orange', 'Yellow', 'Light Blue', 'Brown', 'Pink', 'Red', 'Dark Blue', 'Utility', 'Green', 500] 0.5363198660247017 8
+['Railroad', 'Orange', 'Pink', 'Light Blue', 'Brown', 'Yellow', 'Red', 'Dark Blue', 'Utility', 'Green', 500] 0.5440713536201469 2
+['Railroad', 'Orange', 'Pink', 'Light Blue', 'Brown', 'Yellow', 'Utility', 'Dark Blue', 'Red', 'Green', 500] 0.5487228003784295 1
+['Railroad', 'Orange', 'Pink', 'Light Blue', 'Brown', 'Red', 'Utility', 'Dark Blue', 'Yellow', 'Green', 500] 0.5573960751213336 12
+['Railroad', 'Orange', 'Pink', 'Light Blue', 'Brown', 'Red', 'Utility', 'Dark Blue', 'Yellow', 'Green', 1000] 0.5656319525373451 3
+['Railroad', 'Orange', 'Pink', 'Light Blue', 'Brown', 'Utility', 'Red', 'Dark Blue', 'Yellow', 'Green', 1000] 0.5726441182727079 11
+['Railroad', 'Orange', 'Light Blue', 'Pink', 'Brown', 'Utility', 'Red', 'Dark Blue', 'Yellow', 'Green', 1000] 0.5743185689948893 40
+['Orange', 'Railroad', 'Light Blue', 'Pink', 'Brown', 'Utility', 'Red', 'Dark Blue', 'Yellow', 'Green', 1000] 0.5758738277919864 11
+['Orange', 'Railroad', 'Light Blue', 'Pink', 'Brown', 'Utility', 'Red', 'Yellow', 'Dark Blue', 'Green', 1000] 0.576271186440678 12
+No better neighbors.
+Start!
+['Green', 'Railroad', 'Utility', 'Dark Blue', 'Brown', 'Light Blue', 'Yellow', 'Red', 'Pink', 'Orange', 500] 0.3434145215283389
+['Green', 'Railroad', 'Utility', 'Dark Blue', 'Brown', 'Orange', 'Yellow', 'Red', 'Pink', 'Light Blue', 500] 0.3492899679340357 1
+['Green', 'Railroad', 'Utility', 'Dark Blue', 'Brown', 'Orange', 'Yellow', 'Red', 'Pink', 'Light Blue', 0] 0.39512088869527334 1
+['Orange', 'Railroad', 'Utility', 'Dark Blue', 'Brown', 'Green', 'Yellow', 'Red', 'Pink', 'Light Blue', 0] 0.4559286463798531 2
+['Orange', 'Railroad', 'Utility', 'Dark Blue', 'Green', 'Brown', 'Yellow', 'Red', 'Pink', 'Light Blue', 0] 0.461401487378234 1
+['Orange', 'Railroad', 'Utility', 'Dark Blue', 'Green', 'Brown', 'Red', 'Yellow', 'Pink', 'Light Blue', 0] 0.46879899655064283 6
+['Orange', 'Railroad', 'Utility', 'Dark Blue', 'Green', 'Pink', 'Red', 'Yellow', 'Brown', 'Light Blue', 0] 0.4732170825937141 5
+['Orange', 'Railroad', 'Light Blue', 'Dark Blue', 'Green', 'Pink', 'Red', 'Yellow', 'Brown', 'Utility', 0] 0.49109467763774606 17
+['Orange', 'Railroad', 'Light Blue', 'Dark Blue', 'Green', 'Brown', 'Red', 'Yellow', 'Pink', 'Utility', 0] 0.49989587671803415 4
+['Railroad', 'Orange', 'Light Blue', 'Dark Blue', 'Green', 'Brown', 'Red', 'Yellow', 'Pink', 'Utility', 0] 0.5049979175343606 16
+['Railroad', 'Orange', 'Light Blue', 'Dark Blue', 'Green', 'Utility', 'Red', 'Yellow', 'Pink', 'Brown', 0] 0.5058835780485265 7
+['Railroad', 'Orange', 'Light Blue', 'Dark Blue', 'Green', 'Utility', 'Yellow', 'Red', 'Pink', 'Brown', 0] 0.5066125169217953 3
+['Railroad', 'Light Blue', 'Orange', 'Dark Blue', 'Green', 'Utility', 'Yellow', 'Red', 'Pink', 'Brown', 0] 0.5091136339964587 3
+['Railroad', 'Light Blue', 'Orange', 'Dark Blue', 'Red', 'Utility', 'Yellow', 'Green', 'Pink', 'Brown', 0] 0.5167813216593704 26
+['Railroad', 'Light Blue', 'Orange', 'Dark Blue', 'Red', 'Utility', 'Yellow', 'Green', 'Pink', 'Brown', 500] 0.5236356047166858 19
+['Railroad', 'Light Blue', 'Orange', 'Dark Blue', 'Utility', 'Red', 'Yellow', 'Green', 'Pink', 'Brown', 500] 0.5250521920668059 2
+['Railroad', 'Light Blue', 'Orange', 'Dark Blue', 'Pink', 'Red', 'Yellow', 'Green', 'Utility', 'Brown', 500] 0.526519106285237 8
+['Railroad', 'Light Blue', 'Orange', 'Dark Blue', 'Pink', 'Yellow', 'Red', 'Green', 'Utility', 'Brown', 500] 0.5368509212730318 1
+['Railroad', 'Light Blue', 'Orange', 'Dark Blue', 'Pink', 'Yellow', 'Red', 'Utility', 'Green', 'Brown', 500] 0.5388080025138787 7
+['Railroad', 'Orange', 'Light Blue', 'Dark Blue', 'Pink', 'Yellow', 'Red', 'Utility', 'Green', 'Brown', 500] 0.5449774325600923 8
+['Railroad', 'Orange', 'Light Blue', 'Dark Blue', 'Pink', 'Yellow', 'Red', 'Utility', 'Brown', 'Green', 500] 0.5586993243243243 5
+['Railroad', 'Orange', 'Light Blue', 'Dark Blue', 'Yellow', 'Pink', 'Red', 'Utility', 'Brown', 'Green', 500] 0.5620769881556683 33
+No better neighbors.
+Start!
+['Red', 'Pink', 'Orange', 'Green', 'Railroad', 'Brown', 'Utility', 'Light Blue', 'Dark Blue', 'Yellow', 500] 0.3761508596783139
+['Railroad', 'Pink', 'Orange', 'Green', 'Red', 'Brown', 'Utility', 'Light Blue', 'Dark Blue', 'Yellow', 500] 0.4850979574822843 1
+['Railroad', 'Pink', 'Orange', 'Dark Blue', 'Red', 'Brown', 'Utility', 'Light Blue', 'Green', 'Yellow', 500] 0.5127109814544697 5
+['Railroad', 'Pink', 'Orange', 'Red', 'Dark Blue', 'Brown', 'Utility', 'Light Blue', 'Green', 'Yellow', 500] 0.5135444884350906 4
+['Railroad', 'Light Blue', 'Orange', 'Red', 'Dark Blue', 'Brown', 'Utility', 'Pink', 'Green', 'Yellow', 500] 0.5369556113902848 3
+['Railroad', 'Light Blue', 'Orange', 'Brown', 'Dark Blue', 'Red', 'Utility', 'Pink', 'Green', 'Yellow', 500] 0.5507048180096781 9
+['Railroad', 'Orange', 'Light Blue', 'Brown', 'Dark Blue', 'Red', 'Utility', 'Pink', 'Green', 'Yellow', 500] 0.550867964229353 2
+['Railroad', 'Orange', 'Light Blue', 'Brown', 'Dark Blue', 'Red', 'Utility', 'Pink', 'Yellow', 'Green', 500] 0.5545837723919915 22
+['Railroad', 'Orange', 'Light Blue', 'Brown', 'Dark Blue', 'Red', 'Utility', 'Pink', 'Yellow', 'Green', 1000] 0.5573960751213336 12
+['Orange', 'Railroad', 'Light Blue', 'Brown', 'Dark Blue', 'Red', 'Utility', 'Pink', 'Yellow', 'Green', 1000] 0.5633266321024231 10
+['Orange', 'Railroad', 'Light Blue', 'Brown', 'Pink', 'Red', 'Utility', 'Dark Blue', 'Yellow', 'Green', 1000] 0.5671720920368996 4
+['Orange', 'Railroad', 'Light Blue', 'Pink', 'Brown', 'Red', 'Utility', 'Dark Blue', 'Yellow', 'Green', 1000] 0.5699872557349193 24
+['Orange', 'Railroad', 'Pink', 'Light Blue', 'Brown', 'Red', 'Utility', 'Dark Blue', 'Yellow', 'Green', 1000] 0.571033896504091 2
+['Orange', 'Railroad', 'Light Blue', 'Pink', 'Brown', 'Red', 'Utility', 'Dark Blue', 'Yellow', 'Green', 1000] 0.5717019240990752 45
+['Orange', 'Railroad', 'Light Blue', 'Pink', 'Brown', 'Dark Blue', 'Utility', 'Red', 'Yellow', 'Green', 1000] 0.574653887113951 10
+['Orange', 'Railroad', 'Light Blue', 'Brown', 'Pink', 'Dark Blue', 'Utility', 'Red', 'Yellow', 'Green', 1000] 0.5771117747440273 29
+No better neighbors.
+Start!
+['Yellow', 'Red', 'Dark Blue', 'Brown', 'Green', 'Light Blue', 'Orange', 'Railroad', 'Pink', 'Utility', 1500] 0.23403019744483158
+['Yellow', 'Railroad', 'Dark Blue', 'Brown', 'Green', 'Light Blue', 'Orange', 'Red', 'Pink', 'Utility', 1500] 0.36024844720496896 1
+['Yellow', 'Railroad', 'Dark Blue', 'Orange', 'Green', 'Light Blue', 'Brown', 'Red', 'Pink', 'Utility', 1500] 0.3778097663603145 1
+['Brown', 'Railroad', 'Dark Blue', 'Orange', 'Green', 'Light Blue', 'Yellow', 'Red', 'Pink', 'Utility', 1500] 0.38796316597237446 3
+['Brown', 'Railroad', 'Dark Blue', 'Orange', 'Green', 'Light Blue', 'Pink', 'Red', 'Yellow', 'Utility', 1500] 0.41045498547918685 1
+['Brown', 'Railroad', 'Dark Blue', 'Orange', 'Utility', 'Light Blue', 'Pink', 'Red', 'Yellow', 'Green', 1500] 0.4335983041865395 1
+['Dark Blue', 'Railroad', 'Brown', 'Orange', 'Utility', 'Light Blue', 'Pink', 'Red', 'Yellow', 'Green', 1500] 0.486193602167344 1
+['Dark Blue', 'Railroad', 'Pink', 'Orange', 'Utility', 'Light Blue', 'Brown', 'Red', 'Yellow', 'Green', 1500] 0.4904697427351318 9
+['Dark Blue', 'Railroad', 'Light Blue', 'Orange', 'Utility', 'Pink', 'Brown', 'Red', 'Yellow', 'Green', 1500] 0.5032278217409413 9
+['Dark Blue', 'Railroad', 'Light Blue', 'Orange', 'Pink', 'Utility', 'Brown', 'Red', 'Yellow', 'Green', 1500] 0.5055711756742685 5
+['Orange', 'Railroad', 'Light Blue', 'Dark Blue', 'Pink', 'Utility', 'Brown', 'Red', 'Yellow', 'Green', 1500] 0.5399769464528974 2
+['Orange', 'Railroad', 'Light Blue', 'Dark Blue', 'Pink', 'Utility', 'Brown', 'Red', 'Green', 'Yellow', 1500] 0.5528061493103085 2
+['Orange', 'Railroad', 'Light Blue', 'Dark Blue', 'Pink', 'Brown', 'Utility', 'Red', 'Green', 'Yellow', 1500] 0.5539871484251554 8
+['Orange', 'Railroad', 'Light Blue', 'Dark Blue', 'Pink', 'Brown', 'Utility', 'Green', 'Red', 'Yellow', 1500] 0.5622884940778342 18
+['Orange', 'Railroad', 'Light Blue', 'Dark Blue', 'Brown', 'Pink', 'Utility', 'Green', 'Red', 'Yellow', 1500] 0.5629496402877698 12
+No better neighbors.
+Start!
+['Pink', 'Green', 'Orange', 'Red', 'Light Blue', 'Railroad', 'Utility', 'Dark Blue', 'Yellow', 'Brown', 500] 0.3367132867132867
+['Pink', 'Green', 'Orange', 'Red', 'Light Blue', 'Railroad', 'Utility', 'Dark Blue', 'Yellow', 'Brown', 0] 0.35695657103980044 1
+['Pink', 'Railroad', 'Orange', 'Red', 'Light Blue', 'Green', 'Utility', 'Dark Blue', 'Yellow', 'Brown', 0] 0.4554995801847187 1
+['Orange', 'Railroad', 'Pink', 'Red', 'Light Blue', 'Green', 'Utility', 'Dark Blue', 'Yellow', 'Brown', 0] 0.47704507512520866 3

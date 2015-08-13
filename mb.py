@@ -1,17 +1,16 @@
-# # # # # # # # # # # # # # # #
-# # # # # # # # # # # # # # # #
-# Monopoly Simulator          #
-# Created by Mitchell Eithun  #
-# July 2014 - July 2015       #
-# # # # # # # # # # # # # # # #
-# # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # #
+# # Monopoly Simulator          # #
+# # Created by Mitchell Eithun  # #
+# # July 2014 - July 2015       # #
+# # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # #
 
 from random import randint, shuffle, choice  # For random game elements.
 from decimal import getcontext, ROUND_HALF_UP  # The Decimal module for better rounding.
-from imageExport import exportBoard  # Used to create images of the board
+from imageExport import exportBoard, create_directory  # Used to create images of the board
 import numpy  # For manipulating matrices
 import itertools  # For fancy looping
-# import math
 
 getcontext().rounding = ROUND_HALF_UP  # Adjust the rounding scheme.
 
@@ -27,7 +26,7 @@ class Player:
                  'expected_change', 'expected_change_time', 'rents', 'trading_threshold',
                  'dynamic_ordering', 'go_counter', 'go_record', 'initial_group',
                  'initial_properties', 'expected_n', 'expected_c', 'expected_x', 'step_threshold', 'hybrid_trading',
-                 't']
+                 't', 'monopoly_tags']
 
     def __init__(self,
                  number,
@@ -46,7 +45,7 @@ class Player:
                  trading_threshold=0,
                  initial_group=None,
                  initial_properties=None,
-                 n=1,
+                 n=6,
                  c=1,
                  x=None,
                  t=0,
@@ -111,6 +110,7 @@ class Player:
         self.inventory = set()  # A set of the player's properties.
         self.monopolies = set()
         self.mortgaged_properties = set()
+        self.monopoly_tags = []
 
         # Misc.
         self.position = 0  # The player starts on "Go".
@@ -166,13 +166,18 @@ class Player:
 
         j = 0
         for property in group_properties:
-            rents[property.name] = (property.rents[buildings_split[j]])
+            if buildings_split[j] == 0:
+                rents[property.name] = (property.rents[0] * 2)
+            else:
+                rents[property.name] = (property.rents[buildings_split[j]])
+
             j += 1
 
         return rents
 
     # Evaluating how much benefit a dynamic player gets for a group trade over another player.
     def group_trading_benefit(self, game_info, group_in, group_out, other_player):
+        expected_rents = None
         # All of the properties in the groups.
         properties_in = game_info.board_groups[group_in]
         properties_out = game_info.board_groups[group_out]
@@ -181,41 +186,55 @@ class Player:
         matrix = game_info.matrices[self.expected_x]
 
         # The benefit the player is receiving.
-        benefit = 0
+        benefit_in = 0
 
         # What the player will gain from having the group
         if group_in == "Railroad":
             for prop in properties_in:
-                benefit += matrix[other_player.position][prop.id] * 200
+                benefit_in += matrix[other_player.position][prop.id] * 200
 
         elif group_in == "Utility":
             for prop in properties_in:
-                benefit += matrix[other_player.position][prop.id] * 70
+                benefit_in += matrix[other_player.position][prop.id] * 70
 
         else:
             my_money = self.money - self.get_buying_threshold(game_info, group=group_in) - 1
             expected_rents = self.expected_group_rents(game_info, money=my_money, group=group_in)
             for prop in properties_in:
-                benefit += matrix[other_player.position][prop.id] * expected_rents[prop.name]
+                benefit_in += matrix[other_player.position][prop.id] * expected_rents[prop.name]
 
-        #print(benefit, "G")
-        benefit2 = 0
+        benefit_out = 0
 
         if group_out == "Railroad":
             for prop in properties_out:
-                benefit -= matrix[self.position][prop.id] * 200
+                benefit_out -= matrix[self.position][prop.id] * 200
 
         elif group_out == "Utility":
             for prop in properties_out:
-                benefit -= matrix[self.position][prop.id] * 70
+                benefit_out -= matrix[self.position][prop.id] * 70
         else:
-            other_player_money = other_player.money - 1  # - self.get_buying_threshold(game_info, group=group_in)
+            other_player_money = other_player.money - 1  # self.get_buying_threshold(game_info, group=group_in)
             expected_rents = self.expected_group_rents(game_info, money=other_player_money, group=group_out)
             for prop in properties_out:
-                benefit2 -= matrix[self.position][prop.id] * expected_rents[prop.name]
-                benefit -= matrix[self.position][prop.id] * expected_rents[prop.name]
+                benefit_out -= matrix[self.position][prop.id] * expected_rents[prop.name]
+                #if group_in == "Utility":
+                #    print(prop.name,matrix[self.position][prop.id],self.position,prop.id)
 
-        #print(benefit2, "G")
+        old_benefit = 0
+
+        # Subtract the rent for the properties the player already has in the group.
+        for prop in list(self.group_inv[group_in] + self.group_inv[group_out]):
+            old_benefit += matrix[other_player.position][prop.id] * game_info.calculate_rent(prop)
+
+        # Add the rent for the properties that other player can't charge anymore.
+        for prop in list(other_player.group_inv[group_out] + other_player.group_inv[group_in]):
+            old_benefit -= matrix[self.position][prop.id] * game_info.calculate_rent(prop)
+
+        benefit = (benefit_in + benefit_out) - old_benefit
+
+        #if group_in == "Utility":
+         #   print(group_out, benefit_in, benefit_out, old_benefit, benefit, expected_rents)
+
         return benefit
 
     # Determines the benefit a dynamic player gets from trading.
@@ -233,17 +252,23 @@ class Player:
             benefit = self.property_trading_benefit(game_info, property_in=property_in,
                                                     property_out=property_out,
                                                     other_player=other_player)
+
+
         elif mono_me and mono_other:
             benefit = self.group_trading_benefit(game_info, group_in=property_in.group,
                                                  group_out=property_out.group,
                                                  other_player=other_player)
+
         return benefit
 
     # Determines if the player will accept or reject a 1-1 property trade.
     def trading_decision(self, game_info, property_in, property_out, other_player):
-        # No player will trade away a Monopoly
-        if property_out.group in self.monopolies:
+        # No player will trade away a Monopoly # TODO
+        if len(self.group_inv[property_out.group]) == game_info.group_counts[property_out.group]:
             return False
+
+        #if property_out.group in self.monopolies:
+        #    return False
 
         # The player uses expected value to determine how to trade.
         if self.dynamic_ordering:
@@ -263,18 +288,19 @@ class Player:
         # Trading requirements fail.
         return False
 
-    # Determines rent if the player bought a property that could not be developed.
-    def potential_rent(self, property, player):
+
+    # Only used in discrete trading.
+    def current_rent(self, property, player):
         owner = player
         group = property.group
 
         # Rent for Railroads.
         if group == "Railroad":
-            rent = 25 * pow(2, len(owner.group_inv["Railroad"]) + 1 - 1)  # The rent.
+            rent = 25 * pow(2, len(owner.group_inv["Railroad"]) - 1)  # The rent.
 
         # Rent for Utilities.
         elif group == "Utility":
-            utility_counter = len(owner.group_inv["Utility"]) + 1
+            utility_counter = len(owner.group_inv["Utility"])
             if utility_counter == 2:
                 rent = 70  # If the player owns both utilities, pay 10 times the dice.
             else:
@@ -288,19 +314,59 @@ class Player:
 
     # Evaluates the benefit of a single property trade to a dynamic player.
     def property_trading_benefit(self, game_info, property_in, property_out, other_player):
-        benefit = 0
-
         # The probability matrix.
         matrix = game_info.matrices[self.expected_x]
 
-        benefit += (matrix[other_player.position][property_in.id] * self.potential_rent(property_in, self))
-        benefit -= (matrix[self.position][property_out.id] * self.potential_rent(property_out, other_player))
+        current_benefit = 0
+        expected_benefit = 0
 
-        #print("*")
-        #print(+(matrix[other_player.position][property_in.id] * self.potential_rent(property_in, self)),
-        #      -(matrix[self.position][property_out.id] * self.potential_rent(property_out, other_player)))
+        my_props = list(self.group_inv[property_out.group]) + list(self.group_inv[property_in.group])
+        other_props = list(other_player.group_inv[property_out.group]) + list(other_player.group_inv[property_in.group])
 
-        return benefit
+        for prop in my_props:
+            current_benefit += matrix[other_player.position][prop.id] * self.current_rent(prop, self)
+
+        for prop in other_props:
+            current_benefit -= matrix[self.position][prop.id] * self.current_rent(prop, other_player)
+
+        game_info.mock_trade(playerA=self, playerB=other_player, pAtoB=property_out, pBtoA=property_in)
+
+        my_props = list(self.group_inv[property_out.group]) + list(self.group_inv[property_in.group])
+        other_props = list(other_player.group_inv[property_out.group]) + list(other_player.group_inv[property_in.group])
+
+        for prop in my_props:
+            expected_benefit += matrix[other_player.position][prop.id] * self.current_rent(prop, self)
+
+        for prop in other_props:
+            expected_benefit -= matrix[self.position][prop.id] * self.current_rent(prop, other_player)
+
+        game_info.mock_trade(playerA=self, playerB=other_player, pAtoB=property_in, pBtoA=property_out)
+
+        return expected_benefit - current_benefit
+
+        '''# The properties the other player currently has.
+        current_props = list(other_player.group_inv[property_out.group] + other_player.group_inv[property_in.group])
+        for prop in current_props:
+            current_benefit -= matrix[self.position][prop.id] * self.current_rent(prop, other_player)
+
+        # This player's props.
+        current_props = list(self.group_inv[property_out.group] + self.group_inv[property_in.group])
+        for prop in current_props:
+            current_benefit += matrix[other_player.position][prop.id] * self.current_rent(prop, self)
+
+        expected_props = list(
+            [property_out] + other_player.group_inv[property_out.group] + other_player.group_inv[property_in.group])
+        expected_props.remove(property_in)
+        for prop in expected_props:
+            expected_benefit -= matrix[self.position][prop.id] * self.potential_rent(prop, other_player)
+
+        expected_props = list([property_in] + self.group_inv[property_out.group] + self.group_inv[property_in.group])
+        expected_props.remove(property_out)
+        for prop in expected_props:
+            expected_benefit += matrix[other_player.position][prop.id] * self.potential_rent(prop, self)
+
+        return expected_benefit - current_benefit'''
+
 
     def get_trading_threshold(self, group):
         bound = 200
@@ -345,7 +411,8 @@ class Player:
             money_changes[38] = -200  # Income Tax
 
             for prop in other_player.inventory:
-                money_changes[prop.id] -= game_info.calculate_rent(prop)
+                # money_changes[prop.id] -= game_info.calculate_rent(prop)
+                money_changes[prop.id] -= game_info.calculate_expected_rent(prop)
 
             expected_change = 0
 
@@ -356,11 +423,12 @@ class Player:
             expected_change += numpy.vdot(money_changes, matrix[self.position])
 
             # Add rents that this player will receive.
-            # other_money_changes = [0] * 41
-            other_money_changes = list(self.rents) + [0]
+            other_money_changes = [0] * 41
+            # other_money_changes = list(self.rents) + [0]
 
-            # for prop in self.inventory:
-            # other_money_changes[prop.id] += game_info.calculate_rent(prop)
+            for prop in self.inventory:
+                # other_money_changes[prop.id] += game_info.calculate_rent(prop)
+                other_money_changes[prop.id] += game_info.calculate_expected_rent(prop)
 
             expected_change += numpy.vdot(other_money_changes, matrix[other_player.position])
 
@@ -375,9 +443,12 @@ class Player:
         return self.expected_change
 
     # Add a group to the list of monopolies, checking that it is a valid color group.
-    def add_monopoly(self, group):
+    def add_monopoly(self, game_info, group):
         if group != "Railroad" and group != "Utility":
+            self.monopoly_tags.append(game_info.turn_counter)
             self.monopolies.add(group)
+            if not game_info.first_monopoly:
+                game_info.first_monopoly = self.number
         return
 
     # Used in analysis to add railroad and utility monopolies to player's lists of monopolies.
@@ -781,17 +852,11 @@ class Player:
     def get_buying_threshold(self, game_info, group=None):
         if self.dynamic_ordering:
             return self.buying_threshold
-            # e = -self.expected_future(game_info)
-            # e += self.expected_c
-            # thresh = max(1, e)
-            # if self.number == 1:
-            # print(-e)
-            # return thresh
         elif self.step_threshold:
             if group:
                 thresh = self.buying_threshold * ((self.group_ranking[group] + 1) / 10)
-                # print(thresh, self.number)
                 return thresh
+
         else:
             return self.buying_threshold
 
@@ -847,10 +912,11 @@ class Game:
                  'starting_player', 'trade_count', 'bank', 'free_parking', 'trade_pairs', 'player1', 'player2',
                  'chance_cards', 'community_chest_cards', 'chance_index', 'community_chest_index', 'board',
                  'development_order', 'move_again', 'board_groups', 'p1_trade_pairs', 'p2_trade_pairs',
-                 'image_exporting', 'trades', 'matrices', 'ordering_trading', 'group_trading', 'shuffle']
+                 'image_exporting', 'trades', 'matrices', 'ordering_trading', 'group_trading', 'shuffle', 'all_players',
+                 'first_monopoly', 'record_predicted_winners', 'predicted_winners']
 
     def __init__(self, list_of_players=None, auctions_enabled=True, trading_enabled=False, ordering_trading=False,
-                 group_trading=False,
+                 group_trading=False, record_predicted_winners=False,
                  hotel_upgrade=False, building_sellback=False, image_exporting=False,
                  free_parking_pool=False, double_on_go=False, no_rent_in_jail=False, trip_to_start=False,
                  snake_eyes_bonus=False, cutoff=1000, shuffle=True):
@@ -875,6 +941,7 @@ class Game:
         # Misc.
         self.shuffle = shuffle
         self.cutoff = cutoff
+        self.record_predicted_winners = record_predicted_winners
         self.group_counts = {"Brown": 2, "Light Blue": 3, "Pink": 3, "Orange": 3,
                              "Red": 3, "Yellow": 3, "Green": 3, "Dark Blue": 2,
                              "Utility": 2, "Railroad": 4}
@@ -893,6 +960,8 @@ class Game:
         self.inactive_players = []  # An empty list to store losing players.
         self.active_players = list_of_players  # Create  a list of players.
         self.num_active_players = len(list_of_players)
+        self.all_players = []
+        self.first_monopoly = None
 
         # Create game elements.
         self.create_cards()  # Shuffle both card decks.
@@ -911,7 +980,7 @@ class Game:
                         player.inventory.add(property)
                         player.group_inv[group].append(property)
                         property.owner = player
-                        player.add_monopoly(group)
+                        player.add_monopoly(self, group)
                         # player.money -= property.price
 
             if player.initial_properties:
@@ -936,6 +1005,7 @@ class Game:
         self.starting_player = 0  # Store which player started.
         self.trade_count = 0
         self.trades = []
+        self.predicted_winners = []
 
         # Money pools.
         self.bank = MoneyPool(12500)  # Create the bank.
@@ -1274,9 +1344,12 @@ class Game:
 
     # Trading with individual properties.
     def trading(self, player1, property):
-        # If player 1 now has a monopoly, leave.
-        if property.group in player1.monopolies:
+        # If player 1 now has a monopoly, leave. # TODO
+        if len(player1.group_inv[property.group]) == self.group_counts[property.group]:
             return
+
+        #if property.group in player1.monopolies:
+        #    return
 
         # Find the other player.
         player2 = self.other_player(player1)
@@ -1293,18 +1366,26 @@ class Game:
 
             # Look for properties that player 1 wants.
             for p2to1 in player2.inventory:
+                g2to1 = p2to1.group
 
                 # See if player 2 will accept the property.
                 if player2.trading_decision(self, property_in=p1to2, property_out=p2to1, other_player=player1):
 
-                    # Benefit.
-                    benefit = player1.trading_benefit(self, property_in=p2to1, property_out=p1to2, other_player=player2)
-                    # print(benefit)
+                    mono1 = (len(player1.group_inv[g2to1]) + 1 == self.group_counts[g2to1])
+                    mono2 = (len(player2.group_inv[g1to2]) + 1 == self.group_counts[g1to2])
 
-                    # Evaluate this deal.
-                    if benefit > best_prop_score:
-                        best_prop = p2to1
-                        best_prop_score = benefit
+                    if mono1 and mono2 or (not mono1 and not mono2):
+
+                        # Benefit.
+                        benefit = player1.trading_benefit(self,
+                                                          property_in=p2to1,
+                                                          property_out=p1to2,
+                                                          other_player=player2)
+
+                        # Evaluate this deal.
+                        if benefit > best_prop_score:
+                            best_prop = p2to1
+                            best_prop_score = benefit
 
             # If there was a best valid deal, make the trade.
             if best_prop:
@@ -1320,37 +1401,53 @@ class Game:
             best_prop = None
             best_prop_score = -player1.t  # Only trades better than -t are considered.
 
-            # Look for properties that player 1 wants.
-            for p2to1 in player2.inventory:
+            # Traverse groups player would want.
+            for g2to1 in player1.group_ordering:
+                if g2to1 != g1to2:
 
-                # See if player 2 will accept the property.
-                if player2.trading_decision(self, property_in=p1to2, property_out=p2to1, other_player=player1):
+                    # Look for properties that player 1 wants.
+                    for p2to1 in player2.group_inv[g2to1]:
 
-                    # Benefit.
-                    benefit = player1.trading_benefit(self, property_in=p2to1, property_out=p1to2, other_player=player2)
+                        # See if player 2 will accept the property.
+                        if player2.trading_decision(self, property_in=p1to2, property_out=p2to1, other_player=player1):
 
-                    # Evaluate this deal.
-                    good_deal = False  # A flag used to update best deal
-                    if benefit > best_prop_score:  # The deal is better than the stored one.
-                        if benefit < player1.t:  # The expected value is less than player's threshold
-                            # We check the player's group ranking.
-                            if player1.group_ranking[p1to2.group] > player1.group_ranking[p2to1.group]:
-                                good_deal = True
-                        else:
-                            # The expected value is higher than the threshold.
-                            good_deal = True
+                            mono1 = (len(player1.group_inv[g2to1]) + 1 == self.group_counts[g2to1])
+                            mono2 = (len(player2.group_inv[g1to2]) + 1 == self.group_counts[g1to2])
+
+                            if mono1 and mono2 or (not mono1 and not mono2):
+                                # Benefit.
+                                benefit = player1.trading_benefit(self, property_in=p2to1,
+                                                                  property_out=p1to2,
+                                                                  other_player=player2
+                                )
+
+                                # Evaluate this deal.
+                                good_deal = False  # A flag used to update best deal
+                                overruled_deal = False
+                                if benefit < player1.t:  # The expected value is less than player's threshold
+                                    # We check the player's group ranking.
+                                    if player1.group_ranking[p1to2.group] > player1.group_ranking[p2to1.group]:
+                                        good_deal = True
+                                        overruled_deal = True
+                                else:
+                                    # The expected value is higher than the threshold.
+                                    good_deal = True
+
+                                # We found a deal.
+                                if good_deal:
+                                    if overruled_deal and best_prop == None:
+                                        best_prop = p2to1
+                                        best_prop_score = benefit
+                                    elif not overruled_deal:
+                                        if benefit > best_prop_score:
+                                            best_prop = p2to1
+                                            best_prop_score = benefit
 
 
-                    # We found a deal.
-                    if good_deal:
-                        # Check that this deal is an improvement.
-                        if benefit > best_prop_score:
-                            best_prop = p2to1
-                            best_prop_score = benefit
 
             # If there was a best valid deal, make the trade.
             if best_prop:
-                #print(best_prop_score)
+                # print(best_prop_score)
                 # Rename for clarity.
                 p2to1 = best_prop
 
@@ -1366,23 +1463,29 @@ class Game:
             for g2to1 in player1.group_ordering[:group_rank]:
 
                 # See if Player 2 has properties in the group
-                if player2.group_inv[g2to1] and g2to1 not in player2.monopolies:
+                if player2.group_inv[g2to1]:
 
                     # Grab the first property in that Player 2 owns in the group.
                     p2to1 = player2.group_inv[g2to1][0]
 
-                    # Check that Player 2 will accept the group/property.
-                    if player2.trading_decision(self, property_in=p1to2, property_out=p2to1, other_player=player1):
+                    mono1 = (len(player1.group_inv[g2to1]) + 1 == self.group_counts[g2to1])
+                    mono2 = (len(player2.group_inv[g1to2]) + 1 == self.group_counts[g1to2])
 
-                        # Check that are 0 or 2 monopolies forming.
-                        mono1 = (len(player1.group_inv[g2to1]) + 1 - self.group_counts[g2to1] == 0)
-                        mono2 = (len(player2.group_inv[g1to2]) + 1 - self.group_counts[g1to2] == 0)
-                        if (mono1 and mono2) or (not mono1 and not mono2):
+                    if mono1 and mono2 or (not mono1 and not mono2):
+                        # Check that Player 2 will accept the group/property.
+                        if player2.trading_decision(self, property_in=p1to2, property_out=p2to1, other_player=player1):
                             # Make the trade.
                             self.make_trade(playerA=player1, playerB=player2, pAtoB=p1to2, pBtoA=p2to1)
 
                             # The player has made his one allowed trade, so we leave.
                             return
+
+
+    def mock_trade(self, playerA, playerB, pAtoB, pBtoA):
+        # Update inventories.
+        self.update_inventories(player_from=playerA, player_to=playerB, prop=pAtoB)
+        self.update_inventories(player_from=playerB, player_to=playerA, prop=pBtoA)
+
 
     # Actually execute a 1-1 property trade.
     def make_trade(self, playerA, playerB, pAtoB, pBtoA):
@@ -1391,13 +1494,14 @@ class Game:
         self.update_inventories(player_from=playerB, player_to=playerA, prop=pBtoA)
         self.trade_count += 1
 
-        # Update trading archive.
-        if playerA.number == 1:
-            # print(p1to2.name, "<-->", p2to1.name)
-            self.trades.append([pAtoB, pBtoA])
-        else:
-            # print(p2to1.name, "<-->", p1to2.name)
-            self.trades.append([pBtoA, pAtoB])
+        if True:  # pAtoB.group in playerB.monopolies:
+            # Update trading archive.
+            if playerA.number == 1:
+                # print(pAtoB.name, "<-->", pBtoA.name)
+                self.trades.append([pAtoB, pBtoA])
+            else:
+                # print(pBtoA.name, "<-->", pAtoB.name)
+                self.trades.append([pBtoA, pAtoB])
 
     # Uses money values for each property group.
     def cont_trading(self, playerA):
@@ -1519,7 +1623,7 @@ class Game:
 
             # Update set of monopolies
             if len(player_to.group_inv[prop.group]) == self.group_counts[prop.group]:
-                player_to.add_monopoly(prop.group)
+                player_to.add_monopoly(self, prop.group)
 
             # Update property owner.
             prop.owner = player_to
@@ -1541,7 +1645,7 @@ class Game:
             player_from.inventory.remove(prop)
 
             if len(player_to.group_inv[prop.group]) == self.group_counts[prop.group]:
-                player_to.add_monopoly(prop.group)
+                player_to.add_monopoly(self, prop.group)
 
             # Update property owner.
             prop.owner = player_to
@@ -1604,13 +1708,36 @@ class Game:
 
         if self.ordering_trading or self.trading_enabled:
             self.trading(player1=player, property=board_space)
-        #if self.group_trading:
-        #    self.group_trading_algo(playerA=player)
+            # if self.group_trading:
+            # self.group_trading_algo(playerA=player)
 
     # Determines the owner of a property.
     def property_owner(self, property):
         return property.owner
 
+
+    def calculate_expected_rent(self, property):
+        owner = property.owner
+        # Rent for Railroads.
+        if property.group == "Railroad":
+            rent = 25 * pow(2, len(owner.group_inv["Railroad"]) - 1)  # The rent.
+
+        # Rent for Utilities.
+        elif property.group == "Utility":
+            utility_counter = len(owner.group_inv["Utility"])
+            if utility_counter == 2:
+                rent = 70  # If the player owns both utilities, pay 10 times the dice.
+            else:
+                rent = 28  # If the player owns one utility, pay 4 times the dice.
+
+        # Rent for color-group properties.
+        else:
+            if property.group in owner.monopolies:
+                rent = property.rents[property.buildings]
+            else:
+                rent = property.rents[0]
+
+        return rent
 
     # Determines the rent owed on a property.
     def calculate_rent(self, property):
@@ -1754,7 +1881,6 @@ class Game:
         winning_player.make_auction_funds(winning_bid=winning_bid, property=board_space, game_info=self)
         self.buy_property(winning_player, board_space, custom_price=winning_bid)
 
-
     # Find the liquid wealth of all of the player's properties.
     def total_assets(self, player):
         liquid_property = 0  # The liquidated property wealth of the player.
@@ -1825,6 +1951,11 @@ class Game:
 
     # An individual player takes a turn.
     def take_turn(self, player):
+        # Save board state as an image.
+        if self.image_exporting:
+            if self.turn_counter % self.image_exporting == 0:
+                exportBoard(self)
+
         self.turn_counter += 1  # Increase master turn counter
         self.doubles_counter = 0  # Reset doubles counter.
         self.move_again = False
@@ -1902,6 +2033,10 @@ class Game:
 
     # Plays a game object.
     def play(self):
+
+        if self.image_exporting:
+            create_directory()
+
         # Shuffle the players.
         if self.shuffle:
             shuffle(self.active_players)
@@ -1914,9 +2049,58 @@ class Game:
 
         # Game loop. Continue if there is more than 1 player and we haven't reached the cutoff.
         while self.num_active_players > 1 and self.turn_counter < self.cutoff:
-            if self.image_exporting:
-                if self.turn_counter % self.image_exporting == 0:
-                    exportBoard(self)
+
+
+            # Record which player is currently ahead.
+            if self.record_predicted_winners:
+                liquid_assets = []
+                player_numbers = []
+                player = self.active_players[0]
+                other_player = self.other_player(player)
+
+                my_values = self.matrices[6][player.position]
+                other_values = self.matrices[6][other_player.position]
+
+                temp_properties = []
+                for property in self.board:
+                    if property.is_property:
+                        if not property.owner:
+                            if my_values[property.id] > other_values[property.id]:
+                                property_winner = player
+                            else:
+                                property_winner = other_player
+
+                            property_winner.inventory.add(property)
+                            temp_properties.append(property)
+                            property_winner.group_inv[property.group].append(property)
+                            property.owner = property_winner
+
+                            if len(property_winner.group_inv[property.group]) == self.group_counts:
+                                property_winner.add_monopoly(property.group)
+
+                # liquid_assets.append(self.total_assets(player))
+                liquid_assets.append(player.expected_future(game_info=self))
+                player_numbers.append(player.number)
+
+                liquid_assets.append(other_player.expected_future(game_info=self))
+                player_numbers.append(other_player.number)
+
+                sorted_players = [x for (y, x) in sorted(zip(liquid_assets, player_numbers))]
+                if liquid_assets[0] == liquid_assets[1]:
+                    self.predicted_winners.append(choice(sorted_players))
+                else:
+                    self.predicted_winners.append(sorted_players[-1])
+
+                for property in temp_properties:
+                    owner = property.owner
+                    group = property.group
+
+                    owner.inventory.remove(property)
+                    owner.group_inv[group].remove(property)
+                    property.owner = None
+                    if group in player.monopolies:
+                        player.monopolies.remove(group)
+
 
             # Create list of players starting with the player who is going.
             self.development_order = []
@@ -1926,6 +2110,8 @@ class Game:
             # Allow the player to develop and un-mortgage properties.
             for player in self.development_order:
                 player.between_turns(game_info=self)
+                # for property in player.inventory:
+                # self.trading(player1=player, property=property)
                 # if player.dynamic_ordering:
                 # print(player.expected_future(self))
 
@@ -1935,12 +2121,17 @@ class Game:
             # Update current_player_index.
             current_player_index = (current_player_index + 1) % self.num_active_players
 
+
+
         # # # The game has ended # # #
         if self.image_exporting:
             self.active_players.extend(self.inactive_players)
             exportBoard(self)
+            input("Pause.")
             for player in self.inactive_players:
                 self.active_players.remove(player)
+
+        self.all_players = self.inactive_players + self.active_players
 
         # Find all monopolies.
         all_monopolies = []
@@ -1962,8 +2153,9 @@ class Game:
                    'end behavior': self.loss_reason,
                    'monopolies': all_monopolies,
                    'started': self.starting_player,
-                   'players': self.active_players,
-                   'trade count': self.trade_count
+                   'trade count': self.trade_count,
+                   'all_players': self.all_players,
+                   'winning_player': self.active_players[0],
         }
 
         return results

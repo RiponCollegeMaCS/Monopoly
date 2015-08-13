@@ -1,7 +1,6 @@
 import mb as monopoly
-from timer import *
-import cProfile
-from random import shuffle, randint, uniform
+import math
+from random import shuffle, randint
 
 
 def random_ordering():
@@ -13,48 +12,50 @@ def random_ordering():
 
 
 def best_ordering():
-    return tuple(["Railroad", "Light Blue", "Orange", "Pink", "Red",
-                  "Yellow", "Green", "Dark Blue", "Utility", "Brown"])
+    other_groups = ["Pink", "Red",
+                    "Yellow", "Green",
+                    "Dark Blue", "Utility", "Brown"]
+    shuffle(other_groups)
+
+    return tuple(["Railroad", "Light Blue", "Orange"] + other_groups)
 
 
-def main(games_in_a_set=10000):
-    game0 = monopoly.Game(cutoff=1000, trading_enabled=True, image_exporting=0, )
+def main():
+    game0 = monopoly.Game(cutoff=1000, trading_enabled=True, image_exporting=0)
 
-    for thresh in [1500]:  # range(1500, 2100, 100):
-        for t in range(11, 21, 1):
-            trade_count = []
-            winners = [0, 0, 0]
-            for i in range(games_in_a_set):
-                # Play game.
-                player1 = monopoly.Player(1,
-                                          buying_threshold=thresh,
-                                          group_ordering=best_ordering(),
-                                          step_threshold=True,
-                                          hybrid_trading=True,
-                                          t=t,
-                                          n=6,
-                )
-                player2 = monopoly.Player(2,
-                                          buying_threshold=500,
-                                          #dynamic_ordering=True,
-                                          #n=6,
-                                          # c=-500,
-                                          group_ordering=random_ordering(),
-                                          step_threshold=False
-                )
+    for thresh in range(150, 1501, 150):
+        base_games = 1000
+        counter = 0
+        winners = [0, 0, 0]
+        interval_size = 10
 
-                game0.new_players([player1, player2])
-                results = game0.play()
+        while (counter < base_games) or interval_size > 0.01:
+            counter += 1
+            # Play game.
+            player1 = monopoly.Player(1,
+                                      buying_threshold=1500,
+                                      group_ordering=random_ordering(),
+                                      step_threshold=True,
 
-                # Store length.
-                winners[results['winner']] += 1
-                trade_count.append(results['trade count'])
+            )
+            player2 = monopoly.Player(2,
+                                      buying_threshold=thresh,
+                                      group_ordering=random_ordering(),
+                                      step_threshold=False
+            )
 
-            print(winners, thresh, t, sum(trade_count) / games_in_a_set)
+            game0.new_players([player1, player2])
+            results = game0.play()
+
+            # Store length.
+            winners[results['winner']] += 1
+
+            p = winners[1] / counter
+            interval_size = 1.960 * math.sqrt((p * (1 - p)) / counter)
+
+            # print(counter, p, interval_size)
+
+        print(winners[0] / counter, winners[1] / counter, winners[2] / counter, counter, thresh)
 
 
-if __name__ == '__main__':
-    timer()
-    main()
-    # cProfile.run('main2()', sort=1)
-    timer()
+main()
